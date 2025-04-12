@@ -133,6 +133,7 @@ export const History = () => {
                   category={item.category}
                   logoUrl={item.logoUrl}
                   logoAlt={`${item.query} logo`}
+                  id={item.id}
                 />
               ))}
             </div>

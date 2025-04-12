@@ -2,6 +2,7 @@
 import { animate, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 // Utility function to render logo from CDN URL
 export const renderLogoFromCDN = (url: string, alt: string = "Logo", className: string = "h-6 w-6") => {
@@ -39,6 +40,7 @@ export interface HistoryCardProps {
   category?: string | string[];
   logoUrl?: string;
   logoAlt?: string;
+  id?: string;
 }
 
 export function HistoryCard({ 
@@ -47,7 +49,8 @@ export function HistoryCard({
   date, 
   category = "Search",
   logoUrl,
-  logoAlt
+  logoAlt,
+  id = "1"
 }: HistoryCardProps) {
   // Convert category to array if it's a string
   const categories = typeof category === 'string' 
@@ -136,7 +139,7 @@ export function HistoryCard({
   }, [calculateVisibleTags]);
   
   return (
-    <Card>
+    <Card id={id}>
       <div className="flex flex-col h-full">
         <CardSkeletonContainer>
           <Skeleton logoUrl={logoUrl} logoAlt={logoAlt || title} />
@@ -314,19 +317,25 @@ const Sparkles = () => {
 export const Card = ({
   className,
   children,
+  id = "1",
 }: {
   className?: string;
   children: React.ReactNode;
+  id?: string;
 }) => {
   return (
-    <div
-      className={cn(
-        "w-full p-6 rounded-xl border border-[rgba(255,255,255,0.10)] dark:bg-[rgba(40,40,40,0.70)] bg-gray-100 shadow-[2px_4px_16px_0px_rgba(248,248,248,0.06)_inset] group h-full flex flex-col",
-        className
-      )}
-    >
-      {children}
-    </div>
+    <Link href={`/analysis/${id}`} className="block">
+      <motion.div
+        className={cn(
+          "relative z-20 h-full overflow-hidden rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-800",
+          "transition-all duration-200 ease-in-out hover:border-neutral-300 hover:shadow-md dark:hover:border-neutral-700",
+          "transform hover:-translate-y-1",
+          className
+        )}
+      >
+        {children}
+      </motion.div>
+    </Link>
   );
 };
 
