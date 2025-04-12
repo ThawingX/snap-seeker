@@ -58,13 +58,16 @@ export function HistoryCard({
   const [visibleCategories, setVisibleCategories] = useState<string[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const tagsContainerRef = React.useRef<HTMLDivElement>(null);
+  const calculatedRef = React.useRef(false);
   
   // 使用useCallback缓存计算函数，避免重复创建
   const calculateVisibleTags = React.useCallback(() => {
     const containerRef = tagsContainerRef.current;
-    if (!containerRef) return;
+    if (!containerRef || !document.body) return;
     
     const containerWidth = containerRef.clientWidth;
+    if (containerWidth === 0) return; // 容器宽度为0时不进行计算
+    
     let totalWidth = 0;
     let visibleCount = 0;
     
@@ -76,39 +79,61 @@ export function HistoryCard({
     tempContainer.style.width = `${containerWidth}px`;
     document.body.appendChild(tempContainer);
     
-    // 临时span来测量每个标签的宽度
-    categories.forEach((cat) => {
-      const tempSpan = document.createElement('span');
-      tempSpan.className = 'bg-neutral-100 px-2 py-1 rounded text-xs whitespace-nowrap mr-2 mb-2';
-      tempSpan.textContent = cat;
-      tempContainer.appendChild(tempSpan);
+    try {
+      // 临时span来测量每个标签的宽度
+      categories.forEach((cat) => {
+        const tempSpan = document.createElement('span');
+        tempSpan.className = 'bg-neutral-100 px-2 py-1 rounded text-xs whitespace-nowrap mr-2 mb-2';
+        tempSpan.textContent = cat;
+        tempContainer.appendChild(tempSpan);
+        
+        const spanWidth = tempSpan.offsetWidth + 8; // 8px为外边距
+        if (totalWidth + spanWidth <= containerWidth) {
+          totalWidth += spanWidth;
+          visibleCount++;
+        }
+      });
       
-      const spanWidth = tempSpan.offsetWidth + 8; // 8px为外边距
-      if (totalWidth + spanWidth <= containerWidth) {
-        totalWidth += spanWidth;
-        visibleCount++;
+      // 避免无限循环：仅当新的计算结果不同时才更新
+      const newVisibleCategories = categories.slice(0, visibleCount);
+      setVisibleCategories(newVisibleCategories);
+      setHasMore(visibleCount < categories.length);
+      calculatedRef.current = true;
+    } finally {
+      // 确保临时容器被移除
+      if (document.body.contains(tempContainer)) {
+        document.body.removeChild(tempContainer);
       }
-    });
-    
-    document.body.removeChild(tempContainer);
-    
-    setVisibleCategories(categories.slice(0, visibleCount));
-    setHasMore(visibleCount < categories.length);
+    }
   }, [categories]);
   
   // 使用useEffect注册事件监听器并初始计算
   useEffect(() => {
-    // 初始计算
-    calculateVisibleTags();
+    // 初始计算，仅在组件挂载后进行
+    if (!calculatedRef.current) {
+      // 使用setTimeout确保DOM已完全渲染
+      const timer = setTimeout(() => {
+        calculateVisibleTags();
+      }, 0);
+      
+      return () => clearTimeout(timer);
+    }
+  }, []);
+  
+  // 监听窗口大小变化
+  useEffect(() => {
+    const handleResize = () => {
+      calculateVisibleTags();
+    };
     
     // 窗口大小变化时重新计算
-    window.addEventListener('resize', calculateVisibleTags);
+    window.addEventListener('resize', handleResize);
     
     // 清理函数移除事件监听器
     return () => {
-      window.removeEventListener('resize', calculateVisibleTags);
+      window.removeEventListener('resize', handleResize);
     };
-  }, [calculateVisibleTags]); // 依赖于缓存的calculateVisibleTags函数
+  }, [calculateVisibleTags]);
   
   return (
     <Card>
