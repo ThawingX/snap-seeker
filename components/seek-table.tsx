@@ -2,6 +2,9 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { FloatingDock } from "@/components/ui/floating-dock";
+import { IconTable, IconBrain, IconChartBar, IconBulb } from "@tabler/icons-react";
+import { useRef } from "react";
 
 interface CompetitorData {
   id: string;
@@ -37,6 +40,40 @@ const Step = ({ number, title, description }: { number: number; title: string; d
 );
 
 export default function SeekTable({ query }: { query: string }) {
+  // Add refs for scrolling to specific sections
+  const searchLogicRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const insightsRef = useRef<HTMLDivElement>(null);
+
+  // Function to scroll to a specific section
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement>) => {
+    if (ref.current) {
+      ref.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Define floating dock items
+  const dockItems = [
+    {
+      title: "Search Logic",
+      icon: <IconBrain className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#search-logic",
+      onClick: () => scrollToSection(searchLogicRef)
+    },
+    {
+      title: "Data Table",
+      icon: <IconTable className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#table",
+      onClick: () => scrollToSection(tableRef)
+    },
+    {
+      title: "Insights",
+      icon: <IconBulb className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#insights",
+      onClick: () => scrollToSection(insightsRef)
+    }
+  ];
+
   // In a real app, this would come from an API call based on the query
   const competitorData: CompetitorData[] = [
     {
@@ -126,8 +163,21 @@ export default function SeekTable({ query }: { query: string }) {
         <p className="text-neutral-400">Results for: {query}</p>
       </div>
 
+      {/* Floating Dock for navigation */}
+      <FloatingDock 
+        items={dockItems.map(item => ({
+          title: item.title,
+          icon: item.icon,
+          href: item.href
+        }))}
+        desktopClassName="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 shadow-lg"
+        mobileClassName="fixed bottom-8 right-8 z-50 shadow-lg"
+      />
+
       {/* Chain of Thought Section */}
       <motion.div 
+        ref={searchLogicRef}
+        id="search-logic"
         className="bg-neutral-900 rounded-xl p-6 mb-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -153,6 +203,8 @@ export default function SeekTable({ query }: { query: string }) {
 
       {/* Table Section */}
       <motion.div 
+        ref={tableRef}
+        id="table"
         className="overflow-x-auto bg-neutral-900 rounded-xl"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -226,6 +278,8 @@ export default function SeekTable({ query }: { query: string }) {
       
       {/* Bottom Recommendation Section */}
       <motion.div 
+        ref={insightsRef}
+        id="insights"
         className="mt-10 p-6 bg-gradient-to-r from-cyan-900/30 to-neutral-900 rounded-xl border border-cyan-800/30"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
