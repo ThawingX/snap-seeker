@@ -58,17 +58,17 @@ const CompetitorCard = ({ competitor }: { competitor: CompetitorData }) => (
 
     <div className="grid grid-cols-2 gap-4 mb-6">
       <div>
-        <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">相关度</p>
+        <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Relevance</p>
         <p className="text-neutral-800 dark:text-neutral-200">{competitor.relevance}</p>
       </div>
       <div>
-        <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">流量</p>
+        <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400">Traffic</p>
         <p className="text-neutral-800 dark:text-neutral-200">{competitor.traffic}</p>
       </div>
     </div>
 
     <div className="mb-4">
-      <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">目标用户</p>
+      <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Target User</p>
       <div className="flex flex-wrap gap-2">
         {competitor.targetUser.map((user, index) => (
           <span key={index} className="bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-300 px-2 py-1 rounded text-xs">
@@ -79,7 +79,7 @@ const CompetitorCard = ({ competitor }: { competitor: CompetitorData }) => (
     </div>
 
     <div className="mb-4">
-      <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">核心卖点</p>
+      <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Plain Points</p>
       <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300 space-y-1">
         {competitor.plainPoints.map((point, index) => (
           <li key={index}>{point}</li>
@@ -88,7 +88,7 @@ const CompetitorCard = ({ competitor }: { competitor: CompetitorData }) => (
     </div>
 
     <div className="mb-4">
-      <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">主要功能</p>
+      <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Key Features</p>
       <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300 space-y-1">
         {competitor.keyFeatures.map((feature, index) => (
           <li key={index}>{feature}</li>
@@ -97,7 +97,7 @@ const CompetitorCard = ({ competitor }: { competitor: CompetitorData }) => (
     </div>
 
     <div className="mb-4">
-      <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">潜在弱点</p>
+      <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Potential Weaknesses</p>
       <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300 space-y-1">
         {competitor.potentialWeaknesses.map((weakness, index) => (
           <li key={index}>{weakness}</li>
@@ -106,7 +106,7 @@ const CompetitorCard = ({ competitor }: { competitor: CompetitorData }) => (
     </div>
 
     <div>
-      <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">盈利模式</p>
+      <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Revenue Model</p>
       <p className="text-neutral-800 dark:text-neutral-200">{competitor.revenueModel}</p>
     </div>
   </div>
@@ -119,6 +119,7 @@ const CompetitorCard = ({ competitor }: { competitor: CompetitorData }) => (
 export default function SeekTable({ query }: { query: string }) {
   // 添加引用用于滚动到特定区域
   const searchLogicRef = useRef<HTMLDivElement>(null);
+  const competitorsRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const insightsRef = useRef<HTMLDivElement>(null);
 
@@ -134,7 +135,7 @@ export default function SeekTable({ query }: { query: string }) {
   // 浮动导航菜单项
   const dockItems = [
     {
-      title: "查询逻辑",
+      title: "Search Logic",
       icon: <IconBrain className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
       href: "#search-logic",
       onClick: () => {
@@ -144,7 +145,17 @@ export default function SeekTable({ query }: { query: string }) {
       }
     },
     {
-      title: "数据表格",
+      title: "Main Competitors",
+      icon: <IconChartBar className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#competitors",
+      onClick: () => {
+        if (competitorsRef.current) {
+          competitorsRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    },
+    {
+      title: "Competitor Table",
       icon: <IconTable className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
       href: "#table",
       onClick: () => {
@@ -154,7 +165,7 @@ export default function SeekTable({ query }: { query: string }) {
       }
     },
     {
-      title: "分析洞见",
+      title: "Data Insights",
       icon: <IconBulb className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
       href: "#insights",
       onClick: () => {
@@ -208,36 +219,36 @@ export default function SeekTable({ query }: { query: string }) {
   // 搜索分析步骤
   const searchSteps = [
     {
-      title: "查询分析",
-      description: "分析搜索查询以识别主要主题、关键词和意图。将复杂查询分解为可管理的组件，以便更深入理解。"
+      title: "Query Analysis",
+      description: "Analyzing the search query to identify main topics, keywords, and intent. Breaking down complex queries into manageable components for deeper understanding."
     },
     {
-      title: "领域识别",
-      description: "识别与查询相关的行业领域和业务部门。将查询元素映射到特定市场细分，以便进行有针对性的研究。"
+      title: "Domain Identification",
+      description: "Identifying relevant industry domains and business sectors related to the query. Mapping query elements to specific market segments for targeted research."
     },
     {
-      title: "竞争对手发现",
-      description: "寻找已识别领域中的关键市场参与者和竞争对手。利用多个数据源确保全面的市场覆盖。"
+      title: "Competitor Discovery",
+      description: "Finding key market players and competitors in the identified domains. Utilizing multiple data sources to ensure comprehensive market coverage."
     },
     {
-      title: "数据收集",
-      description: "收集有关每个竞争对手的详细信息，包括产品供应、市场定位、目标受众和商业模式。"
+      title: "Data Collection",
+      description: "Gathering detailed information about each competitor including product offerings, market positioning, target audience, and business models."
     },
     {
-      title: "功能分析",
-      description: "分析每个竞争对手的关键功能、优势和劣势，以识别市场中的模式和差异化因素。"
+      title: "Feature Analysis",
+      description: "Analyzing key features, strengths, and weaknesses of each competitor to identify patterns and differentiating factors in the market."
     },
     {
-      title: "市场定位",
-      description: "评估每个竞争对手在市场中的定位，包括信息传递、定价策略和目标客户群体。"
+      title: "Market Positioning",
+      description: "Evaluating how each competitor positions themselves in the market, including messaging, pricing strategies, and target customer segments."
     },
     {
-      title: "趋势识别",
-      description: "识别竞争对手之间的新兴模式和趋势，以突出市场方向和潜在机会或威胁。"
+      title: "Trend Identification",
+      description: "Recognizing emerging patterns and trends across competitors to highlight market direction and potential opportunities or threats."
     },
     {
-      title: "洞察合成",
-      description: "综合所有收集的数据，根据竞争分析结果生成可行的洞察和建议。"
+      title: "Insight Synthesis",
+      description: "Combining all collected data to generate actionable insights and recommendations based on competitive analysis findings."
     },
   ];
 
@@ -249,10 +260,10 @@ export default function SeekTable({ query }: { query: string }) {
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          返回历史记录
+          Back to History
         </Link>
-        <h1 className="text-3xl font-bold mt-4 mb-2">竞争对手分析</h1>
-        <p className="text-neutral-400">查询结果：{query}</p>
+        <h1 className="text-3xl font-bold mt-4 mb-2">Competitor Analysis</h1>
+        <p className="text-neutral-400">Results for: {query}</p>
       </div>
 
       {/* 浮动导航栏 */}
@@ -275,10 +286,10 @@ export default function SeekTable({ query }: { query: string }) {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="text-2xl font-semibold mb-6 text-white">搜索处理逻辑</h2>
+        <h2 className="text-2xl font-semibold mb-6 text-white">Search Processing Logic</h2>
         <div className="mb-4 border-l-2 border-cyan-500 pl-4">
           <p className="text-neutral-300 italic">
-            "分析市场中的竞争对手，识别优势、劣势和"{query}"的机会..."
+            "Analyzing competitors in the market to identify strengths, weaknesses, and opportunities for {query}..."
           </p>
         </div>
         <div className="space-y-0">
@@ -293,6 +304,23 @@ export default function SeekTable({ query }: { query: string }) {
         </div>
       </motion.div>
 
+      {/* 主要竞争对手卡片部分 */}
+      <motion.div 
+        ref={competitorsRef}
+        id="competitors"
+        className="mb-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <h2 className="text-2xl font-semibold mb-6 dark:text-white">Main Competitors</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {competitorData.map((competitor) => (
+            <CompetitorCard key={competitor.id} competitor={competitor} />
+          ))}
+        </div>
+      </motion.div>
+
       {/* 竞争对手数据表格部分 */}
       <motion.div 
         ref={tableRef}
@@ -300,14 +328,70 @@ export default function SeekTable({ query }: { query: string }) {
         className="mb-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
       >
-        <h2 className="text-2xl font-semibold mb-6 dark:text-white">竞争对手数据</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {competitorData.map((competitor) => (
-            <CompetitorCard key={competitor.id} competitor={competitor} />
-          ))}
+        <h2 className="text-2xl font-semibold mb-4 dark:text-white">Competitor Table</h2>
+        <div className="bg-neutral-900 rounded-xl overflow-hidden shadow-lg">
+          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
+            <table className="w-full border-collapse min-w-[1200px]">
+              <thead>
+                <tr className="bg-gradient-to-r from-neutral-800 to-neutral-900 text-neutral-200 whitespace-nowrap">
+                  <th className="p-4 text-left font-medium sticky top-0 w-[140px]">Product</th>
+                  <th className="p-4 text-left font-medium sticky top-0 w-[220px]">Slogan</th>
+                  <th className="p-4 text-left font-medium sticky top-0 w-[150px]">Relevance</th>
+                  <th className="p-4 text-left font-medium sticky top-0 w-[160px]">Traffic</th>
+                  <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Target User</th>
+                  <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Plain Points</th>
+                  <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Key Features</th>
+                  <th className="p-4 text-left font-medium sticky top-0 w-[180px]">Revenue Model</th>
+                </tr>
+              </thead>
+              <tbody>
+                {competitorData.map((competitor) => (
+                  <tr key={competitor.id} className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors">
+                    <td className="p-4 font-medium text-cyan-400">{competitor.name}</td>
+                    <td className="p-4 italic text-sm text-neutral-300">{competitor.slogan}</td>
+                    <td className="p-4 text-neutral-300">
+                      <div className="flex flex-col space-y-1">
+                        <div className="w-full bg-neutral-700 rounded-full h-2">
+                          <div 
+                            className="bg-cyan-500 h-2 rounded-full" 
+                            style={{ width: competitor.relevance.match(/\d+/)?.[0] + '%' }}
+                          ></div>
+                        </div>
+                        <span className="text-xs">{competitor.relevance}</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-neutral-300">{competitor.traffic}</td>
+                    <td className="p-4 text-neutral-300">
+                      <ul className="list-disc list-inside">
+                        {competitor.targetUser.map((user, idx) => (
+                          <li key={idx} className="text-sm py-1">{user}</li>
+                        ))}
+                      </ul>
+                    </td>
+                    <td className="p-4 text-neutral-300">
+                      <ul className="list-disc list-inside">
+                        {competitor.plainPoints.map((point, idx) => (
+                          <li key={idx} className="text-sm py-1">{point}</li>
+                        ))}
+                      </ul>
+                    </td>
+                    <td className="p-4 text-neutral-300">
+                      <ul className="list-disc list-inside">
+                        {competitor.keyFeatures.map((feature, idx) => (
+                          <li key={idx} className="text-sm py-1">{feature}</li>
+                        ))}
+                      </ul>
+                    </td>
+                    <td className="p-4 text-neutral-300">{competitor.revenueModel}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+        <p className="text-xs text-neutral-500 mt-2 italic">* Scroll horizontally to view all data</p>
       </motion.div>
 
       {/* 洞察和分析部分 */}
@@ -319,28 +403,28 @@ export default function SeekTable({ query }: { query: string }) {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <h2 className="text-2xl font-semibold mb-6 dark:text-white">市场洞察</h2>
+        <h2 className="text-2xl font-semibold mb-6 dark:text-white">Market Insights</h2>
         <div className="space-y-6">
           <div>
-            <h3 className="text-lg font-medium mb-2 text-cyan-600 dark:text-cyan-400">市场趋势</h3>
+            <h3 className="text-lg font-medium mb-2 text-cyan-600 dark:text-cyan-400">Market Trends</h3>
             <p className="text-neutral-700 dark:text-neutral-300">
-              基于对{competitorData.length}个主要竞争对手的分析，我们观察到以下市场趋势：
-              用户界面简化、自动化工具整合、跨平台功能是当前市场焦点。
-              SaaS订阅模式仍是主流收入来源，但市场正向多元化收入模式发展。
+              Based on analysis of {competitorData.length} key competitors, we observe the following market trends:
+              UI simplification, automation tool integration, and cross-platform functionality are current market focus areas.
+              SaaS subscription remains the dominant revenue source, but the market is evolving toward diversified revenue models.
             </p>
           </div>
           <div>
-            <h3 className="text-lg font-medium mb-2 text-cyan-600 dark:text-cyan-400">目标用户分析</h3>
+            <h3 className="text-lg font-medium mb-2 text-cyan-600 dark:text-cyan-400">Target User Analysis</h3>
             <p className="text-neutral-700 dark:text-neutral-300">
-              市场细分明确，各竞争对手针对不同规模企业提供差异化服务。
-              小型企业和自由职业者市场竞争激烈，而企业级市场有更高进入壁垒但利润更高。
+              The market segmentation is clear, with each competitor targeting different enterprise scales with differentiated services.
+              Small business and freelancer markets are highly competitive, while enterprise markets have higher barriers to entry but greater profitability.
             </p>
           </div>
           <div>
-            <h3 className="text-lg font-medium mb-2 text-cyan-600 dark:text-cyan-400">机会空间</h3>
+            <h3 className="text-lg font-medium mb-2 text-cyan-600 dark:text-cyan-400">Opportunity Areas</h3>
             <p className="text-neutral-700 dark:text-neutral-300">
-              现有竞争对手在自定义报告、性能优化和定价策略方面存在不足，
-              提供更灵活的解决方案并兼顾性能和易用性可能是市场机会点。
+              Existing competitors have deficiencies in custom reporting, performance optimization, and pricing strategies.
+              Providing more flexible solutions that balance performance and usability could be a market opportunity.
             </p>
           </div>
         </div>
@@ -353,13 +437,13 @@ export default function SeekTable({ query }: { query: string }) {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.6 }}
       >
-        <h2 className="text-2xl font-semibold mb-6 dark:text-white">推荐行动</h2>
+        <h2 className="text-2xl font-semibold mb-6 dark:text-white">Recommended Actions</h2>
         <ul className="list-disc pl-5 space-y-2 text-neutral-700 dark:text-neutral-300">
-          <li>关注用户体验设计，平衡强大功能与易用性</li>
-          <li>开发灵活的定价模型，覆盖不同细分市场需求</li>
-          <li>优先发展竞争对手忽视的自定义报告功能</li>
-          <li>投资技术基础设施以解决性能问题</li>
-          <li>构建差异化整合能力，提供竞争对手缺乏的连接</li>
+          <li>Focus on UX design, balancing powerful features with ease of use</li>
+          <li>Develop flexible pricing models to cover different market segments</li>
+          <li>Prioritize development of custom reporting features overlooked by competitors</li>
+          <li>Invest in technical infrastructure to address performance issues</li>
+          <li>Build differentiated integration capabilities, providing connections competitors lack</li>
         </ul>
       </motion.div>
     </div>
