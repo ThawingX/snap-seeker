@@ -1,37 +1,15 @@
 "use client";
-import { animate, motion } from "framer-motion";
-import React, { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-
-// Utility function to render logo from CDN URL
-export const renderLogoFromCDN = (url: string, alt: string = "Logo", className: string = "h-6 w-6") => {
-  if (!url) return null;
-  
-  try {
-    return (
-      <div className={cn("flex items-center justify-center", className)}>
-        <div className="relative w-full h-full flex items-center justify-center bg-white dark:bg-neutral-800 rounded-md p-2">
-          <img 
-            src={url} 
-            alt={alt} 
-            className="w-4/5 h-4/5 object-contain"
-            style={{ maxWidth: '80%', maxHeight: '80%' }}
-          />
-        </div>
-      </div>
-    );
-  } catch (error) {
-    console.error("Error rendering image from CDN:", error);
-    return (
-      <div className={cn("flex items-center justify-center bg-neutral-200 dark:bg-neutral-700 rounded-full", className)}>
-        <span className="text-neutral-500 dark:text-neutral-300 text-sm font-medium">
-          {alt.substring(0, 2).toUpperCase()}
-        </span>
-      </div>
-    );
-  }
-};
+import {
+  CardTitle,
+  CardDescription,
+  CardSkeletonContainer,
+  renderLogoFromCDN
+} from "@/components/ui/card-components";
+import { calculateVisibleTags, formatCategories } from "@/lib/tag-utils";
+import { cn } from "@/lib/utils";
 
 export interface HistoryCardProps {
   title: string;
@@ -43,6 +21,10 @@ export interface HistoryCardProps {
   id?: string;
 }
 
+/**
+ * 历史记录卡片组件
+ * 展示历史搜索记录，包含标题、描述、日期和分类标签
+ */
 export function HistoryCard({ 
   title, 
   description, 
@@ -52,183 +34,117 @@ export function HistoryCard({
   logoAlt,
   id = "1"
 }: HistoryCardProps) {
-  // Convert category to array if it's a string
-  const categories = typeof category === 'string' 
-    ? category.split('｜').filter(Boolean) 
-    : Array.isArray(category) ? category : [category];
+  // 将分类转换为数组
+  const categories = formatCategories(category);
   
-  // Store visible categories in state to maintain them after initial render
   const [visibleCategories, setVisibleCategories] = useState<string[]>([]);
   const [hasMore, setHasMore] = useState(false);
-  const tagsContainerRef = React.useRef<HTMLDivElement>(null);
-  const calculatedRef = React.useRef(false);
+  const tagsContainerRef = useRef<HTMLDivElement>(null);
+  const calculatedRef = useRef(false);
   
-  // 使用useCallback缓存计算函数，避免重复创建
-  const calculateVisibleTags = React.useCallback(() => {
+  /**
+   * 更新可见标签
+   * 基于容器宽度计算并更新可见标签
+   */
+  const updateVisibleTags = () => {
     const containerRef = tagsContainerRef.current;
-    if (!containerRef || !document.body) return;
+    if (!containerRef) return;
     
     const containerWidth = containerRef.clientWidth;
-    if (containerWidth === 0) return; // 容器宽度为0时不进行计算
+    if (containerWidth === 0) return;
     
-    let totalWidth = 0;
-    let visibleCount = 0;
+    const { visibleCategories: newVisibleCategories, hasMore: newHasMore } = 
+      calculateVisibleTags(categories, containerWidth);
     
-    // 临时容器来测量标签，不影响UI
-    const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'absolute';
-    tempContainer.style.visibility = 'hidden';
-    tempContainer.style.display = 'flex';
-    tempContainer.style.width = `${containerWidth}px`;
-    document.body.appendChild(tempContainer);
-    
-    try {
-      // 临时span来测量每个标签的宽度
-      categories.forEach((cat) => {
-        const tempSpan = document.createElement('span');
-        tempSpan.className = 'bg-neutral-100 px-2 py-1 rounded text-xs whitespace-nowrap mr-2 mb-2';
-        tempSpan.textContent = cat;
-        tempContainer.appendChild(tempSpan);
-        
-        const spanWidth = tempSpan.offsetWidth + 8; // 8px为外边距
-        if (totalWidth + spanWidth <= containerWidth) {
-          totalWidth += spanWidth;
-          visibleCount++;
-        }
-      });
-      
-      // 避免无限循环：仅当新的计算结果不同时才更新
-      const newVisibleCategories = categories.slice(0, visibleCount);
-      setVisibleCategories(newVisibleCategories);
-      setHasMore(visibleCount < categories.length);
-      calculatedRef.current = true;
-    } finally {
-      // 确保临时容器被移除
-      if (document.body.contains(tempContainer)) {
-        document.body.removeChild(tempContainer);
-      }
-    }
-  }, [categories]);
+    setVisibleCategories(newVisibleCategories);
+    setHasMore(newHasMore);
+    calculatedRef.current = true;
+  };
   
-  // 使用useEffect注册事件监听器并初始计算
+  // 组件挂载后初始计算
   useEffect(() => {
-    // 初始计算，仅在组件挂载后进行
     if (!calculatedRef.current) {
-      // 使用setTimeout确保DOM已完全渲染
-      const timer = setTimeout(() => {
-        calculateVisibleTags();
-      }, 0);
-      
+      const timer = setTimeout(updateVisibleTags, 0);
       return () => clearTimeout(timer);
     }
   }, []);
   
   // 监听窗口大小变化
   useEffect(() => {
-    const handleResize = () => {
-      calculateVisibleTags();
-    };
-    
-    // 窗口大小变化时重新计算
-    window.addEventListener('resize', handleResize);
-    
-    // 清理函数移除事件监听器
+    window.addEventListener('resize', updateVisibleTags);
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('resize', updateVisibleTags);
     };
-  }, [calculateVisibleTags]);
+  }, []);
   
   return (
-    <Card id={id}>
-      <div className="flex flex-col h-full">
-        <CardSkeletonContainer>
-          <Skeleton logoUrl={logoUrl} logoAlt={logoAlt || title} />
-        </CardSkeletonContainer>
-        
-        <CardTitle>{title}</CardTitle>
-        
-        <div className="min-h-[60px]">
-          <CardDescription>{description}</CardDescription>
-        </div>
-        
-        <div className="mt-auto pt-4 border-t border-neutral-200 dark:border-neutral-700">
-          <div className="text-xs text-neutral-500 mb-3">
-            {date}
+    <Link href={`/analysis/${id}`} className="block">
+      <motion.div
+        layoutId={`card-container-${id}`}
+        className="group/card relative overflow-hidden rounded-xl border border-neutral-200 bg-white p-5 transition duration-200 dark:border-neutral-800 dark:bg-neutral-950 
+                 hover:border-neutral-300 hover:shadow-md dark:hover:border-neutral-700 transform hover:-translate-y-1"
+        style={{
+          transformStyle: "preserve-3d",
+        }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+      >
+        <div className="flex flex-col h-full">
+          <CardSkeletonContainer>
+            <Skeleton logoUrl={logoUrl} logoAlt={logoAlt || title} />
+          </CardSkeletonContainer>
+          
+          <CardTitle>{title}</CardTitle>
+          
+          <div className="min-h-[60px]">
+            <CardDescription>{description}</CardDescription>
           </div>
-          <div ref={tagsContainerRef} className="flex flex-nowrap overflow-hidden h-[28px]">
-            {visibleCategories.map((cat, index) => (
-              <span 
-                key={index}
-                className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded text-xs text-neutral-600 dark:text-neutral-300 whitespace-nowrap mr-2"
-              >
-                {cat}
-              </span>
-            ))}
-            {hasMore && (
-              <span className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded text-xs text-neutral-600 dark:text-neutral-300 whitespace-nowrap">
-                +{categories.length - visibleCategories.length}
-              </span>
-            )}
+          
+          <div className="mt-auto pt-4 border-t border-neutral-200 dark:border-neutral-700">
+            <div className="text-xs text-neutral-500 mb-3">
+              {date}
+            </div>
+            <div ref={tagsContainerRef} className="flex flex-nowrap overflow-hidden h-[28px]">
+              {visibleCategories.map((cat, index) => (
+                <span 
+                  key={index}
+                  className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded text-xs text-neutral-600 dark:text-neutral-300 whitespace-nowrap mr-2"
+                >
+                  {cat}
+                </span>
+              ))}
+              {hasMore && (
+                <span className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded text-xs text-neutral-600 dark:text-neutral-300 whitespace-nowrap">
+                  +{categories.length - visibleCategories.length}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </motion.div>
+    </Link>
   );
 }
 
+/**
+ * 骨架屏动画组件
+ * 用于卡片加载时显示的动画效果
+ */
 const Skeleton = ({ logoUrl, logoAlt }: { logoUrl?: string; logoAlt?: string }) => {
-  const scale = [1, 1.1, 1];
-  const transform = ["translateY(0px)", "translateY(-4px)", "translateY(0px)"];
-  const sequence = [
-    [
-      ".circle-1",
-      {
-        scale,
-        transform,
-      },
-      { duration: 0.8 },
-    ],
-    [
-      ".circle-2",
-      {
-        scale,
-        transform,
-      },
-      { duration: 0.8 },
-    ],
-    [
-      ".circle-3",
-      {
-        scale,
-        transform,
-      },
-      { duration: 0.8 },
-    ],
-    [
-      ".circle-4",
-      {
-        scale,
-        transform,
-      },
-      { duration: 0.8 },
-    ],
-    [
-      ".circle-5",
-      {
-        scale,
-        transform,
-      },
-      { duration: 0.8 },
-    ],
-  ];
-
-  useEffect(() => {
-    animate(sequence, {
-      // @ts-ignore
-      repeat: Infinity,
-      repeatDelay: 1,
-    });
-  }, []);
+  // 定义动画参数
+  const pulseAnimation = {
+    scale: [1, 1.1, 1],
+    y: [0, -4, 0],
+  };
+  
+  // 动画时间设置
+  const transition = {
+    duration: 2,
+    ease: "easeInOut",
+    repeat: Infinity,
+    repeatDelay: 0.5
+  };
   
   // 常用服务的图标URLs 
   const defaultLogos = {
@@ -238,184 +154,111 @@ const Skeleton = ({ logoUrl, logoAlt }: { logoUrl?: string; logoAlt?: string }) 
     logo4: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/microsoftbing.svg",
     logo5: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/notion.svg",
   };
-  
+
+  const Container = ({
+    className,
+    children,
+    delay = 0
+  }: {
+    className?: string;
+    children: React.ReactNode;
+    delay?: number;
+  }) => {
+    return (
+      <motion.div
+        className={cn(
+          `h-16 w-16 rounded-full flex items-center justify-center bg-white dark:bg-neutral-800 
+          shadow-[0px_0px_8px_0px_rgba(248,248,248,0.25)_inset,0px_32px_24px_-16px_rgba(0,0,0,0.40)]`,
+          className
+        )}
+        animate={pulseAnimation}
+        transition={{
+          ...transition,
+          delay: delay
+        }}
+      >
+        {children}
+      </motion.div>
+    );
+  };
+
   return (
     <div className="p-8 overflow-hidden h-full relative flex items-center justify-center">
       <div className="flex flex-row shrink-0 justify-center items-center gap-2">
-        <Container className="h-8 w-8 circle-1">
-          <div className="h-4 w-4">
+        <Container className="h-8 w-8" delay={0}>
+          <div className="h-4 w-4 flex items-center justify-center">
             <img src={defaultLogos.logo1} alt="OpenAI" className="w-full h-full dark:invert" />
           </div>
         </Container>
-        <Container className="h-12 w-12 circle-2">
-          <div className="h-6 w-6">
+        <Container className="h-12 w-12" delay={0.2}>
+          <div className="h-6 w-6 flex items-center justify-center">
             <img src={defaultLogos.logo2} alt="GitHub" className="w-full h-full dark:invert" />
           </div>
         </Container>
-        <Container className="circle-3">
-          <div className="h-8 w-8">
+        <Container className="h-16 w-16" delay={0.4}>
+          <div className="h-8 w-8 flex items-center justify-center">
             <img src={defaultLogos.logo3} alt={logoAlt || "Google"} className="w-full h-full dark:invert" />
           </div>
         </Container>
-        <Container className="h-12 w-12 circle-4">
-          <div className="h-6 w-6">
+        <Container className="h-12 w-12" delay={0.6}>
+          <div className="h-6 w-6 flex items-center justify-center">
             <img src={defaultLogos.logo4} alt="Bing" className="w-full h-full dark:invert" />
           </div>
         </Container>
-        <Container className="h-8 w-8 circle-5">
-          <div className="h-4 w-4">
+        <Container className="h-8 w-8" delay={0.8}>
+          <div className="h-4 w-4 flex items-center justify-center">
             <img src={defaultLogos.logo5} alt="Notion" className="w-full h-full dark:invert" />
           </div>
         </Container>
       </div>
 
-      <div className="h-40 w-px absolute m-auto z-40 bg-gradient-to-b  animate-move">
+      <motion.div 
+        className="h-40 w-px absolute m-auto z-40 bg-gradient-to-b"
+        animate={{ 
+          opacity: [0.2, 1, 0.2],
+          height: ["60%", "80%", "60%"]
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      >
         <div className="w-10 h-32 top-1/2 -translate-y-1/2 absolute -left-10">
           <Sparkles />
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
 
+/**
+ * 闪光效果组件
+ * 添加微妙的视觉效果，提升UI质感
+ */
 const Sparkles = () => {
   const randomMove = () => Math.random() * 2 - 1;
   const randomOpacity = () => Math.random();
   const random = () => Math.random();
+
   return (
-    <div className="absolute inset-0">
-      {[...Array(12)].map((_, i) => (
+    <div className="relative flex">
+      {[...Array(5)].map((_, i) => (
         <motion.span
-          key={`star-${i}`}
+          key={i}
+          className="mx-[1px] inline-block h-1.5 w-px bg-neutral-200 dark:bg-neutral-700"
+          style={{ height: Math.max(5, random() * 15) }}
           animate={{
-            top: `calc(${random() * 100}% + ${randomMove()}px)`,
-            left: `calc(${random() * 100}% + ${randomMove()}px)`,
-            opacity: randomOpacity(),
-            scale: [1, 1.2, 0],
+            translateY: [0, randomMove(), randomMove(), 0],
+            opacity: [0, randomOpacity(), randomOpacity(), 0],
           }}
           transition={{
-            duration: random() * 2 + 4,
+            duration: random() * 3 + 2,
             repeat: Infinity,
-            ease: "linear",
+            delay: random() * 3,
           }}
-          style={{
-            position: "absolute",
-            top: `${random() * 100}%`,
-            left: `${random() * 100}%`,
-            width: `2px`,
-            height: `2px`,
-            borderRadius: "50%",
-            zIndex: 1,
-          }}
-          className="inline-block bg-black dark:bg-white"
-        ></motion.span>
+        />
       ))}
-    </div>
-  );
-};
-
-export const Card = ({
-  className,
-  children,
-  id = "1",
-}: {
-  className?: string;
-  children: React.ReactNode;
-  id?: string;
-}) => {
-  return (
-    <Link href={`/analysis/${id}`} className="block">
-      <motion.div
-        className={cn(
-          "relative z-20 h-full overflow-hidden rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-800",
-          "transition-all duration-200 ease-in-out hover:border-neutral-300 hover:shadow-md dark:hover:border-neutral-700",
-          "transform hover:-translate-y-1",
-          className
-        )}
-      >
-        {children}
-      </motion.div>
-    </Link>
-  );
-};
-
-export const CardTitle = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <h3
-      className={cn(
-        "text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 min-h-[3.5rem]",
-        className
-      )}
-    >
-      {children}
-    </h3>
-  );
-};
-
-export const CardDescription = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <p
-      className={cn(
-        "text-sm font-normal text-neutral-600 dark:text-neutral-400 line-clamp-3",
-        className
-      )}
-    >
-      {children}
-    </p>
-  );
-};
-
-export const CardSkeletonContainer = ({
-  className,
-  children,
-  showGradient = true,
-}: {
-  className?: string;
-  children: React.ReactNode;
-  showGradient?: boolean;
-}) => {
-  return (
-    <div
-      className={cn(
-        "h-[160px] rounded-xl z-40 mb-3",
-        className,
-        showGradient &&
-          "bg-neutral-300 dark:bg-[rgba(40,40,40,0.70)] [mask-image:radial-gradient(50%_50%_at_50%_50%,white_0%,transparent_100%)]"
-      )}
-    >
-      {children}
-    </div>
-  );
-};
-
-const Container = ({
-  className,
-  children,
-}: {
-  className?: string;
-  children: React.ReactNode;
-}) => {
-  return (
-    <div
-      className={cn(
-        `h-16 w-16 rounded-full flex items-center justify-center bg-white dark:bg-neutral-800 
-    shadow-[0px_0px_8px_0px_rgba(248,248,248,0.25)_inset,0px_32px_24px_-16px_rgba(0,0,0,0.40)]`,
-        className
-      )}
-    >
-      {children}
     </div>
   );
 }; 
