@@ -2,6 +2,8 @@
 import React from "react";
 import { BackgroundBeamsWithCollision } from "../ui/background-beams-with-collision";
 import { SearchBar } from "./SearchBar";
+import { Cover } from "../ui/cover";
+import ColourfulText from "../ui/colourful-text";
 
 export const Dashboard = () => {
   return (
@@ -10,9 +12,9 @@ export const Dashboard = () => {
         <div className="flex max-w-4xl flex-col items-center justify-center w-full">
           <BackgroundBeamsWithCollision className="flex flex-col items-center justify-center rounded-3xl shadow-lg bg-opacity-60 backdrop-blur-sm">
             <h1 className="text-4xl md:text-5xl font-bold text-center mt-16 mb-12 relative z-10 text-black dark:text-white">
-              What do you want to know?
+              <Cover>Snap seek</Cover> what's out there for your<br /> <ColourfulText text="ideas and plans" />
             </h1>
-            
+
             <div className="relative z-10 w-full max-w-2xl px-6 mb-16">
               <SearchBar />
             </div>
