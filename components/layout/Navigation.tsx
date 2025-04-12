@@ -39,7 +39,7 @@ export const AuthButtons = () => {
   return (
     <div className="pb-4">
       <div className="flex justify-center mb-4">
-        <Link href="/signup" 
+        <Link href="/login?mode=signup" 
           className="text-base py-3 px-10 rounded-full bg-teal-500 text-white font-medium hover:bg-teal-600 transition-colors">
             Sign Up
         </Link>
