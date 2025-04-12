@@ -3,23 +3,148 @@ import { animate, motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { GoCopilot } from "react-icons/go";
+import Image from "next/image";
 
-export function CardDemo() {
+// Utility function to render logo from CDN URL
+export const renderLogoFromCDN = (url: string, alt: string = "Logo", className: string = "h-6 w-6") => {
+  if (!url) return null;
+  
+  try {
+    return (
+      <div className={cn("flex items-center justify-center", className)}>
+        <div className="relative w-full h-full flex items-center justify-center bg-white dark:bg-neutral-800 rounded-md p-2">
+          <img 
+            src={url} 
+            alt={alt} 
+            className="w-4/5 h-4/5 object-contain"
+            style={{ maxWidth: '80%', maxHeight: '80%' }}
+          />
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error("Error rendering image from CDN:", error);
+    return (
+      <div className={cn("flex items-center justify-center bg-neutral-200 dark:bg-neutral-700 rounded-full", className)}>
+        <span className="text-neutral-500 dark:text-neutral-300 text-sm font-medium">
+          {alt.substring(0, 2).toUpperCase()}
+        </span>
+      </div>
+    );
+  }
+};
+
+export interface HistoryCardProps {
+  title: string;
+  description: string;
+  date: string;
+  category?: string | string[];
+  logoUrl?: string;
+  logoAlt?: string;
+}
+
+export function HistoryCard({ 
+  title, 
+  description, 
+  date, 
+  category = "Search",
+  logoUrl,
+  logoAlt
+}: HistoryCardProps) {
+  // Convert category to array if it's a string
+  const categories = typeof category === 'string' 
+    ? category.split('｜').filter(Boolean) 
+    : Array.isArray(category) ? category : [category];
+  
+  // Store visible categories in state to maintain them after initial render
+  const [visibleCategories, setVisibleCategories] = useState<string[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const tagsContainerRef = React.useRef<HTMLDivElement>(null);
+  
+  // Calculate visible tags on mount and window resize
+  useEffect(() => {
+    const calculateVisibleTags = () => {
+      if (!tagsContainerRef.current) return;
+      
+      const containerWidth = tagsContainerRef.current.clientWidth;
+      let totalWidth = 0;
+      let visibleCount = 0;
+      
+      // Clone the container to measure tags without affecting the UI
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.visibility = 'hidden';
+      tempContainer.style.display = 'flex';
+      tempContainer.style.width = `${containerWidth}px`;
+      document.body.appendChild(tempContainer);
+      
+      // Create temp spans to measure each tag's width
+      categories.forEach((cat) => {
+        const tempSpan = document.createElement('span');
+        tempSpan.className = 'bg-neutral-100 px-2 py-1 rounded text-xs whitespace-nowrap mr-2 mb-2';
+        tempSpan.textContent = cat;
+        tempContainer.appendChild(tempSpan);
+        
+        const spanWidth = tempSpan.offsetWidth + 8; // 8px for margin
+        if (totalWidth + spanWidth <= containerWidth) {
+          totalWidth += spanWidth;
+          visibleCount++;
+        }
+      });
+      
+      document.body.removeChild(tempContainer);
+      
+      setVisibleCategories(categories.slice(0, visibleCount));
+      setHasMore(visibleCount < categories.length);
+    };
+    
+    // Initial calculation
+    calculateVisibleTags();
+    
+    // Recalculate on resize
+    window.addEventListener('resize', calculateVisibleTags);
+    return () => window.removeEventListener('resize', calculateVisibleTags);
+  }, [categories]);
+  
   return (
     <Card>
-      <CardSkeletonContainer>
-        <Skeleton />
-      </CardSkeletonContainer>
-      <CardTitle>Damn good card</CardTitle>
-      <CardDescription>
-        A card that showcases a set of tools that you use to create your
-        product.
-      </CardDescription>
+      <div className="flex flex-col h-full">
+        <CardSkeletonContainer>
+          <Skeleton logoUrl={logoUrl} logoAlt={logoAlt || title} />
+        </CardSkeletonContainer>
+        
+        <CardTitle>{title}</CardTitle>
+        
+        <div className="min-h-[60px]">
+          <CardDescription>{description}</CardDescription>
+        </div>
+        
+        <div className="mt-auto pt-4 border-t border-neutral-200 dark:border-neutral-700">
+          <div className="text-xs text-neutral-500 mb-3">
+            {date}
+          </div>
+          <div ref={tagsContainerRef} className="flex flex-nowrap overflow-hidden h-[28px]">
+            {visibleCategories.map((cat, index) => (
+              <span 
+                key={index}
+                className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded text-xs text-neutral-600 dark:text-neutral-300 whitespace-nowrap mr-2"
+              >
+                {cat}
+              </span>
+            ))}
+            {hasMore && (
+              <span className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded text-xs text-neutral-600 dark:text-neutral-300 whitespace-nowrap">
+                +{categories.length - visibleCategories.length}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
     </Card>
   );
 }
 
-const Skeleton = () => {
+const Skeleton = ({ logoUrl, logoAlt }: { logoUrl?: string; logoAlt?: string }) => {
   const scale = [1, 1.1, 1];
   const transform = ["translateY(0px)", "translateY(-4px)", "translateY(0px)"];
   const sequence = [
@@ -72,27 +197,47 @@ const Skeleton = () => {
       repeatDelay: 1,
     });
   }, []);
+  
+  // 常用服务的图标URLs 
+  const defaultLogos = {
+    logo1: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/openai.svg",
+    logo2: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/github.svg",
+    logo3: logoUrl || "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/google.svg",
+    logo4: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/microsoftbing.svg",
+    logo5: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/notion.svg",
+  };
+  
   return (
     <div className="p-8 overflow-hidden h-full relative flex items-center justify-center">
       <div className="flex flex-row shrink-0 justify-center items-center gap-2">
         <Container className="h-8 w-8 circle-1">
-          <ClaudeLogo className="h-4 w-4 " />
+          <div className="h-4 w-4">
+            <img src={defaultLogos.logo1} alt="OpenAI" className="w-full h-full dark:invert" />
+          </div>
         </Container>
         <Container className="h-12 w-12 circle-2">
-          <GoCopilot className="h-6 w-6 dark:text-white" />
+          <div className="h-6 w-6">
+            <img src={defaultLogos.logo2} alt="GitHub" className="w-full h-full dark:invert" />
+          </div>
         </Container>
         <Container className="circle-3">
-          <OpenAILogo className="h-8 w-8 dark:text-white" />
+          <div className="h-8 w-8">
+            <img src={defaultLogos.logo3} alt={logoAlt || "Google"} className="w-full h-full dark:invert" />
+          </div>
         </Container>
         <Container className="h-12 w-12 circle-4">
-          <MetaIconOutline className="h-6 w-6 " />
+          <div className="h-6 w-6">
+            <img src={defaultLogos.logo4} alt="Bing" className="w-full h-full dark:invert" />
+          </div>
         </Container>
         <Container className="h-8 w-8 circle-5">
-          <GeminiLogo className="h-4 w-4 " />
+          <div className="h-4 w-4">
+            <img src={defaultLogos.logo5} alt="Notion" className="w-full h-full dark:invert" />
+          </div>
         </Container>
       </div>
 
-      <div className="h-40 w-px absolute top-20 m-auto z-40 bg-gradient-to-b from-transparent via-cyan-500 to-transparent animate-move">
+      <div className="h-40 w-px absolute m-auto z-40 bg-gradient-to-b  animate-move">
         <div className="w-10 h-32 top-1/2 -translate-y-1/2 absolute -left-10">
           <Sparkles />
         </div>
@@ -146,7 +291,7 @@ export const Card = ({
   return (
     <div
       className={cn(
-        "max-w-sm w-full mx-auto p-8 rounded-xl border border-[rgba(255,255,255,0.10)] dark:bg-[rgba(40,40,40,0.70)] bg-gray-100 shadow-[2px_4px_16px_0px_rgba(248,248,248,0.06)_inset] group",
+        "w-full p-6 rounded-xl border border-[rgba(255,255,255,0.10)] dark:bg-[rgba(40,40,40,0.70)] bg-gray-100 shadow-[2px_4px_16px_0px_rgba(248,248,248,0.06)_inset] group h-full flex flex-col",
         className
       )}
     >
@@ -165,7 +310,7 @@ export const CardTitle = ({
   return (
     <h3
       className={cn(
-        "text-lg font-semibold text-gray-800 dark:text-white py-2",
+        "text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-2 min-h-[3.5rem]",
         className
       )}
     >
@@ -184,7 +329,7 @@ export const CardDescription = ({
   return (
     <p
       className={cn(
-        "text-sm font-normal text-neutral-600 dark:text-neutral-400 max-w-sm",
+        "text-sm font-normal text-neutral-600 dark:text-neutral-400 line-clamp-3",
         className
       )}
     >
@@ -205,7 +350,7 @@ export const CardSkeletonContainer = ({
   return (
     <div
       className={cn(
-        "h-[15rem] md:h-[20rem] rounded-xl z-40",
+        "h-[160px] rounded-xl z-40 mb-3",
         className,
         showGradient &&
           "bg-neutral-300 dark:bg-[rgba(40,40,40,0.70)] [mask-image:radial-gradient(50%_50%_at_50%_50%,white_0%,transparent_100%)]"
@@ -226,9 +371,8 @@ const Container = ({
   return (
     <div
       className={cn(
-        `h-16 w-16 rounded-full flex items-center justify-center bg-[rgba(248,248,248,0.01)]
-    shadow-[0px_0px_8px_0px_rgba(248,248,248,0.25)_inset,0px_32px_24px_-16px_rgba(0,0,0,0.40)]
-    `,
+        `h-16 w-16 rounded-full flex items-center justify-center bg-white dark:bg-neutral-800 
+    shadow-[0px_0px_8px_0px_rgba(248,248,248,0.25)_inset,0px_32px_24px_-16px_rgba(0,0,0,0.40)]`,
         className
       )}
     >
@@ -356,4 +500,4 @@ export const MetaIconOutline = ({ className }: { className?: string }) => {
       />
     </svg>
   );
-};
+}; 
