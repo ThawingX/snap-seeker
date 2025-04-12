@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { SearchBar } from "./SearchBar";
-import { InfoCards } from "./InfoCards";
 
 export const Dashboard = () => {
   return (
@@ -11,7 +10,6 @@ export const Dashboard = () => {
           <h1 className="text-4xl md:text-5xl font-bold text-center mb-12">What do you want to know?</h1>
           
           <SearchBar />
-          {/* <InfoCards /> */}
         </div>
       </div>
     </div>

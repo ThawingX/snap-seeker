@@ -10,18 +10,13 @@ export const Logo = () => {
     >
       <div className="h-6 w-6 shrink-0 text-teal-500">
         <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L2 7L12 12L22 7L12 2Z" />
-          <path d="M2 17L12 22L22 17" />
-          <path d="M2 12L12 17L22 12" />
+          <path d="M9.5 14.5L4.5 19.5M15 10a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M12 3L12 7M21 12L17 12M19.7782 4.2218L16.9497 7.0503M4.2218 4.2218L7.0503 7.0503M12 17L12 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-medium whitespace-pre text-black dark:text-white"
-      >
-        perplexity
-      </motion.span>
+      <span className="font-medium whitespace-pre text-black dark:text-white">
+        Snap Seeker
+      </span>
     </Link>
   );
 };
@@ -34,9 +29,8 @@ export const LogoIcon = () => {
     >
       <div className="h-6 w-6 shrink-0 text-teal-500">
         <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L2 7L12 12L22 7L12 2Z" />
-          <path d="M2 17L12 22L22 17" />
-          <path d="M2 12L12 17L22 12" />
+          <path d="M9.5 14.5L4.5 19.5M15 10a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M12 3L12 7M21 12L17 12M19.7782 4.2218L16.9497 7.0503M4.2218 4.2218L7.0503 7.0503M12 17L12 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
     </Link>

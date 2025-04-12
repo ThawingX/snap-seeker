@@ -1,12 +1,12 @@
 "use client";
 import React from "react";
-import { Dashboard } from "@/components/layout/Dashboard";
+import { History } from "@/components/layout/History";
 import { AppLayout } from "@/components/layout/AppLayout";
 
-export default function Home() {
+export default function HistoryPage() {
   return (
     <AppLayout>
-      <Dashboard />
+      <History />
     </AppLayout>
   );
-}
+} 
