@@ -6,3 +6,7 @@ Sat Apr 12 2025:
 - [x] 加固代码：抽离组件，删除无用组件，添加中文注释
 - [x] 新增vercel部署脚本
 - [x] 修复登录页面useSearchParams的Suspense问题
+
+Sun Apr 13 2025:
+- [x] vercel脚本修复，需要添加路由，否则next不会认为是客户端的路由组件
+- [ ] 移动端适配
