@@ -18,10 +18,10 @@ export type SeoConfig = {
 
 const seoConfig: SeoConfig = {
   siteUrl: "https://seeker.snapsnap.site",
-  defaultTitle: "SnapSeeker - 竞品分析和创意验证工具 | Competitor Analysis & Idea Validation Tool",
-  defaultDescription: "SnapSeeker 是一款专为产品经理、独立开发者和创业者打造的竞品分析工具，帮助您验证产品创意、分析同类产品，并避免重复造轮子。Find similar products, validate your ideas and gain market insights with SnapSeeker.",
+  defaultTitle: "SnapSeeker - Competitor Analysis & Idea Validation Tool",
+  defaultDescription: "SnapSeeker is a competitor analysis tool designed for product managers, independent developers, and entrepreneurs to help validate product ideas, analyze similar products, and avoid reinventing the wheel.",
   
-  // 核心关键词 Core Keywords
+  // Core Keywords
   coreKeywords: {
     keywords: [
       { zh: "竞品分析工具", en: "Competitor Analysis Tool" },
@@ -37,7 +37,7 @@ const seoConfig: SeoConfig = {
     ],
   },
   
-  // 目标用户关键词 Target User Keywords
+  // Target User Keywords
   targetUserKeywords: {
     keywords: [
       { zh: "产品经理 竞品分析", en: "Product Manager Competitor Analysis" },
@@ -52,7 +52,7 @@ const seoConfig: SeoConfig = {
     ],
   },
   
-  // 长尾关键词 Long Tail Keywords
+  // Long Tail Keywords
   longTailKeywords: {
     keywords: [
       { zh: "如何查看我的想法是否有同类产品", en: "How to check if my idea has similar products" },
@@ -71,7 +71,7 @@ const seoConfig: SeoConfig = {
     ],
   },
   
-  // 包含产品名称的关键词 Product Name Keywords
+  // Product Name Keywords
   productKeywords: {
     keywords: [
       { zh: "Snapseeker", en: "Snapseeker" },
@@ -82,7 +82,7 @@ const seoConfig: SeoConfig = {
     ],
   },
   
-  // 潜在的痛点关键词 Pain Point Keywords
+  // Pain Point Keywords
   painPointKeywords: {
     keywords: [
       { zh: "避免重复造轮子", en: "Avoid reinventing the wheel" },

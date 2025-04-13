@@ -22,10 +22,10 @@ export default function SeoNavigation() {
         </Link>
       </div>
       <div className="hidden md:flex gap-6">
-        <Link href="/seo/about" className={isActive('/seo/about')}>关于我们</Link>
-        <Link href="/seo/features" className={isActive('/seo/features')}>功能特点</Link>
-        <Link href="/seo/competitor-analysis" className={isActive('/seo/competitor-analysis')}>竞品分析</Link>
-        <Link href="/seo/product-validation" className={isActive('/seo/product-validation')}>产品验证</Link>
+        <Link href="/seo/about" className={isActive('/seo/about')}>About Us</Link>
+        <Link href="/seo/features" className={isActive('/seo/features')}>Features</Link>
+        <Link href="/seo/competitor-analysis" className={isActive('/seo/competitor-analysis')}>Competitor Analysis</Link>
+        <Link href="/seo/product-validation" className={isActive('/seo/product-validation')}>Product Validation</Link>
       </div>
     </div>
   );

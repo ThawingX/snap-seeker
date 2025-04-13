@@ -15,83 +15,83 @@ export default function SeoFooter() {
             <span className="font-medium">SnapSeeker</span>
           </div>
           <p className="text-neutral-400 text-sm">
-            专业的竞品分析和创意验证工具，帮助产品经理、独立开发者和创业者快速验证产品想法。
+            Professional competitor analysis and idea validation tool, helping product managers, independent developers, and entrepreneurs quickly validate product ideas.
           </p>
         </div>
         
         <div>
-          <h4 className="font-medium mb-4">主要功能</h4>
+          <h4 className="font-medium mb-4">Main Features</h4>
           <ul className="space-y-2 text-sm">
             <li>
               <Link href="/competitor-analysis" className="text-neutral-400 hover:text-teal-500">
-                竞品分析工具 | Competitor Analysis Tool
+                Competitor Analysis Tool
               </Link>
             </li>
             <li>
               <Link href="/product-validation" className="text-neutral-400 hover:text-teal-500">
-                产品创意验证 | Product Idea Validation
+                Product Idea Validation
               </Link>
             </li>
             <li>
               <Link href="/" className="text-neutral-400 hover:text-teal-500">
-                同类产品查询 | Similar Product Search
+                Similar Product Search
               </Link>
             </li>
             <li>
               <Link href="/" className="text-neutral-400 hover:text-teal-500">
-                市场机会分析 | Market Opportunity Analysis
+                Market Opportunity Analysis
               </Link>
             </li>
           </ul>
         </div>
         
         <div>
-          <h4 className="font-medium mb-4">解决痛点</h4>
+          <h4 className="font-medium mb-4">Solutions</h4>
           <ul className="space-y-2 text-sm">
             <li>
               <Link href="/features" className="text-neutral-400 hover:text-teal-500">
-                避免重复造轮子 | Avoid Reinventing the Wheel
+                Avoid Reinventing the Wheel
               </Link>
             </li>
             <li>
               <Link href="/features" className="text-neutral-400 hover:text-teal-500">
-                了解市场竞争格局 | Understand Market Landscape
+                Understand Market Landscape
               </Link>
             </li>
             <li>
               <Link href="/features" className="text-neutral-400 hover:text-teal-500">
-                降低创业风险 | Reduce Startup Risk
+                Reduce Startup Risk
               </Link>
             </li>
             <li>
               <Link href="/features" className="text-neutral-400 hover:text-teal-500">
-                提高产品成功率 | Improve Success Rate
+                Improve Success Rate
               </Link>
             </li>
           </ul>
         </div>
         
         <div>
-          <h4 className="font-medium mb-4">适合用户</h4>
+          <h4 className="font-medium mb-4">Target Users</h4>
           <ul className="space-y-2 text-sm">
             <li>
               <Link href="/about" className="text-neutral-400 hover:text-teal-500">
-                产品经理 | Product Managers
+                Product Managers
               </Link>
             </li>
             <li>
               <Link href="/about" className="text-neutral-400 hover:text-teal-500">
-                独立开发者 | Independent Developers
+                Independent Developers
               </Link>
             </li>
             <li>
               <Link href="/about" className="text-neutral-400 hover:text-teal-500">
-                创业者 | Entrepreneurs
+                Entrepreneurs
               </Link>
             </li>
             <li>
               <Link href="/about" className="text-neutral-400 hover:text-teal-500">
-                市场研究人员 | Market Researchers
+                Market Researchers
               </Link>
             </li>
           </ul>
@@ -103,10 +103,10 @@ export default function SeoFooter() {
           &copy; {new Date().getFullYear()} SnapSeeker. All rights reserved.
         </div>
         <div className="flex gap-4">
-          <Link href="/about" className="text-neutral-500 text-sm hover:text-white">关于我们</Link>
-          <Link href="/features" className="text-neutral-500 text-sm hover:text-white">功能</Link>
-          <Link href="/" className="text-neutral-500 text-sm hover:text-white">隐私政策</Link>
-          <Link href="/" className="text-neutral-500 text-sm hover:text-white">条款</Link>
+          <Link href="/about" className="text-neutral-500 text-sm hover:text-white">About Us</Link>
+          <Link href="/features" className="text-neutral-500 text-sm hover:text-white">Features</Link>
+          <Link href="/" className="text-neutral-500 text-sm hover:text-white">Privacy Policy</Link>
+          <Link href="/" className="text-neutral-500 text-sm hover:text-white">Terms</Link>
         </div>
       </div>
     </div>
