@@ -1,22 +1,22 @@
 "use client";
 import React from "react";
-import { Dashboard } from "@/components/layout/Dashboard";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { History } from "@/components/layout/History";
 import { MobileLayout } from "@/components/layout/MobileLayout";
-import { MobileDashboard } from "@/components/layout/MobileDashboard";
+import { MobileHistory } from "@/components/layout/MobileHistory";
 
-export default function Home() {
+export default function SpacePage() {
   return (
     <>
       {/* Desktop Layout - hidden on mobile with CSS */}
       <AppLayout>
-        <Dashboard />
+        <History />
       </AppLayout>
       
       {/* Mobile Layout - hidden on desktop with CSS */}
       <MobileLayout>
-        <MobileDashboard />
+        <MobileHistory />
       </MobileLayout>
     </>
   );
-}
+} 

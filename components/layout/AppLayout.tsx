@@ -9,7 +9,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div
       className={cn(
-        "flex w-full flex-1 flex-col overflow-hidden bg-white md:flex-row dark:bg-neutral-900",
+        "hidden md:flex w-full flex-1 flex-col overflow-hidden bg-white md:flex-row dark:bg-neutral-900",
         "h-screen",
       )}
     >
