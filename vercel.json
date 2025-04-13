@@ -41,11 +41,6 @@
     "silent": true,
     "autoJobCancelation": true
   },
-  "buildOptions": {
-    "enableRegister": true,
-    "enableClassic": true,
-    "skipBuildCommand": false
-  },
   "crons": [
     {
       "path": "/api/cron",
