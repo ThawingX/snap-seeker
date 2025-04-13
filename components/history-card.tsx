@@ -80,7 +80,6 @@ export function HistoryCard({
   return (
     <Link href={`/analysis/${id}`} className="block">
       <motion.div
-        layoutId={`card-container-${id}`}
         className="group/card relative overflow-hidden rounded-xl border border-neutral-200 bg-white p-5 transition duration-200 dark:border-neutral-800 dark:bg-neutral-950 
                  hover:border-neutral-300 hover:shadow-md dark:hover:border-neutral-700 transform hover:-translate-y-1"
         style={{
@@ -88,7 +87,10 @@ export function HistoryCard({
         }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.4, ease: "easeInOut" }}
+        transition={{ 
+          duration: 0.4, 
+          ease: "easeInOut"
+        }}
       >
         <div className="flex flex-col h-full">
           <CardSkeletonContainer>
@@ -123,6 +125,7 @@ export function HistoryCard({
           </div>
         </div>
       </motion.div>
+      
     </Link>
   );
 }
