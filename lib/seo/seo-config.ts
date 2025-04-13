@@ -18,8 +18,8 @@ export type SeoConfig = {
 
 const seoConfig: SeoConfig = {
   siteUrl: "https://seeker.snapsnap.site",
-  defaultTitle: "SnapSeeker - Competitor Analysis & Idea Validation Tool",
-  defaultDescription: "SnapSeeker is a competitor analysis tool designed for product managers, independent developers, and entrepreneurs to help validate product ideas, analyze similar products, and avoid reinventing the wheel.",
+  defaultTitle: "SnapSeeker - Snap Seeker | Seeker & Product Search Tool by SnapSnap",
+  defaultDescription: "SnapSeeker (Snap Seeker) is a product search and competitor analysis tool designed for product managers, independent developers, and entrepreneurs. Find similar products, validate ideas, and analyze market opportunities with this powerful seeker tool by SnapSnap.",
   
   // Core Keywords
   coreKeywords: {
@@ -79,6 +79,11 @@ const seoConfig: SeoConfig = {
       { zh: "Snapseeker 竞品分析", en: "Snapseeker Competitor Analysis" },
       { zh: "Snapseeker 市场调研", en: "Snapseeker Market Research" },
       { zh: "Snapseeker 产品验证", en: "Snapseeker Product Validation" },
+      { zh: "Seeker", en: "Seeker" },
+      { zh: "Product Seek", en: "Product Seek" },
+      { zh: "Snap Seeker", en: "Snap Seeker" },
+      { zh: "SnapSnap", en: "SnapSnap" },
+      { zh: "产品搜索工具", en: "Product Search Tool" },
     ],
   },
   

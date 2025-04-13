@@ -6,6 +6,7 @@ import { MobileLayout } from "@/components/layout/MobileLayout";
 import { MobileDashboard } from "@/components/layout/MobileDashboard";
 import StructuredData from "@/components/seo/StructuredData";
 import { generateProductStructuredData, generateSiteStructuredData } from "@/lib/seo/seo-utils";
+import CanonicalLink from "@/components/seo/CanonicalLink";
 
 export default function Home() {
   // Combine multiple structured data objects
@@ -16,6 +17,9 @@ export default function Home() {
   
   return (
     <>
+      {/* SEO optimizations */}
+      <CanonicalLink path="/" />
+      
       {/* Desktop Layout - hidden on mobile with CSS */}
       <AppLayout>
         <Dashboard />

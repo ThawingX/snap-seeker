@@ -4,12 +4,13 @@ import seoConfig from '@/lib/seo/seo-config';
 
 // Generate home page metadata with specific keywords for this page
 export const metadata: Metadata = generateMetadata(
-  'Competitor Analysis and Idea Validation Tool | SnapSeeker',
-  'Quickly validate your product ideas, find similar products, analyze market opportunities, and avoid reinventing the wheel with SnapSeeker.',
+  'SnapSeeker | Snap Seeker | Product Search & Competitor Analysis Tool',
+  'SnapSeeker (Snap Seeker) helps you quickly validate product ideas, find similar products, analyze market opportunities, and avoid reinventing the wheel. The ultimate seeker and product search tool by SnapSnap.',
   [
     seoConfig.coreKeywords,
     seoConfig.targetUserKeywords,
-    seoConfig.painPointKeywords
+    seoConfig.painPointKeywords,
+    seoConfig.productKeywords
   ],
   '/',
   undefined,

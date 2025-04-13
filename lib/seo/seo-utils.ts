@@ -84,6 +84,10 @@ export function generateMetadata(
     metadataBase: new URL(seoConfig.siteUrl),
     alternates: {
       canonical: canonicalUrl,
+      languages: {
+        'en': canonicalUrl,
+        'x-default': canonicalUrl
+      }
     },
     openGraph: {
       type: 'website',
@@ -110,7 +114,13 @@ export function generateMetadata(
     robots: {
       index: true,
       follow: true,
+      'max-snippet': 200,
+      'max-image-preview': 'large',
+      'max-video-preview': -1,
     },
+    other: {
+      'google-site-verification': 'add-your-verification-code-here',
+    }
   };
 }
 
@@ -122,8 +132,10 @@ export function generateSiteStructuredData() {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'SnapSeeker',
+    alternateName: ['Snap Seeker', 'Seeker', 'Product Seek', 'SnapSnap'],
     url: seoConfig.siteUrl,
     description: seoConfig.defaultDescription,
+    keywords: 'product search, seeker, snap seeker, snapsnap, competitor analysis, product validation, idea validation',
     potentialAction: {
       '@type': 'SearchAction',
       target: `${seoConfig.siteUrl}/search?q={search_term_string}`,
@@ -140,8 +152,10 @@ export function generateProductStructuredData() {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'SnapSeeker',
+    alternateName: ['Snap Seeker', 'Seeker', 'Product Seek', 'SnapSnap Seeker'],
     applicationCategory: 'BusinessApplication',
     description: seoConfig.defaultDescription,
+    keywords: 'product search, seeker, snap seeker, snapsnap, competitor analysis, product validation, idea validation',
     offers: {
       '@type': 'Offer',
       price: '0',
