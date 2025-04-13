@@ -1,6 +1,8 @@
-import type { NextConfig } from "next";
+import { type NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Add output option for static export
+  output: 'standalone',
   images: {
     remotePatterns: [
       {
@@ -15,7 +17,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  webpack(config) {
+  webpack(config: any) {
     // Configure webpack to handle SVG files
     config.module.rules.push({
       test: /\.svg$/,

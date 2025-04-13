@@ -1,25 +1,55 @@
 {
   "version": 2,
   "buildCommand": "pnpm build",
-  "devCommand": "pnpm dev",
+  "devCommand": "pnpm dev --turbopack",
   "installCommand": "pnpm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
-  "routes": [
+  "headers": [
     {
-      "src": "/favicon.ico",
-      "dest": "/favicon.ico"
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
     },
     {
-      "src": "/(.*)",
-      "dest": "/"
+      "source": "/_next/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "NEXT_TELEMETRY_DISABLED": "1"
   },
   "github": {
     "silent": true,
     "autoJobCancelation": true
-  }
+  },
+  "buildOptions": {
+    "enableRegister": true,
+    "enableClassic": true,
+    "skipBuildCommand": false
+  },
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "0 5 * * *"
+    }
+  ]
 } 
