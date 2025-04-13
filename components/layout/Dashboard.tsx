@@ -4,6 +4,7 @@ import { BackgroundBeamsWithCollision } from "../ui/background-beams-with-collis
 import { SearchBar } from "./SearchBar";
 import { Cover } from "../ui/cover";
 import ColourfulText from "../ui/colourful-text";
+import Link from "next/link";
 
 export const Dashboard = () => {
   return (

@@ -6,12 +6,19 @@ import { usePathname } from "next/navigation";
 import {
   IconHome,
   IconHistory,
+  IconInfoCircle,
+  IconList,
+  IconChartBar,
+  IconBulb,
+  IconMenu2
 } from "@tabler/icons-react";
+import { useState } from "react";
 
 export const MobileLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
-  
-  const navItems = [
+  const [showMenu, setShowMenu] = useState(false);
+
+  const mainNavItems = [
     {
       label: "Home",
       href: "/",
@@ -23,7 +30,7 @@ export const MobileLayout = ({ children }: { children: React.ReactNode }) => {
       icon: <IconHistory size={24} />,
     },
   ];
-  
+
   return (
     <div
       className={cn(
@@ -34,11 +41,11 @@ export const MobileLayout = ({ children }: { children: React.ReactNode }) => {
       <main className="flex-1 overflow-y-auto pb-16">
         {children}
       </main>
-      
+
       {/* Mobile Navigation Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-neutral-800 p-2">
         <div className="grid grid-cols-2 gap-1">
-          {navItems.map((item) => (
+          {mainNavItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -54,6 +61,7 @@ export const MobileLayout = ({ children }: { children: React.ReactNode }) => {
             </Link>
           ))}
         </div>
+
       </div>
     </div>
   );

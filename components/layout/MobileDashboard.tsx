@@ -13,8 +13,8 @@ export const MobileDashboard = () => {
       <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center">
           <svg className="h-6 w-6 text-teal-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L4 6v12l8 4 8-4V6l-8-4z" stroke="currentColor" strokeWidth="2" />
-            <path d="M12 2v4m0 16v-4m0-12l8 4m-8 4V6m0 4l8-4m-8 4l-8-4" stroke="currentColor" strokeWidth="2" />
+            <path d="M9.5 14.5L4.5 19.5M15 10a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M12 3L12 7M21 12L17 12M19.7782 4.2218L16.9497 7.0503M4.2218 4.2218L7.0503 7.0503M12 17L12 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
           <span className="ml-2 text-lg font-medium text-white">SnapSeeker</span>
         </div>
@@ -35,13 +35,13 @@ export const MobileDashboard = () => {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col items-center justify-center px-4 pt-8">
+        <div className="flex flex-col items-center justify-center px-4 pt-6">
           <BackgroundBeamsWithCollision className="flex flex-col items-center justify-center rounded-3xl shadow-lg bg-opacity-60 backdrop-blur-sm">
             <h1 className="text-2xl md:text-3xl font-bold text-center mt-8 mb-8 relative z-10 text-white">
               <Cover>Snap seek</Cover> what's out there for your<br /> <ColourfulText text="ideas and plans" />
             </h1>
 
-            <div className="relative z-10 w-full max-w-lg px-4 mb-12">
+            <div className="relative z-10 w-full max-w-lg px-4 mb-8">
               <MobileSearchBar />
             </div>
           </BackgroundBeamsWithCollision>
