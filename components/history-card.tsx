@@ -21,6 +21,12 @@ export interface HistoryCardProps {
   id?: string;
 }
 
+// 文本截断工具函数，确保卡片描述显示省略号
+const truncateText = (text: string, maxLength: number = 100): string => {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+};
+
 /**
  * 历史记录卡片组件
  * 展示历史搜索记录，包含标题、描述、日期和分类标签
@@ -36,6 +42,8 @@ export function HistoryCard({
 }: HistoryCardProps) {
   // 将分类转换为数组
   const categories = formatCategories(category);
+  // 截断描述文本
+  const truncatedDescription = truncateText(description);
   
   const [visibleCategories, setVisibleCategories] = useState<string[]>([]);
   const [hasMore, setHasMore] = useState(false);
@@ -100,7 +108,7 @@ export function HistoryCard({
           <CardTitle>{title}</CardTitle>
           
           <div className="min-h-[60px]">
-            <CardDescription>{description}</CardDescription>
+            <CardDescription>{truncatedDescription}</CardDescription>
           </div>
           
           <div className="mt-auto pt-4 border-t border-neutral-200 dark:border-neutral-700">

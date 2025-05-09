@@ -41,18 +41,30 @@ export const Card = ({
 export const CardTitle = ({
   children,
   className,
+  maxLines = 1,
 }: {
   children: React.ReactNode;
   className?: string;
+  maxLines?: number;
 }) => {
   return (
     <h3
       className={cn(
-        "mb-2 text-base font-medium text-neutral-900 dark:text-neutral-100",
+        "mb-2 text-base font-medium text-neutral-900 dark:text-neutral-100 overflow-hidden",
         className
       )}
+      style={{
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        WebkitLineClamp: maxLines,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        maxHeight: `${maxLines * 1.5}em`
+      }}
     >
-      {children}
+      {typeof children === 'string' && children.length > 50 
+        ? children.substring(0, 50) + '...'
+        : children}
     </h3>
   );
 };
@@ -63,18 +75,30 @@ export const CardTitle = ({
 export const CardDescription = ({
   children,
   className,
+  maxLines = 3,
 }: {
   children: React.ReactNode;
   className?: string;
+  maxLines?: number;
 }) => {
   return (
     <p
       className={cn(
-        "line-clamp-3 text-sm font-normal text-neutral-500 dark:text-neutral-400",
+        "text-sm font-normal text-neutral-500 dark:text-neutral-400 overflow-hidden",
         className
       )}
+      style={{
+        display: '-webkit-box',
+        WebkitBoxOrient: 'vertical',
+        WebkitLineClamp: maxLines,
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        maxHeight: `${maxLines * 1.5}em`
+      }}
     >
-      {children}
+      {typeof children === 'string' && children.length > 150 
+        ? children.substring(0, 150) + '...'
+        : children}
     </p>
   );
 };

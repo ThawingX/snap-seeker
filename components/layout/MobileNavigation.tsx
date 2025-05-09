@@ -9,30 +9,36 @@ import {
   IconSearch,
   IconUser,
 } from "@tabler/icons-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MobileNavigation = () => {
   const pathname = usePathname();
+  const { showAuthModal } = useAuth();
   
   const navItems = [
     {
-      label: "首页",
+      label: "Home",
       href: "/",
       icon: <IconHome size={24} />,
     },
     {
-      label: "发现",
+      label: "Search",
       href: "/discover",
       icon: <IconSearch size={24} />,
     },
     {
-      label: "空间",
-      href: "/space",
+      label: "History",
+      href: "/history",
       icon: <IconHistory size={24} />,
     },
     {
-      label: "图书馆",
-      href: "/library",
+      label: "Account",
+      href: "#",
       icon: <IconUser size={24} />,
+      onClick: (e: React.MouseEvent) => {
+        e.preventDefault();
+        showAuthModal("login");
+      }
     },
   ];
 
@@ -49,6 +55,7 @@ const MobileNavigation = () => {
                 ? "text-teal-500"
                 : "text-neutral-400 hover:text-neutral-200"
             )}
+            onClick={item.onClick}
           >
             {item.icon}
             <span className="mt-1">{item.label}</span>

@@ -12,19 +12,37 @@ import {
   PrimaryButton, 
   SocialButton 
 } from "@/components/ui/form-utils";
+import { useToast } from "@/components/ui/toast";
 
 /**
  * 登录表单组件
  * 用户登录界面，包含邮箱密码登录和第三方登录选项
  */
 export default function LoginForm() {
+  const { showToast } = useToast();
+
   /**
    * 处理表单提交
    * @param e 表单提交事件
    */
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Login form submitted");
+    showToast({
+      message: "Login functionality is not implemented yet. Please check back later.",
+      type: "info",
+      duration: 5000
+    });
+  };
+
+  /**
+   * 处理社交登录
+   */
+  const handleSocialLogin = (provider: string) => {
+    showToast({
+      message: `${provider} login is not implemented yet. Please check back later.`,
+      type: "info",
+      duration: 5000
+    });
   };
 
   return (
@@ -65,7 +83,17 @@ export default function LoginForm() {
             </label>
           </div>
           <div className="text-sm">
-            <a href="#" className="text-cyan-500 hover:text-cyan-400">
+            <a 
+              href="#" 
+              onClick={(e) => {
+                e.preventDefault();
+                showToast({
+                  message: "Password reset functionality is not implemented yet.",
+                  type: "info"
+                });
+              }}
+              className="text-cyan-500 hover:text-cyan-400"
+            >
               Forgot your password?
             </a>
           </div>
@@ -81,14 +109,14 @@ export default function LoginForm() {
 
         {/* 第三方登录选项 */}
         <div className="flex flex-col space-y-4">
-          <SocialButton>
+          <SocialButton onClick={() => handleSocialLogin("GitHub")}>
             <IconBrandGithub className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
             <span className="text-sm text-neutral-700 dark:text-neutral-300">
               Login with GitHub
             </span>
           </SocialButton>
           
-          <SocialButton>
+          <SocialButton onClick={() => handleSocialLogin("Google")}>
             <IconBrandGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
             <span className="text-sm text-neutral-700 dark:text-neutral-300">
               Login with Google

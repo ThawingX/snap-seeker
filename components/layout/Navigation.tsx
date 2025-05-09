@@ -6,6 +6,7 @@ import {
   IconHistory,
 } from "@tabler/icons-react";
 import Link from "next/link";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const Navigation = () => {
   // Define sidebar navigation links
@@ -36,19 +37,23 @@ export const Navigation = () => {
 };
 
 export const AuthButtons = () => {
+  const { showAuthModal } = useAuth();
+
   return (
     <div className="pb-4">
       <div className="flex justify-center mb-4">
-        <Link href="/login?mode=signup" 
+        <button 
+          onClick={() => showAuthModal("signup")}
           className="text-base py-3 px-10 rounded-full bg-teal-500 text-white font-medium hover:bg-teal-600 transition-colors">
             Sign Up
-        </Link>
+        </button>
       </div>
       <div className="flex justify-center">
-        <Link href="/login" 
+        <button 
+          onClick={() => showAuthModal("login")}
           className="text-base py-3 px-10 rounded-full text-neutral-700 font-medium hover:bg-neutral-100 transition-colors dark:text-neutral-200 dark:hover:bg-neutral-800">
             Log in
-        </Link>
+        </button>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { HistoryCard } from "@/components/history-card";
+import { getSearchHistory, clearSearchHistory, SearchHistoryItem } from "@/lib/searchHistory";
 
 // Sample API response type
 interface HistoryItem {
@@ -13,71 +14,21 @@ interface HistoryItem {
 }
 
 export const MobileHistory = () => {
-  const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
+  const [historyItems, setHistoryItems] = useState<SearchHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // In a real app, this would be an API call
+    // 从localStorage中获取搜索历史
     const fetchHistoryItems = async () => {
       try {
         setLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Sample data (in a real app, this would come from the API)
-        const sampleData: HistoryItem[] = [
-          {
-            id: "1",
-            query: "Tea varieties comparison and buying guide",
-            description: "Explore various tea varieties, their characteristics, origins, brewing methods and buying advice",
-            timestamp: new Date().toISOString(),
-            category: "Tea｜Teaware｜Tea Culture",
-            logoUrl: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/buymeacoffee.svg"
-          },
-          {
-            id: "2",
-            query: "Best restaurants in San Francisco",
-            description: "Looking for top-rated restaurants in the San Francisco Bay Area with outdoor seating",
-            timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-            category: "Food｜Restaurants｜San Francisco",
-            logoUrl: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/yelp.svg"
-          },
-          {
-            id: "3",
-            query: "Machine learning framework comparison",
-            description: "Comparing the most popular machine learning frameworks: TensorFlow, PyTorch, scikit-learn and their use cases",
-            timestamp: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-            category: "Technology｜AI｜Programming｜Machine Learning",
-            logoUrl: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/tensorflow.svg"
-          },
-          {
-            id: "4",
-            query: "Summer travel destinations 2023",
-            description: "Exploring popular summer travel destinations with good weather and affordable accommodations",
-            timestamp: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
-            category: "Travel｜Vacation｜Summer",
-            logoUrl: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/tripadvisor.svg"
-          },
-          {
-            id: "5",
-            query: "Methods to improve remote work efficiency",
-            description: "Tips and tools to improve productivity when working at home or remotely",
-            timestamp: new Date(Date.now() - 345600000).toISOString(), // 4 days ago
-            category: "Productivity｜Remote Work｜Efficiency｜Time Management",
-            logoUrl: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/notion.svg"
-          },
-          {
-            id: "6",
-            query: "Healthy breakfast recipe recommendations",
-            description: "Quick and nutritious breakfast recipes that can be completed in 15 minutes",
-            timestamp: new Date(Date.now() - 432000000).toISOString(), // 5 days ago
-            category: "Food｜Healthy Eating｜Recipes",
-            logoUrl: "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/airbnb.svg"
-          },
-        ];
+        // 模拟加载延迟
+        await new Promise(resolve => setTimeout(resolve, 200));
         
-        setHistoryItems(sampleData);
+        // 获取本地存储的历史记录
+        const storedHistory = getSearchHistory();
+        setHistoryItems(storedHistory);
         setLoading(false);
       } catch (err) {
         setError("Failed to load history items");
@@ -87,6 +38,12 @@ export const MobileHistory = () => {
 
     fetchHistoryItems();
   }, []);
+
+  // 清除所有历史记录
+  const handleClearHistory = () => {
+    clearSearchHistory();
+    setHistoryItems([]);
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -100,8 +57,16 @@ export const MobileHistory = () => {
   return (
     <div className="flex flex-col h-full bg-black text-white">
       <div className="sticky top-0 left-0 right-0 z-30 bg-black px-4 py-3 border-b border-neutral-800">
-        <div className="flex items-center">
+        <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">History</h1>
+          {historyItems.length > 0 && (
+            <button 
+              onClick={handleClearHistory}
+              className="text-red-500 hover:text-red-600 text-xs font-medium"
+            >
+              Clear All
+            </button>
+          )}
         </div>
       </div>
       
