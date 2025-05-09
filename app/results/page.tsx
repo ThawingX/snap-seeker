@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import SeekTable from "@/components/seek-table";
 
-export default function ResultsPage() {
+function ResultsContent() {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState<string>("");
   
@@ -21,7 +21,7 @@ export default function ResultsPage() {
   }, [searchParams]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-neutral-950 py-8">
+    <>
       {query ? (
         <SeekTable query={query} />
       ) : (
@@ -29,6 +29,20 @@ export default function ResultsPage() {
           <span>Loading...</span>
         </div>
       )}
+    </>
+  );
+}
+
+export default function ResultsPage() {
+  return (
+    <main className="flex min-h-screen flex-col items-center bg-neutral-950 py-8">
+      <Suspense fallback={
+        <div className="flex items-center justify-center h-32 text-neutral-400">
+          <span>Loading results...</span>
+        </div>
+      }>
+        <ResultsContent />
+      </Suspense>
     </main>
   );
 } 
