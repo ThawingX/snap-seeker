@@ -73,6 +73,7 @@ export const clearSearchHistory = (): void => {
   // 删除每个搜索ID对应的localStorage条目
   history.forEach(item => {
     localStorage.removeItem(item.id);
+    localStorage.removeItem(`searchData_${item.id}`);
   });
 
   // 删除历史记录列表
