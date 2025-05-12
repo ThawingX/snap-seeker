@@ -334,26 +334,26 @@ export default function SeekTable({ query }: { query: string }) {
         }
       }
     },
-    {
-      title: "Competitor Table",
-      icon: <IconTable className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
-      href: "#table",
-      onClick: () => {
-        if (tableRef.current) {
-          tableRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-    },
-    {
-      title: "Data Insights",
-      icon: <IconBulb className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
-      href: "#insights",
-      onClick: () => {
-        if (insightsRef.current) {
-          insightsRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-    }
+    // {
+    //   title: "Competitor Table",
+    //   icon: <IconTable className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+    //   href: "#table",
+    //   onClick: () => {
+    //     if (tableRef.current) {
+    //       tableRef.current.scrollIntoView({ behavior: 'smooth' });
+    //     }
+    //   }
+    // },
+    // {
+    //   title: "Data Insights",
+    //   icon: <IconBulb className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+    //   href: "#insights",
+    //   onClick: () => {
+    //     if (insightsRef.current) {
+    //       insightsRef.current.scrollIntoView({ behavior: 'smooth' });
+    //     }
+    //   }
+    // }
   ];
 
   // SSE 连接和数据处理
@@ -785,7 +785,7 @@ export default function SeekTable({ query }: { query: string }) {
       </motion.div>
 
       {/* 洞察和分析部分 */}
-      {competitorData.length > 0 ? (
+      {/* {competitorData.length > 0 ? (
         <motion.div 
           ref={insightsRef}
           id="insights"
@@ -828,10 +828,10 @@ export default function SeekTable({ query }: { query: string }) {
         >
           <InsightsSkeleton />
         </motion.div>
-      ) : null}
+      ) : null} */}
       
       {/* 建议行动 */}
-      {competitorData.length > 0 ? (
+      {/* {competitorData.length > 0 ? (
         <motion.div 
           className="bg-white dark:bg-neutral-900 rounded-xl p-6"
           initial={{ opacity: 0 }}
@@ -855,7 +855,7 @@ export default function SeekTable({ query }: { query: string }) {
         >
           <RecommendationsSkeleton />
         </motion.div>
-      ) : null}
+      ) : null} */}
     </div>
   );
 } 
