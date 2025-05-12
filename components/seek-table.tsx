@@ -334,16 +334,16 @@ export default function SeekTable({ query }: { query: string }) {
         }
       }
     },
-    // {
-    //   title: "Competitor Table",
-    //   icon: <IconTable className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
-    //   href: "#table",
-    //   onClick: () => {
-    //     if (tableRef.current) {
-    //       tableRef.current.scrollIntoView({ behavior: 'smooth' });
-    //     }
-    //   }
-    // },
+    {
+      title: "Competitor Table",
+      icon: <IconTable className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#table",
+      onClick: () => {
+        if (tableRef.current) {
+          tableRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    },
     // {
     //   title: "Data Insights",
     //   icon: <IconBulb className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
