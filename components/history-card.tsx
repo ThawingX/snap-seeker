@@ -6,7 +6,6 @@ import {
   CardTitle,
   CardDescription,
   CardSkeletonContainer,
-  renderLogoFromCDN
 } from "@/components/ui/card-components";
 import { calculateVisibleTags, formatCategories } from "@/lib/tag-utils";
 import { cn } from "@/lib/utils";
@@ -38,7 +37,7 @@ export function HistoryCard({
   category = "Search",
   logoUrl,
   logoAlt,
-  id = "1"
+  id = "-1"
 }: HistoryCardProps) {
   // 将分类转换为数组
   const categories = formatCategories(category);
@@ -86,7 +85,7 @@ export function HistoryCard({
   }, []);
   
   return (
-    <Link href={`/analysis/${id}`} className="block">
+    <Link href={`/results?id=${id}`} className="block">
       <motion.div
         className="group/card relative overflow-hidden rounded-xl border border-neutral-200 bg-white p-5 transition duration-200 dark:border-neutral-800 dark:bg-neutral-950 
                  hover:border-neutral-300 hover:shadow-md dark:hover:border-neutral-700 transform hover:-translate-y-1"

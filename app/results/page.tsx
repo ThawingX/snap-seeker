@@ -1,29 +1,30 @@
 "use client";
 
 import React, { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
 import SeekTable from "@/components/seek-table";
+import { useSearchParams } from "next/navigation";
 
 function ResultsContent() {
-  const searchParams = useSearchParams();
   const [query, setQuery] = useState<string>("");
+  const [searchId, setSearchId] = useState<string>("");
+  const searchParams = useSearchParams();
   
   useEffect(() => {
-    // Get query from URL or sessionStorage
-    const urlQuery = searchParams.get("query");
-    const storedQuery = typeof window !== "undefined" ? sessionStorage.getItem("searchQuery") : null;
-    
-    if (urlQuery) {
-      setQuery(urlQuery);
-    } else if (storedQuery) {
-      setQuery(storedQuery);
+    // Get query from localStorage based on URL id parameter
+    const id = searchParams.get("id");
+    if (id && typeof window !== "undefined") {
+      const storedQuery = localStorage.getItem(id);
+      if (storedQuery) {
+        setQuery(JSON.parse(storedQuery).query);
+        setSearchId(id);
+      }
     }
   }, [searchParams]);
 
   return (
     <>
       {query ? (
-        <SeekTable query={query} />
+        <SeekTable query={query} searchId={searchId} />
       ) : (
         <div className="flex items-center justify-center h-32 text-neutral-400">
           <span>Loading...</span>

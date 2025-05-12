@@ -3,8 +3,7 @@ import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { IconTable, IconBrain, IconChartBar, IconBulb } from "@tabler/icons-react";
-import { addSearchToHistory } from "@/lib/searchHistory";
+import { IconTable, IconBrain, IconChartBar } from "@tabler/icons-react";
 
 /**
  * 竞争对手数据接口
@@ -290,7 +289,7 @@ const RecommendationsSkeleton = () => (
  * 竞争对手分析表格组件
  * 根据搜索词展示竞争对手分析结果
  */
-export default function SeekTable({ query }: { query: string }) {
+export default function SeekTable({ query, searchId }: { query: string, searchId: string }) {
   // 添加引用用于滚动到特定区域
   const searchLogicRef = useRef<HTMLDivElement>(null);
   const competitorsRef = useRef<HTMLDivElement>(null);
@@ -358,10 +357,25 @@ export default function SeekTable({ query }: { query: string }) {
 
   // SSE 连接和数据处理
   useEffect(() => {
-    if (!query) return;
+    if (!searchId || !query) return;
 
-    // 将查询保存到搜索历史
-    addSearchToHistory(query);
+
+    // 检查是否已有缓存数据
+    const cachedData = localStorage.getItem(`searchData_${searchId}`);
+    if (cachedData) {
+      try {
+        const { logicSteps: cachedSteps, competitors: cachedCompetitors } = JSON.parse(cachedData);
+        if (cachedSteps && cachedCompetitors) {
+          setLogicSteps(cachedSteps);
+          setCompetitors(cachedCompetitors);
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        console.error('Error parsing cached data:', err);
+        // 如果解析缓存数据出错，继续执行获取新数据
+      }
+    }
 
     // 防止严格模式下重复请求
     let isRequestCancelled = false;
@@ -374,8 +388,6 @@ export default function SeekTable({ query }: { query: string }) {
         setCompetitors([]);
         setError(null);
 
-        // 创建 EventSource 进行 SSE 请求
-        // 由于 SSE 通常使用 GET 请求，而我们需要 POST 请求，所以使用 fetch 创建 POST 请求
         const response = await fetch('/api/proxy/chat', {
           method: 'POST',
           headers: {
@@ -389,7 +401,6 @@ export default function SeekTable({ query }: { query: string }) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        // 使用 ReadableStream API 处理流式响应
         const reader = response.body?.getReader();
         if (!reader) {
           throw new Error('Response body is not readable');
@@ -397,56 +408,55 @@ export default function SeekTable({ query }: { query: string }) {
 
         const decoder = new TextDecoder();
         let buffer = '';
+        let currentLogicSteps: { title: string; description: string }[] = [];
+        let currentCompetitors: CompetitorData[] = [];
 
         const processChunk = async () => {
           try {
             const { done, value } = await reader.read();
             
-            // 如果请求被取消则终止处理
             if (isRequestCancelled) {
               reader.cancel("Request cancelled");
               return;
             }
             
             if (done) {
+              // 存储完整的数据到localStorage
+              const dataToStore = {
+                logicSteps: currentLogicSteps,
+                competitors: currentCompetitors
+              };
+              localStorage.setItem(`searchData_${searchId}`, JSON.stringify(dataToStore));
               setLoading(false);
               return;
             }
 
-            // 解码二进制数据
             buffer += decoder.decode(value, { stream: true });
-            
-            // 处理可能的多行数据
             const lines = buffer.split('\n');
-            buffer = lines.pop() || ''; // 保留最后一个可能不完整的行
+            buffer = lines.pop() || '';
 
             for (const line of lines) {
               if (line.trim() === '') continue;
               
               try {
-                // 处理SSE格式的数据行(data: {...})
                 if (line.startsWith('data:')) {
-                  // 提取data:后面的JSON部分
                   const jsonString = line.substring(5).trim();
                   const jsonData = JSON.parse(jsonString);
                   
                   if (jsonData.step) {
-                    // 处理逻辑链数据
                     if (jsonData.step === 'step') {
                       const content = jsonData.messageContent;
-                      // 从 markdown 内容中提取标题和描述
                       const titleMatch = content.match(/## (.+?)\n/);
                       const title = titleMatch ? titleMatch[1] : 'Step';
                       const description = content.replace(/## .+?\n/, '').trim();
                       
-                      setLogicSteps(prev => [...prev, { title, description }]);
+                      currentLogicSteps = [...currentLogicSteps, { title, description }];
+                      setLogicSteps(currentLogicSteps);
                     }
-                    // 处理竞争对手卡片数据
                     else if (jsonData.step === 'Main Competitors') {
                       const cardIndex = jsonData.card_index;
                       const cardContent = jsonData.card_content as CompetitorCardData;
                       
-                      // 处理 revenue_model，可能是字符串或字符串数组
                       const revenueModel = Array.isArray(cardContent.revenue_model) 
                         ? cardContent.revenue_model.join(', ') 
                         : cardContent.revenue_model;
@@ -464,58 +474,9 @@ export default function SeekTable({ query }: { query: string }) {
                         revenueModel: revenueModel
                       };
                       
-                      setCompetitors(prev => {
-                        // 替换现有索引或添加新的
-                        const newCompetitors = [...prev];
-                        newCompetitors[cardIndex] = newCompetitor;
-                        return newCompetitors;
-                      });
-                    }
-                  }
-                } else {
-                  // 尝试解析不带data:前缀的JSON格式(向后兼容)
-                  const jsonData = JSON.parse(line);
-                  
-                  if (jsonData.data) {
-                    // 处理逻辑链数据
-                    if (jsonData.data.step === 'step') {
-                      const content = jsonData.data.messageContent;
-                      // 从 markdown 内容中提取标题和描述
-                      const titleMatch = content.match(/## (.+?)\n/);
-                      const title = titleMatch ? titleMatch[1] : 'Step';
-                      const description = content.replace(/## .+?\n/, '').trim();
-                      
-                      setLogicSteps(prev => [...prev, { title, description }]);
-                    }
-                    // 处理竞争对手卡片数据
-                    else if (jsonData.data.step === 'Main Competitors') {
-                      const cardIndex = jsonData.data.card_index;
-                      const cardContent = jsonData.data.card_content as CompetitorCardData;
-                      
-                      // 处理 revenue_model，可能是字符串或字符串数组
-                      const revenueModel = Array.isArray(cardContent.revenue_model) 
-                        ? cardContent.revenue_model.join(', ') 
-                        : cardContent.revenue_model;
-                      
-                      const newCompetitor: CompetitorData = {
-                        id: cardIndex.toString(),
-                        name: cardContent.product_name,
-                        slogan: cardContent.slogan,
-                        relevance: cardContent.relevance,
-                        traffic: cardContent.traffic,
-                        targetUser: cardContent.target_users,
-                        plainPoints: cardContent.pain_points_addressed,
-                        keyFeatures: cardContent.key_features,
-                        potentialWeaknesses: cardContent.potential_weaknesses,
-                        revenueModel: revenueModel
-                      };
-                      
-                      setCompetitors(prev => {
-                        // 替换现有索引或添加新的
-                        const newCompetitors = [...prev];
-                        newCompetitors[cardIndex] = newCompetitor;
-                        return newCompetitors;
-                      });
+                      currentCompetitors = [...currentCompetitors];
+                      currentCompetitors[cardIndex] = newCompetitor;
+                      setCompetitors(currentCompetitors);
                     }
                   }
                 }
@@ -524,10 +485,8 @@ export default function SeekTable({ query }: { query: string }) {
               }
             }
             
-            // 继续处理下一个块
             processChunk();
           } catch (error) {
-            // 处理流读取错误
             if (!isRequestCancelled) {
               console.error('Error processing stream chunk:', error);
               setError('Error processing response data. Please try again.');
@@ -538,7 +497,6 @@ export default function SeekTable({ query }: { query: string }) {
 
         processChunk();
       } catch (err) {
-        // 只有在请求没有被主动取消时才显示错误
         if (!isRequestCancelled) {
           console.error('Error in SSE connection:', err);
           setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -549,12 +507,11 @@ export default function SeekTable({ query }: { query: string }) {
 
     fetchData();
 
-    // 清理函数：取消请求和标记已取消
     return () => {
       isRequestCancelled = true;
       abortController.abort();
     };
-  }, [query]); // 只在query变化时重新执行
+  }, [query]);
 
   // 默认的搜索分析步骤 - 当没有接收到服务器数据时使用
   const defaultSearchSteps: { title: string; description: string }[] = [];

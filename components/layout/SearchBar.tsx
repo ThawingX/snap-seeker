@@ -40,14 +40,17 @@ export const SearchBar = () => {
     
     setIsLoading(true);
     
-    // 保存到localStorage
-    addSearchToHistory(input);
+    // 生成唯一id
+    const searchId = crypto.randomUUID();
     
-    // Store the query in sessionStorage to be used by the SeekTable component
-    sessionStorage.setItem('searchQuery', input);
+    // 保存到localStorage并传递searchId
+    addSearchToHistory(input, searchId);
     
-    // Navigate to the results page
-    router.push(`/results?query=${encodeURIComponent(input)}`);
+    // 存储到localStorage，key为id，value为内容
+    localStorage.setItem(searchId, JSON.stringify({ query: input }));
+    
+    // 跳转到results页面，带id参数
+    router.push(`/results?id=${searchId}`);
   };
 
   return (
