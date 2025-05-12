@@ -616,9 +616,16 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         <h2 className="text-2xl font-semibold mb-6 dark:text-white">Main Competitors</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {competitorData.length > 0 ? (
-            competitorData.map((competitor) => (
-              <CompetitorCard key={competitor.id} competitor={competitor} />
-            ))
+            <>
+              {competitorData.map((competitor) => (
+                <CompetitorCard key={competitor.id} competitor={competitor} />
+              ))}
+              {loading && competitorData.length < 3 && 
+                Array(3 - competitorData.length).fill(0).map((_, index) => (
+                  <CompetitorCardSkeleton key={`skeleton-${index}`} />
+                ))
+              }
+            </>
           ) : (
             loading ? (
               // 骨架屏加载效果
