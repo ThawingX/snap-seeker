@@ -35,7 +35,9 @@
   ],
   "env": {
     "NODE_ENV": "production",
-    "NEXT_TELEMETRY_DISABLED": "1"
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "FLUID_COMPUTE": "true",
+    "AWS_LAMBDA_JS_RUNTIME": "nodejs22.x"
   },
   "github": {
     "silent": true,
