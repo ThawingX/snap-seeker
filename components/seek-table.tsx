@@ -438,7 +438,19 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
                   const jsonData = JSON.parse(jsonString);
                   
                   if (jsonData.step) {
-                    if (jsonData.step === 'step') {
+                    // 检测特定的结束消息
+                    if (jsonData.step === "Done") {
+                      console.log("收到结束信号，流处理完成");
+                      // 存储完整的数据到localStorage
+                      const dataToStore = {
+                        logicSteps: currentLogicSteps,
+                        competitors: currentCompetitors
+                      };
+                      localStorage.setItem(`searchData_${searchId}`, JSON.stringify(dataToStore));
+                      setLoading(false);
+                      return; // 结束处理
+                    }
+                    else if (jsonData.step === 'step') {
                       const content = jsonData.messageContent;
                       const titleMatch = content.match(/## (.+?)\n/);
                       const title = titleMatch ? titleMatch[1] : 'Step';

@@ -12,3 +12,8 @@ Sun Apr 13 2025:
 - [x] 移动端适配
 - [x] 修复移动端直接通过url访问history页面的问题
 - [x] 移除移动端历史页面的返回按钮，避免与底部导航重复
+
+Wed May 13 2025:
+- [x] 严格模式关闭和周遭修复
+- [x] vercel超时10s，修复，配置fluid compute
+- [x] sse中断标识 {setp:done}

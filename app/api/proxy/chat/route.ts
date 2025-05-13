@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'edge'; // 使用Edge Runtime以提高超时限制
+
 export async function POST(req: NextRequest) {
   try {
     // 获取请求体
@@ -36,14 +38,63 @@ export async function POST(req: NextRequest) {
     // 创建一个简单的 TextDecoder
     const decoder = new TextDecoder();
     
+    // 流处理状态跟踪
+    let isStreamActive = true;
+    let lastDataTime = Date.now();
+    const streamTimeout = 15000; // 15秒无数据则判定流结束
+    let hasCompetitorsData = false; // 跟踪是否收到过竞争对手数据
+    
     // 创建转换器，处理流式数据
     const transformStream = new TransformStream({
+      start(controller) {
+        // 设置定时器定期检查流活跃状态
+        const intervalId = setInterval(() => {
+          const currentTime = Date.now();
+          // 如果长时间没有新数据且已经接收了一些有效数据，认为流已完成
+          if (isStreamActive && (currentTime - lastDataTime > streamTimeout) && hasCompetitorsData) {
+            console.log("流处理超时，发送结束信号");
+            // 发送结束信号
+            try {
+              controller.enqueue(new TextEncoder().encode('data: {"step": "Done"}\n\n'));
+            } catch (err) {
+              console.error("发送结束信号失败:", err);
+            }
+            
+            // 清理定时器
+            clearInterval(intervalId);
+            isStreamActive = false;
+          }
+        }, 1000);
+      },
+      
       transform(chunk, controller) {
         try {
+          // 收到新数据，更新时间戳
+          lastDataTime = Date.now();
+          
           // 将二进制数据转为文本
           const text = decoder.decode(chunk, { stream: true });
           // 处理数据行
           const lines = text.split('\n');
+          
+          // 检查是否包含竞争对手数据
+          const hasCompetitorLine = lines.some(line => {
+            if (line.startsWith('data:')) {
+              try {
+                const jsonPart = line.substring(5).trim();
+                const data = JSON.parse(jsonPart.replace(/'/g, '"'));
+                return data.step === 'Main Competitors';
+              } catch {
+                return false;
+              }
+            }
+            return false;
+          });
+          
+          if (hasCompetitorLine) {
+            hasCompetitorsData = true;
+          }
+          
           const transformedLines = lines.map(line => {
             // 对每一行进行处理
             if (line.trim() === '') return line;
@@ -80,6 +131,15 @@ export async function POST(req: NextRequest) {
           console.error('Error in transform:', err);
           // 如果处理出错，将原始数据传递下去
           controller.enqueue(chunk);
+        }
+      },
+      
+      flush(controller) {
+        // 当上游流关闭时，发送明确的结束信号
+        if (isStreamActive) {
+          console.log("上游流已关闭，发送结束信号");
+          controller.enqueue(new TextEncoder().encode('data: {"step": "Done"}\n\n'));
+          isStreamActive = false;
         }
       }
     });
