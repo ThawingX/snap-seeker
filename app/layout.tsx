@@ -6,6 +6,7 @@ import seoConfig from "@/lib/seo/seo-config";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/components/ui/toast";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,6 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <GoogleAnalytics />
+      <VercelAnalytics />
       <body className={`${inter.className} min-h-screen bg-black text-white antialiased`}>
         <ToastProvider>
           <AuthProvider>
