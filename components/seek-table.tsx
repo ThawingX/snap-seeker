@@ -4,6 +4,9 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { FloatingDock } from "@/components/ui/floating-dock";
 import { IconTable, IconBrain, IconChartBar } from "@tabler/icons-react";
+import { isProxyChatEnabled } from '@/lib/env';
+import { ENV } from '@/lib/env';
+import { normalizeSSEData } from '@/lib/utils';
 
 /**
  * 竞争对手数据接口
@@ -302,6 +305,9 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   const [competitors, setCompetitors] = useState<CompetitorData[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Store interval ID in a ref to access it in cleanup
+  const intervalIdRef = useRef<number | null>(null);
+
   /**
    * 滚动到指定区域的函数
    */
@@ -386,15 +392,31 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         setCompetitors([]);
         setError(null);
 
-        const response = await fetch('/api/proxy/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'text/event-stream',
-          },
-          body: JSON.stringify({ query }),
-          signal: abortController.signal
-        });
+        let response;
+        // Determine which API endpoint to use based on environment
+        if (isProxyChatEnabled()) {
+          // Development environment - use proxy API
+          response = await fetch('/api/proxy/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'text/event-stream',
+            },
+            body: JSON.stringify({ query }),
+            signal: abortController.signal
+          });
+        } else {
+          // Production environment - direct API call
+          response = await fetch(ENV.TARGET_CHAT_API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'text/event-stream',
+            },
+            body: JSON.stringify({ query }),
+            signal: abortController.signal
+          });
+        }
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -409,6 +431,37 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         let buffer = '';
         let currentLogicSteps: { title: string; description: string }[] = [];
         let currentCompetitors: CompetitorData[] = [];
+        
+        // Stream handling variables similar to proxy
+        let lastDataTime = Date.now();
+        const streamTimeout = 15000; // 15 seconds
+        let hasReceivedCompetitors = false;
+        
+        // Set up timeout monitoring
+        if (!isProxyChatEnabled()) {
+          // Only needed in production (direct API) as proxy handles this server-side
+          intervalIdRef.current = window.setInterval(() => {
+            const currentTime = Date.now();
+            // If no data for 15 seconds and we've received some competitor data, end the stream
+            if ((currentTime - lastDataTime > streamTimeout) && hasReceivedCompetitors) {
+              console.log("Stream processing timed out, sending end signal");
+              setLoading(false);
+              
+              // Save data to localStorage before ending
+              const dataToStore = {
+                logicSteps: currentLogicSteps,
+                competitors: currentCompetitors
+              };
+              localStorage.setItem(`searchData_${searchId}`, JSON.stringify(dataToStore));
+              
+              // Clear the interval
+              if (intervalIdRef.current !== null) {
+                clearInterval(intervalIdRef.current);
+                intervalIdRef.current = null;
+              }
+            }
+          }, 1000);
+        }
 
         const processChunk = async () => {
           try {
@@ -422,20 +475,39 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
               };
               localStorage.setItem(`searchData_${searchId}`, JSON.stringify(dataToStore));
               setLoading(false);
+              
+              // Clean up the interval if it exists
+              if (intervalIdRef.current !== null) {
+                clearInterval(intervalIdRef.current);
+                intervalIdRef.current = null;
+              }
+              
               return;
             }
 
+            // Update last data time on each chunk
+            lastDataTime = Date.now();
+            
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n');
             buffer = lines.pop() || '';
 
+            // Process each line
             for (const line of lines) {
               if (line.trim() === '') continue;
               
               try {
-                if (line.startsWith('data:')) {
-                  const jsonString = line.substring(5).trim();
+                // Normalize the line to handle both environments consistently
+                const normalizedLine = normalizeSSEData(line);
+                
+                if (normalizedLine.startsWith('data:')) {
+                  const jsonString = normalizedLine.substring(5).trim();
                   const jsonData = JSON.parse(jsonString);
+                  
+                  // Check for competitor data to track progress
+                  if (jsonData.step === 'Main Competitors') {
+                    hasReceivedCompetitors = true;
+                  }
                   
                   if (jsonData.step) {
                     // 检测特定的结束消息
@@ -511,6 +583,11 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
 
     return () => {
       abortController.abort();
+      // Clear interval if it exists
+      if (intervalIdRef.current !== null) {
+        clearInterval(intervalIdRef.current);
+        intervalIdRef.current = null;
+      }
     };
   }, [query]);
 

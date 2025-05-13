@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ENV } from '@/lib/env';
 
 export const runtime = 'edge'; // 使用Edge Runtime以提高超时限制
 
 export async function POST(req: NextRequest) {
+  // 检查是否是开发环境
+  if (!ENV.IS_DEVELOPMENT) {
+    return NextResponse.json(
+      { error: 'This API is only available in development environment' },
+      { status: 403 }
+    );
+  }
+
   try {
     // 获取请求体
     const body = await req.json();

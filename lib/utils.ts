@@ -29,3 +29,51 @@ export function useIsMobile() {
   
   return isMobile;
 }
+
+/**
+ * Checks if the current environment is development
+ * @returns {boolean} True if in development environment, false otherwise
+ */
+export function isDevelopmentEnvironment(): boolean {
+  // For client-side
+  if (typeof window !== 'undefined') {
+    // Check if a development flag exists in localStorage or any other client-side indicator
+    // For example, you could set this flag during build time
+    return process.env.NODE_ENV === 'development';
+  }
+  
+  // For server-side
+  return process.env.NODE_ENV === 'development';
+}
+
+/**
+ * Normalizes SSE data from different sources to ensure consistent formatting
+ * @param {string} line - A line of SSE data
+ * @returns {string} - Normalized SSE data line
+ */
+export function normalizeSSEData(line: string): string {
+  if (line.trim() === '') return line;
+  
+  if (line.startsWith('data:')) {
+    // Extract JSON part
+    const jsonPart = line.substring(5).trim();
+    try {
+      // Try direct parse
+      JSON.parse(jsonPart);
+      return line; // If valid JSON, return as is
+    } catch (e) {
+      // If parsing fails, try converting single quotes to double quotes
+      try {
+        const standardJson = jsonPart.replace(/'/g, '"');
+        // Verify the converted JSON is valid
+        JSON.parse(standardJson);
+        return `data: ${standardJson}`;
+      } catch (jsonErr) {
+        // If still can't parse, return original
+        console.error("JSON normalization failed:", jsonErr);
+        return line;
+      }
+    }
+  }
+  return line; // Non-data lines return as is
+}
