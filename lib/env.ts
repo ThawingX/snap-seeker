@@ -10,7 +10,7 @@ export const ENV = {
   
   // API URLs
   API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || '',
-  TARGET_CHAT_API_URL: 'http://35.209.49.134:8000/api/chat',
+  TARGET_CHAT_API_URL: 'https://35.209.49.134:8000/api/chat',
   
   // Feature flags
   ENABLE_PROXY_CHAT: process.env.NODE_ENV === 'development',

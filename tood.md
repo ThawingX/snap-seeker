@@ -17,3 +17,5 @@ Wed May 13 2025:
 - [x] 严格模式关闭和周遭修复
 - [x] vercel超时10s，修复，配置fluid compute
 - [x] sse中断标识 {setp:done}
+- [x] 接入google analytics / vercel  analysis
+- [x] 区分开发环境和生产环境的接口调用，并且解决跨域
