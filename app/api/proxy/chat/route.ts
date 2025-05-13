@@ -5,14 +5,23 @@ export async function POST(req: NextRequest) {
     // 获取请求体
     const body = await req.json();
     
-    // 转发请求到目标API
+    // 转发请求到目标API，添加 Accept 头部表明接受 SSE
     const response = await fetch('http://35.209.49.134:8000/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
       },
       body: JSON.stringify(body),
     });
+
+    // 检查响应状态
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: `API responded with status: ${response.status}` },
+        { status: response.status }
+      );
+    }
 
     // 获取流式响应
     const data = response.body;
@@ -77,11 +86,12 @@ export async function POST(req: NextRequest) {
 
     // 使用更可靠的方式处理流
     return new Response(data.pipeThrough(transformStream), {
-      status: response.status,
       headers: {
         'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
+        'Cache-Control': 'no-cache, no-transform',
         'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no', // 禁用nginx缓冲
+        'Transfer-Encoding': 'chunked'
       },
     });
   } catch (error) {

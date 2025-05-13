@@ -359,7 +359,6 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   useEffect(() => {
     if (!searchId || !query) return;
 
-
     // 检查是否已有缓存数据
     const cachedData = localStorage.getItem(`searchData_${searchId}`);
     if (cachedData) {
@@ -377,8 +376,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       }
     }
 
-    // 防止严格模式下重复请求
-    let isRequestCancelled = false;
+    // 仅保留 AbortController
     let abortController = new AbortController();
 
     const fetchData = async () => {
@@ -392,6 +390,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'text/event-stream',
           },
           body: JSON.stringify({ query }),
           signal: abortController.signal
@@ -414,11 +413,6 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         const processChunk = async () => {
           try {
             const { done, value } = await reader.read();
-            
-            if (isRequestCancelled) {
-              reader.cancel("Request cancelled");
-              return;
-            }
             
             if (done) {
               // 存储完整的数据到localStorage
@@ -487,28 +481,23 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
             
             processChunk();
           } catch (error) {
-            if (!isRequestCancelled) {
-              console.error('Error processing stream chunk:', error);
-              setError('Error processing response data. Please try again.');
-              setLoading(false);
-            }
+            console.error('Error processing stream chunk:', error);
+            setError('Error processing response data. Please try again.');
+            setLoading(false);
           }
         };
 
         processChunk();
       } catch (err) {
-        if (!isRequestCancelled) {
-          console.error('Error in SSE connection:', err);
-          setError(err instanceof Error ? err.message : 'An unknown error occurred');
-          setLoading(false);
-        }
+        console.error('Error in SSE connection:', err);
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setLoading(false);
       }
     };
 
     fetchData();
 
     return () => {
-      isRequestCancelled = true;
       abortController.abort();
     };
   }, [query]);

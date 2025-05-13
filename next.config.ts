@@ -3,6 +3,8 @@ import { type NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Add output option for static export
   output: 'standalone',
+  // 关闭严格模式
+  reactStrictMode: false,
   images: {
     remotePatterns: [
       {
