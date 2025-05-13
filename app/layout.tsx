@@ -5,6 +5,7 @@ import { generateMetadata } from "@/lib/seo/seo-utils";
 import seoConfig from "@/lib/seo/seo-config";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/components/ui/toast";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,6 +37,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <GoogleAnalytics />
       <body className={`${inter.className} min-h-screen bg-black text-white antialiased`}>
         <ToastProvider>
           <AuthProvider>
