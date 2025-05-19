@@ -199,7 +199,7 @@ export function generateArticleStructuredData(
       name: 'SnapSeeker',
       logo: {
         '@type': 'ImageObject',
-        url: `${seoConfig.siteUrl}/logo.png`,
+        url: `${seoConfig.siteUrl}/images/web-logo.png`,
       },
     },
     mainEntityOfPage: {

@@ -32,7 +32,7 @@ export default function SnapSnapPage() {
       '@type': 'Organization',
       name: 'SnapSnap',
       url: seoConfig.siteUrl,
-      logo: `${seoConfig.siteUrl}/logo.png`,
+      logo: `${seoConfig.siteUrl}/images/web-logo.png`,
       sameAs: [
         'https://twitter.com/snapsnap',
         'https://linkedin.com/company/snapsnap'

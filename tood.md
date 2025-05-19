@@ -19,3 +19,7 @@ Wed May 13 2025:
 - [x] sse中断标识 {setp:done}
 - [x] 接入google analytics / vercel  analysis
 - [x] 区分开发环境和生产环境的接口调用，并且解决跨域
+
+Mon May 19 2025:
+- [x]logo优化
+- [x]slogan优化
