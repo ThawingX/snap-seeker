@@ -8,6 +8,7 @@ import { isProxyChatEnabled } from '@/lib/env';
 import { ENV } from '@/lib/env';
 import { normalizeSSEData } from '@/lib/utils';
 import Image from "next/image";
+import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
 
 /**
  * 竞争对手数据接口
@@ -293,30 +294,40 @@ const RecommendationsSkeleton = () => (
  * 锁定内容组件
  * 用于显示需要付费解锁的内容
  */
-const LockedContent = ({ title, description }: { title: string; description: string }) => (
-  <div className="relative bg-white dark:bg-neutral-900 rounded-xl p-5 shadow-md mb-6 overflow-hidden">
-    <div className="relative z-10">
-      <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{title}</h3>
-      <p className="text-neutral-600 dark:text-neutral-400 text-sm">{description}</p>
+const LockedContent = ({ title, description }: { title: string; description: string }) => {
+  const handleUpgradeClick = () => {
+    trackEvent(ANALYTICS_EVENTS.UPGRADE_CLICK, {
+      content_type: title,
+      content_id: title.toLowerCase().replace(/\s+/g, '_')
+    });
+  };
 
-      <div className="mt-4 flex justify-center items-center">
-        <Link
-          href="/login?mode=signup"
-          className="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-2 rounded-full flex items-center space-x-2 transition-colors"
-        >
-          <IconLock size={18} />
-          <span>Upgrade to Unlock</span>
-        </Link>
+  return (
+    <div className="relative bg-white dark:bg-neutral-900 rounded-xl p-5 shadow-md mb-6 overflow-hidden">
+      <div className="relative z-10">
+        <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{title}</h3>
+        <p className="text-neutral-600 dark:text-neutral-400 text-sm">{description}</p>
+        
+        <div className="mt-4 flex justify-center items-center">
+          <Link
+            href="/login?mode=signup"
+            className="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-2 rounded-full flex items-center space-x-2 transition-colors"
+            onClick={handleUpgradeClick}
+          >
+            <IconLock size={18} />
+            <span>Upgrade to Unlock</span>
+          </Link>
+        </div>
+      </div>
+      
+      <div className="absolute inset-0 backdrop-blur-sm bg-gradient-to-t from-white/80 dark:from-black/80 to-transparent flex items-center justify-center">
+        <div className="w-full h-full relative">
+          <div className="absolute inset-0 bg-gradient-to-t from-white/80 dark:from-black/80 to-transparent" />
+        </div>
       </div>
     </div>
-
-    <div className="absolute inset-0 backdrop-blur-sm bg-gradient-to-t from-white/80 dark:from-black/80 to-transparent flex items-center justify-center">
-      <div className="w-full h-full relative">
-        <div className="absolute inset-0 bg-gradient-to-t from-white/80 dark:from-black/80 to-transparent" />
-      </div>
-    </div>
-  </div>
-);
+  );
+};
 
 /**
  * 竞争对手分析表格组件

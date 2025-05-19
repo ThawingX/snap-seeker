@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import LoginForm from "@/components/login-form";
 import { X } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
+import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -42,6 +43,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
   // 处理注册表单提交
   const handleSignupSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    trackEvent(ANALYTICS_EVENTS.CREATE_ACCOUNT_CLICK, {
+      signup_method: 'form'
+    });
     showToast({
       message: "Sign up is not allow yet.Please contact with developer!",
       type: "info",
