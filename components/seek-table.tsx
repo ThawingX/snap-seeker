@@ -3,10 +3,11 @@ import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { IconTable, IconBrain, IconChartBar } from "@tabler/icons-react";
+import { IconTable, IconBrain, IconChartBar, IconLock, IconBulb, IconTarget } from "@tabler/icons-react";
 import { isProxyChatEnabled } from '@/lib/env';
 import { ENV } from '@/lib/env';
 import { normalizeSSEData } from '@/lib/utils';
+import Image from "next/image";
 
 /**
  * 竞争对手数据接口
@@ -46,7 +47,7 @@ interface CompetitorCardData {
  * 用于链式思考部分展示每个分析步骤
  */
 const Step = ({ number, title, description }: { number: number; title: string; description: string }) => (
-  <motion.div 
+  <motion.div
     className="flex mb-6"
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -68,7 +69,7 @@ const Step = ({ number, title, description }: { number: number; title: string; d
  * 骨架加载样式 - 步骤条目
  */
 const StepSkeleton = ({ number }: { number: number }) => (
-  <motion.div 
+  <motion.div
     className="flex mb-6"
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -289,6 +290,35 @@ const RecommendationsSkeleton = () => (
 );
 
 /**
+ * 锁定内容组件
+ * 用于显示需要付费解锁的内容
+ */
+const LockedContent = ({ title, description }: { title: string; description: string }) => (
+  <div className="relative bg-white dark:bg-neutral-900 rounded-xl p-5 shadow-md mb-6 overflow-hidden">
+    <div className="relative z-10">
+      <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{title}</h3>
+      <p className="text-neutral-600 dark:text-neutral-400 text-sm">{description}</p>
+
+      <div className="mt-4 flex justify-center items-center">
+        <Link
+          href="/login?mode=signup"
+          className="bg-cyan-500 hover:bg-cyan-600 text-white px-6 py-2 rounded-full flex items-center space-x-2 transition-colors"
+        >
+          <IconLock size={18} />
+          <span>Upgrade to Unlock</span>
+        </Link>
+      </div>
+    </div>
+
+    <div className="absolute inset-0 backdrop-blur-sm bg-gradient-to-t from-white/80 dark:from-black/80 to-transparent flex items-center justify-center">
+      <div className="w-full h-full relative">
+        <div className="absolute inset-0 bg-gradient-to-t from-white/80 dark:from-black/80 to-transparent" />
+      </div>
+    </div>
+  </div>
+);
+
+/**
  * 竞争对手分析表格组件
  * 根据搜索词展示竞争对手分析结果
  */
@@ -298,6 +328,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   const competitorsRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const insightsRef = useRef<HTMLDivElement>(null);
+  const recommendationsRef = useRef<HTMLDivElement>(null);
 
   // 添加状态用于存储 SSE 响应数据
   const [loading, setLoading] = useState(true);
@@ -349,16 +380,26 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         }
       }
     },
-    // {
-    //   title: "Data Insights",
-    //   icon: <IconBulb className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
-    //   href: "#insights",
-    //   onClick: () => {
-    //     if (insightsRef.current) {
-    //       insightsRef.current.scrollIntoView({ behavior: 'smooth' });
-    //     }
-    //   }
-    // }
+    {
+      title: "MVP Strategy",
+      icon: <IconBulb className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#insights",
+      onClick: () => {
+        if (insightsRef.current) {
+          insightsRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    },
+    {
+      title: "PMF Analysis",
+      icon: <IconTarget className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#recommendations",
+      onClick: () => {
+        if (recommendationsRef.current) {
+          recommendationsRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    }
   ];
 
   // SSE 连接和数据处理
@@ -431,12 +472,12 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         let buffer = '';
         let currentLogicSteps: { title: string; description: string }[] = [];
         let currentCompetitors: CompetitorData[] = [];
-        
+
         // Stream handling variables similar to proxy
         let lastDataTime = Date.now();
         const streamTimeout = 15000; // 15 seconds
         let hasReceivedCompetitors = false;
-        
+
         // Set up timeout monitoring
         if (!isProxyChatEnabled()) {
           // Only needed in production (direct API) as proxy handles this server-side
@@ -446,14 +487,14 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
             if ((currentTime - lastDataTime > streamTimeout) && hasReceivedCompetitors) {
               console.log("Stream processing timed out, sending end signal");
               setLoading(false);
-              
+
               // Save data to localStorage before ending
               const dataToStore = {
                 logicSteps: currentLogicSteps,
                 competitors: currentCompetitors
               };
               localStorage.setItem(`searchData_${searchId}`, JSON.stringify(dataToStore));
-              
+
               // Clear the interval
               if (intervalIdRef.current !== null) {
                 clearInterval(intervalIdRef.current);
@@ -466,7 +507,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         const processChunk = async () => {
           try {
             const { done, value } = await reader.read();
-            
+
             if (done) {
               // 存储完整的数据到localStorage
               const dataToStore = {
@@ -475,19 +516,19 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
               };
               localStorage.setItem(`searchData_${searchId}`, JSON.stringify(dataToStore));
               setLoading(false);
-              
+
               // Clean up the interval if it exists
               if (intervalIdRef.current !== null) {
                 clearInterval(intervalIdRef.current);
                 intervalIdRef.current = null;
               }
-              
+
               return;
             }
 
             // Update last data time on each chunk
             lastDataTime = Date.now();
-            
+
             buffer += decoder.decode(value, { stream: true });
             const lines = buffer.split('\n');
             buffer = lines.pop() || '';
@@ -495,20 +536,20 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
             // Process each line
             for (const line of lines) {
               if (line.trim() === '') continue;
-              
+
               try {
                 // Normalize the line to handle both environments consistently
                 const normalizedLine = normalizeSSEData(line);
-                
+
                 if (normalizedLine.startsWith('data:')) {
                   const jsonString = normalizedLine.substring(5).trim();
                   const jsonData = JSON.parse(jsonString);
-                  
+
                   // Check for competitor data to track progress
                   if (jsonData.step === 'Main Competitors') {
                     hasReceivedCompetitors = true;
                   }
-                  
+
                   if (jsonData.step) {
                     // 检测特定的结束消息
                     if (jsonData.step === "Done") {
@@ -527,18 +568,18 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
                       const titleMatch = content.match(/## (.+?)\n/);
                       const title = titleMatch ? titleMatch[1] : 'Step';
                       const description = content.replace(/## .+?\n/, '').trim();
-                      
+
                       currentLogicSteps = [...currentLogicSteps, { title, description }];
                       setLogicSteps(currentLogicSteps);
                     }
                     else if (jsonData.step === 'Main Competitors') {
                       const cardIndex = jsonData.card_index;
                       const cardContent = jsonData.card_content as CompetitorCardData;
-                      
-                      const revenueModel = Array.isArray(cardContent.revenue_model) 
-                        ? cardContent.revenue_model.join(', ') 
+
+                      const revenueModel = Array.isArray(cardContent.revenue_model)
+                        ? cardContent.revenue_model.join(', ')
                         : cardContent.revenue_model;
-                      
+
                       const newCompetitor: CompetitorData = {
                         id: cardIndex.toString(),
                         name: cardContent.product_name,
@@ -551,7 +592,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
                         potentialWeaknesses: cardContent.potential_weaknesses,
                         revenueModel: revenueModel
                       };
-                      
+
                       currentCompetitors = [...currentCompetitors];
                       currentCompetitors[cardIndex] = newCompetitor;
                       setCompetitors(currentCompetitors);
@@ -562,7 +603,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
                 console.error('Error parsing SSE data:', err, line);
               }
             }
-            
+
             processChunk();
           } catch (error) {
             console.error('Error processing stream chunk:', error);
@@ -596,7 +637,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
 
   // 使用逻辑步骤数据，如果为空则使用默认步骤
   const searchSteps = logicSteps.length > 0 ? logicSteps : defaultSearchSteps;
-  
+
   // 默认的竞争对手数据 - 当没有接收到服务器数据时使用
   const defaultCompetitorData: CompetitorData[] = [];
 
@@ -604,300 +645,270 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   const competitorData = competitors.length > 0 ? competitors : defaultCompetitorData;
 
   return (
-    <div className="flex flex-col p-6 lg:p-10 w-full max-w-7xl mx-auto">
-      {/* 页面头部 */}
-      <div className="mb-8">
-        <Link href="/history" className="text-cyan-500 hover:text-cyan-400 flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Back to History
-        </Link>
-        <h1 className="text-3xl font-bold mt-4 mb-2">Competitor Analysis</h1>
-        <p className="text-neutral-400">Results for: {query}</p>
-        {loading && (
-          <div className="flex items-center mt-2 text-neutral-400">
-            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-cyan-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Processing data...
-          </div>
-        )}
-        {error && (
-          <div className="mt-2 text-red-500">
-            Error: {error}
-          </div>
-        )}
-      </div>
-
-      {/* 浮动导航栏 */}
-      <FloatingDock 
-        items={dockItems.map(item => ({
-          title: item.title,
-          icon: item.icon,
-          href: item.href
-        }))}
-        desktopClassName="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 shadow-lg"
+    <div className="relative">
+      <FloatingDock
+        items={dockItems}
+        desktopClassName="fixed bottom-8 right-1 -translate-x-1/2 z-50 shadow-lg"
         mobileClassName="fixed bottom-8 right-8 z-50 shadow-lg"
       />
 
-      {/* 搜索逻辑思考链部分 */}
-      <motion.div 
-        ref={searchLogicRef}
-        id="search-logic"
-        className="bg-neutral-900 rounded-xl p-6 mb-10"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h2 className="text-2xl font-semibold mb-6 text-white">Search Processing Logic</h2>
-        <div className="mb-4 border-l-2 border-cyan-500 pl-4">
-          <p className="text-neutral-300 italic">
-            "Analyzing competitors in the market to identify strengths, weaknesses, and opportunities for {query}..."
-          </p>
-        </div>
-        <div className="space-y-0">
-          {searchSteps.length > 0 ? (
-            searchSteps.map((step, index) => (
-              <Step 
-                key={index}
-                number={index + 1}
-                title={step.title}
-                description={step.description}
-              />
-            ))
-          ) : (
-            loading ? (
-              // 骨架屏加载效果
-              Array(5).fill(0).map((_, index) => (
-                <StepSkeleton key={index} number={index + 1} />
-              ))
-            ) : (
-              <div className="text-center py-8 text-neutral-400">
-                <p>No search logic data available. Please try searching again.</p>
-              </div>
-            )
+      <div className="space-y-8">
+        {/* 页面头部 */}
+        <div className="mb-8">
+          <Link href="/history" className="text-cyan-500 hover:text-cyan-400 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to History
+          </Link>
+          <h1 className="text-3xl font-bold mt-4 mb-2">Competitor Analysis</h1>
+          <p className="text-neutral-400">Results for: {query}</p>
+          {loading && (
+            <div className="flex items-center mt-2 text-neutral-400">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-cyan-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Processing data...
+            </div>
+          )}
+          {error && (
+            <div className="mt-2 text-red-500">
+              Error: {error}
+            </div>
           )}
         </div>
-      </motion.div>
 
-      {/* 主要竞争对手卡片部分 */}
-      <motion.div 
-        ref={competitorsRef}
-        id="competitors"
-        className="mb-10"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <h2 className="text-2xl font-semibold mb-6 dark:text-white">Main Competitors</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* 搜索逻辑思考链部分 */}
+        <motion.div
+          ref={searchLogicRef}
+          id="search-logic"
+          className="bg-neutral-900 rounded-xl p-6 mb-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-2xl font-semibold mb-6 text-white flex items-center"><IconBrain className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />Search Processing Logic</h2>
+          <div className="mb-4 border-l-2 border-cyan-500 pl-4">
+            <p className="text-neutral-300 italic">
+              "Analyzing competitors in the market to identify strengths, weaknesses, and opportunities for {query}..."
+            </p>
+          </div>
+          <div className="space-y-0">
+            {searchSteps.length > 0 ? (
+              searchSteps.map((step, index) => (
+                <Step
+                  key={index}
+                  number={index + 1}
+                  title={step.title}
+                  description={step.description}
+                />
+              ))
+            ) : (
+              loading ? (
+                // 骨架屏加载效果
+                Array(5).fill(0).map((_, index) => (
+                  <StepSkeleton key={index} number={index + 1} />
+                ))
+              ) : (
+                <div className="text-center py-8 text-neutral-400">
+                  <p>No search logic data available. Please try searching again.</p>
+                </div>
+              )
+            )}
+          </div>
+        </motion.div>
+
+        {/* 主要竞争对手卡片部分 */}
+        <motion.div
+          ref={competitorsRef}
+          id="competitors"
+          className="mb-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <h2 className="text-2xl font-semibold mb-6 dark:text-white flex items-center"> <IconChartBar className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />Main Competitors</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {competitorData.length > 0 ? (
+              <>
+                {competitorData.map((competitor) => (
+                  <CompetitorCard key={competitor.id} competitor={competitor} />
+                ))}
+                {loading && competitorData.length < 3 &&
+                  Array(3 - competitorData.length).fill(0).map((_, index) => (
+                    <CompetitorCardSkeleton key={`skeleton-${index}`} />
+                  ))
+                }
+              </>
+            ) : (
+              loading ? (
+                // 骨架屏加载效果
+                Array(3).fill(0).map((_, index) => (
+                  <CompetitorCardSkeleton key={index} />
+                ))
+              ) : (
+                <div className="col-span-3 text-center py-8 text-neutral-400">
+                  <p>No competitor data available. Please try searching again.</p>
+                </div>
+              )
+            )}
+          </div>
+        </motion.div>
+
+        {/* 竞争对手数据表格部分 */}
+        <motion.div
+          ref={tableRef}
+          id="table"
+          className="mb-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <h2 className="text-2xl font-semibold mb-4 dark:text-white flex items-center"><IconTable className=" mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />Competitor Table</h2>
           {competitorData.length > 0 ? (
             <>
-              {competitorData.map((competitor) => (
-                <CompetitorCard key={competitor.id} competitor={competitor} />
-              ))}
-              {loading && competitorData.length < 3 && 
-                Array(3 - competitorData.length).fill(0).map((_, index) => (
-                  <CompetitorCardSkeleton key={`skeleton-${index}`} />
-                ))
-              }
+              <div className="bg-neutral-900 rounded-xl overflow-hidden shadow-lg">
+                <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
+                  <table className="w-full border-collapse min-w-[1200px]">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-neutral-800 to-neutral-900 text-neutral-200 whitespace-nowrap">
+                        <th className="p-4 text-left font-medium sticky top-0 w-[140px]">Product</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[220px]">Slogan</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[150px]">Relevance</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[160px]">Traffic</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Target User</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Plain Points</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Key Features</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[180px]">Revenue Model</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {competitorData.map((competitor) => (
+                        <tr key={competitor.id} className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors">
+                          <td className="p-4 font-medium text-cyan-400">{competitor.name}</td>
+                          <td className="p-4 italic text-sm text-neutral-300">{competitor.slogan}</td>
+                          <td className="p-4 text-neutral-300">
+                            <div className="flex flex-col space-y-1">
+                              <div className="w-full bg-neutral-700 rounded-full h-2">
+                                <div
+                                  className="bg-cyan-500 h-2 rounded-full"
+                                  style={{ width: competitor.relevance.match(/\d+/)?.[0] + '%' }}
+                                ></div>
+                              </div>
+                              <span className="text-xs">{competitor.relevance}</span>
+                            </div>
+                          </td>
+                          <td className="p-4 text-neutral-300">{competitor.traffic}</td>
+                          <td className="p-4 text-neutral-300">
+                            <ul className="list-disc list-inside">
+                              {competitor.targetUser.map((user, idx) => (
+                                <li key={idx} className="text-sm py-1">{user}</li>
+                              ))}
+                            </ul>
+                          </td>
+                          <td className="p-4 text-neutral-300">
+                            <ul className="list-disc list-inside">
+                              {competitor.plainPoints.map((point, idx) => (
+                                <li key={idx} className="text-sm py-1">{point}</li>
+                              ))}
+                            </ul>
+                          </td>
+                          <td className="p-4 text-neutral-300">
+                            <ul className="list-disc list-inside">
+                              {competitor.keyFeatures.map((feature, idx) => (
+                                <li key={idx} className="text-sm py-1">{feature}</li>
+                              ))}
+                            </ul>
+                          </td>
+                          <td className="p-4 text-neutral-300">{competitor.revenueModel}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <p className="text-xs text-neutral-500 mt-2 italic">* Scroll horizontally to view all data</p>
             </>
           ) : (
             loading ? (
-              // 骨架屏加载效果
-              Array(3).fill(0).map((_, index) => (
-                <CompetitorCardSkeleton key={index} />
-              ))
+              <div className="bg-neutral-900 rounded-xl overflow-hidden shadow-lg">
+                <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
+                  <table className="w-full border-collapse min-w-[1200px]">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-neutral-800 to-neutral-900 text-neutral-200 whitespace-nowrap">
+                        <th className="p-4 text-left font-medium sticky top-0 w-[140px]">Product</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[220px]">Slogan</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[150px]">Relevance</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[160px]">Traffic</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Target User</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Plain Points</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Key Features</th>
+                        <th className="p-4 text-left font-medium sticky top-0 w-[180px]">Revenue Model</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array(3).fill(0).map((_, index) => (
+                        <TableRowSkeleton key={index} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             ) : (
-              <div className="col-span-3 text-center py-8 text-neutral-400">
-                <p>No competitor data available. Please try searching again.</p>
+              <div className="bg-neutral-900 rounded-xl p-8 text-center text-neutral-400">
+                No competitor data available to display in table format.
               </div>
             )
           )}
-        </div>
-      </motion.div>
+        </motion.div>
 
-      {/* 竞争对手数据表格部分 */}
-      <motion.div 
-        ref={tableRef}
-        id="table"
-        className="mb-10"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
-      >
-        <h2 className="text-2xl font-semibold mb-4 dark:text-white">Competitor Table</h2>
-        {competitorData.length > 0 ? (
-          <>
-            <div className="bg-neutral-900 rounded-xl overflow-hidden shadow-lg">
-              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
-                <table className="w-full border-collapse min-w-[1200px]">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-neutral-800 to-neutral-900 text-neutral-200 whitespace-nowrap">
-                      <th className="p-4 text-left font-medium sticky top-0 w-[140px]">Product</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[220px]">Slogan</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[150px]">Relevance</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[160px]">Traffic</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Target User</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Plain Points</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Key Features</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[180px]">Revenue Model</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {competitorData.map((competitor) => (
-                      <tr key={competitor.id} className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors">
-                        <td className="p-4 font-medium text-cyan-400">{competitor.name}</td>
-                        <td className="p-4 italic text-sm text-neutral-300">{competitor.slogan}</td>
-                        <td className="p-4 text-neutral-300">
-                          <div className="flex flex-col space-y-1">
-                            <div className="w-full bg-neutral-700 rounded-full h-2">
-                              <div 
-                                className="bg-cyan-500 h-2 rounded-full" 
-                                style={{ width: competitor.relevance.match(/\d+/)?.[0] + '%' }}
-                              ></div>
-                            </div>
-                            <span className="text-xs">{competitor.relevance}</span>
-                          </div>
-                        </td>
-                        <td className="p-4 text-neutral-300">{competitor.traffic}</td>
-                        <td className="p-4 text-neutral-300">
-                          <ul className="list-disc list-inside">
-                            {competitor.targetUser.map((user, idx) => (
-                              <li key={idx} className="text-sm py-1">{user}</li>
-                            ))}
-                          </ul>
-                        </td>
-                        <td className="p-4 text-neutral-300">
-                          <ul className="list-disc list-inside">
-                            {competitor.plainPoints.map((point, idx) => (
-                              <li key={idx} className="text-sm py-1">{point}</li>
-                            ))}
-                          </ul>
-                        </td>
-                        <td className="p-4 text-neutral-300">
-                          <ul className="list-disc list-inside">
-                            {competitor.keyFeatures.map((feature, idx) => (
-                              <li key={idx} className="text-sm py-1">{feature}</li>
-                            ))}
-                          </ul>
-                        </td>
-                        <td className="p-4 text-neutral-300">{competitor.revenueModel}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <p className="text-xs text-neutral-500 mt-2 italic">* Scroll horizontally to view all data</p>
-          </>
-        ) : (
-          loading ? (
-            <div className="bg-neutral-900 rounded-xl overflow-hidden shadow-lg">
-              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
-                <table className="w-full border-collapse min-w-[1200px]">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-neutral-800 to-neutral-900 text-neutral-200 whitespace-nowrap">
-                      <th className="p-4 text-left font-medium sticky top-0 w-[140px]">Product</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[220px]">Slogan</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[150px]">Relevance</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[160px]">Traffic</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Target User</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Plain Points</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Key Features</th>
-                      <th className="p-4 text-left font-medium sticky top-0 w-[180px]">Revenue Model</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Array(3).fill(0).map((_, index) => (
-                      <TableRowSkeleton key={index} />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-neutral-900 rounded-xl p-8 text-center text-neutral-400">
-              No competitor data available to display in table format.
-            </div>
-          )
-        )}
-      </motion.div>
-
-      {/* 洞察和分析部分 */}
-      {/* {competitorData.length > 0 ? (
+        {/* MVP section */}
         <motion.div 
           ref={insightsRef}
           id="insights"
-          className="bg-white dark:bg-neutral-900 rounded-xl p-6 mb-6"
+          className="mb-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
         >
-          <h2 className="text-2xl font-semibold mb-6 dark:text-white">Market Insights</h2>
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-medium mb-2 text-cyan-600 dark:text-cyan-400">Market Trends</h3>
-              <p className="text-neutral-700 dark:text-neutral-300">
-                Based on analysis of {competitorData.length} key competitors, we observe the following market trends:
-                UI simplification, automation tool integration, and cross-platform functionality are current market focus areas.
-                SaaS subscription remains the dominant revenue source, but the market is evolving toward diversified revenue models.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-medium mb-2 text-cyan-600 dark:text-cyan-400">Target User Analysis</h3>
-              <p className="text-neutral-700 dark:text-neutral-300">
-                The market segmentation is clear, with each competitor targeting different enterprise scales with differentiated services.
-                Small business and freelancer markets are highly competitive, while enterprise markets have higher barriers to entry but greater profitability.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-medium mb-2 text-cyan-600 dark:text-cyan-400">Opportunity Areas</h3>
-              <p className="text-neutral-700 dark:text-neutral-300">
-                Existing competitors have deficiencies in custom reporting, performance optimization, and pricing strategies.
-                Providing more flexible solutions that balance performance and usability could be a market opportunity.
-              </p>
-            </div>
-          </div>
+          <h2 className="text-2xl font-semibold mb-6 text-neutral-900 dark:text-white flex items-center">
+            <IconBulb className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+            MVP Strategy Recommendations
+          </h2>
+          {loading ? (
+            <InsightsSkeleton />
+          ) : (
+            <LockedContent
+              title="Customized MVP Strategy Analysis"
+              description="Get detailed recommendations for your Minimum Viable Product (MVP), including core features, technology stack selection, and development timeline planning."
+            />
+          )}
         </motion.div>
-      ) : loading ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <InsightsSkeleton />
-        </motion.div>
-      ) : null} */}
-      
-      {/* 建议行动 */}
-      {/* {competitorData.length > 0 ? (
+
+        {/* PMF section */}
         <motion.div 
-          className="bg-white dark:bg-neutral-900 rounded-xl p-6"
+          ref={recommendationsRef}
+          id="recommendations"
+          className="mb-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
         >
-          <h2 className="text-2xl font-semibold mb-6 dark:text-white">Recommended Actions</h2>
-          <ul className="list-disc pl-5 space-y-2 text-neutral-700 dark:text-neutral-300">
-            <li>Focus on UX design, balancing powerful features with ease of use</li>
-            <li>Develop flexible pricing models to cover different market segments</li>
-            <li>Prioritize development of custom reporting features overlooked by competitors</li>
-            <li>Invest in technical infrastructure to address performance issues</li>
-            <li>Build differentiated integration capabilities, providing connections competitors lack</li>
-          </ul>
+          <h2 className="text-2xl font-semibold mb-6 text-neutral-900 dark:text-white flex items-center">
+            <IconTarget className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+            Product-Market Fit (PMF) Analysis
+          </h2>
+          {loading ? (
+            <RecommendationsSkeleton />
+          ) : (
+            <LockedContent
+              title="PMF Achievement Strategy"
+              description="In-depth analysis of product-market fit, providing market entry strategies, user acquisition plans, and product iteration recommendations."
+            />
+          )}
         </motion.div>
-      ) : loading ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-        >
-          <RecommendationsSkeleton />
-        </motion.div>
-      ) : null} */}
+      </div>
     </div>
   );
 } 

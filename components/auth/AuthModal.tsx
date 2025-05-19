@@ -43,7 +43,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
   const handleSignupSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     showToast({
-      message: "Sign up functionality is not implemented yet. Please check back later.",
+      message: "Sign up is not allow yet.Please contact with developer!",
       type: "info",
       duration: 5000
     });

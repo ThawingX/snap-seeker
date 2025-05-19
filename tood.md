@@ -23,3 +23,4 @@ Wed May 13 2025:
 Mon May 19 2025:
 - [x]logo优化
 - [x]slogan优化
+- [x] MVP和PMF

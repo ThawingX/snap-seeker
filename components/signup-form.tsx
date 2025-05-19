@@ -11,19 +11,37 @@ import {
   PrimaryButton, 
   SocialButton 
 } from "@/components/ui/form-utils";
+import { useToast } from "@/components/ui/toast";
 
 /**
  * 注册表单组件
  * 用户注册界面，包含基本信息输入和第三方注册选项
  */
 export default function SignupForm() {
+  const { showToast } = useToast();
+
   /**
    * 处理表单提交
    * @param e 表单提交事件
    */
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Form submitted");
+    showToast({
+      message: "Sign up is not allow yet.Please contact with developer!",
+      type: "info",
+      duration: 5000
+    });
+  };
+
+  /**
+   * 处理社交登录
+   */
+  const handleSocialLogin = (provider: string) => {
+    showToast({
+      message: `${provider} sign up is not implemented yet. Please check back later.`,
+      type: "info",
+      duration: 5000
+    });
   };
   
   return (
@@ -95,14 +113,14 @@ export default function SignupForm() {
 
         {/* 第三方注册选项 */}
         <div className="flex flex-col space-y-4">
-          <SocialButton>
+          <SocialButton onClick={() => handleSocialLogin("GitHub")}>
             <IconBrandGithub className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
             <span className="text-sm text-neutral-700 dark:text-neutral-300">
               Continue with GitHub
             </span>
           </SocialButton>
           
-          <SocialButton>
+          <SocialButton onClick={() => handleSocialLogin("Google")}>
             <IconBrandGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
             <span className="text-sm text-neutral-700 dark:text-neutral-300">
               Continue with Google
