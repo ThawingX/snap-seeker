@@ -85,7 +85,7 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
   }, [searchBarRef]);
 
   // 创建初始标签 - 全屏显示，但避开搜索框和标题区域
-  const createTag = useCallback((text: string, index: number): FloatingTag => {
+  const createTag = useCallback((text: string, index: number, laneIndex?: number): FloatingTag => {
     const safeWidth = Math.max(containerSize.width, 800);
     const safeHeight = Math.max(containerSize.height, 600);
     
@@ -94,8 +94,23 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
     const startY = Math.max(titleAreaBottom, 120); // 从标题下方开始
     const endY = safeHeight - 60; // 到底部，留一些边距
     
-    // 如果有搜索框，在其区域周围留出空间
-    let y = startY + Math.random() * (endY - startY);
+    let y;
+    
+    // 如果指定了道路索引，使用道路系统避免堆叠
+    if (laneIndex !== undefined) {
+      const laneCount = 8; // 将可用空间分为8条道路
+      const availableHeight = endY - startY;
+      const laneHeight = availableHeight / laneCount;
+      const actualLaneIndex = laneIndex % laneCount;
+      
+      // 在指定道路内随机选择位置，留出一些缓冲空间
+      const laneStart = startY + (actualLaneIndex * laneHeight) + (laneHeight * 0.1);
+      const laneEnd = startY + ((actualLaneIndex + 1) * laneHeight) - (laneHeight * 0.1);
+      y = laneStart + Math.random() * (laneEnd - laneStart);
+    } else {
+      // 如果没有指定道路，使用原来的随机方式
+      y = startY + Math.random() * (endY - startY);
+    }
     
     // 如果标签会与搜索框重叠，则调整位置
     if (searchBarBounds.top > 0) {
@@ -131,16 +146,44 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
     };
   }, [containerSize, searchBarBounds]);
 
-  // 初始化标签 - 全屏显示
+  // 初始化标签 - 分批连续创建，而非一次性创建
   useEffect(() => {
     if (tags.length === 0 || containerSize.width === 0 || containerSize.height === 0) return;
     
-    const initialTags: FloatingTag[] = [];
-    for (let i = 0; i < maxTags; i++) {
-      const randomTag = tags[Math.floor(Math.random() * tags.length)];
-      initialTags.push(createTag(randomTag, i));
-    }
-    setFloatingTags(initialTags);
+    // 清空现有标签
+    setFloatingTags([]);
+    
+    // 分批创建标签的函数
+    let tagIndex = 0;
+    let laneIndex = 0; // 用于道路分配的索引
+    const batchSize = 3; // 每批创建3个标签
+    const createInterval = 800; // 每800ms创建一批
+    
+    const createBatch = () => {
+      const newTags: FloatingTag[] = [];
+      const currentBatchSize = Math.min(batchSize, maxTags - tagIndex);
+      
+      for (let i = 0; i < currentBatchSize; i++) {
+        const randomTag = tags[Math.floor(Math.random() * tags.length)];
+        // 为每个标签指定不同的道路，避免堆叠
+        const delayedTag = createTag(randomTag, tagIndex + i, laneIndex + i);
+        // 给每个标签一个额外的初始 x 偏移，让它们不同时出现
+        delayedTag.x = delayedTag.x + (i * 200); // 增加间距到200px
+        newTags.push(delayedTag);
+      }
+      
+      setFloatingTags(prev => [...prev, ...newTags]);
+      tagIndex += currentBatchSize;
+      laneIndex += currentBatchSize; // 更新道路索引
+      
+      // 如果还没有创建完所有标签，继续创建下一批
+      if (tagIndex < maxTags) {
+        setTimeout(createBatch, createInterval);
+      }
+    };
+    
+    // 开始创建第一批
+    setTimeout(createBatch, 500); // 延迟500ms开始，让页面先渲染
   }, [tags, maxTags, createTag, containerSize, searchBarBounds]);
 
   // 动画循环 - 全屏移动
@@ -167,7 +210,15 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
             const endY = safeHeight - 60;
             
             newX = containerSize.width + 200 + Math.random() * 300;
-            newY = startY + Math.random() * (endY - startY);
+            
+            // 重新进入时也使用道路系统，保持间距
+            const laneCount = 8;
+            const availableHeight = endY - startY;
+            const laneHeight = availableHeight / laneCount;
+            const randomLane = Math.floor(Math.random() * laneCount);
+            const laneStart = startY + (randomLane * laneHeight) + (laneHeight * 0.1);
+            const laneEnd = startY + ((randomLane + 1) * laneHeight) - (laneHeight * 0.1);
+            newY = laneStart + Math.random() * (laneEnd - laneStart);
             
             // 如果有搜索框，避开搜索框区域
             if (searchBarBounds.top > 0) {
@@ -262,4 +313,4 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
       ))}
     </div>
   );
-}; 
+};

@@ -324,7 +324,7 @@ const LockedContent = ({ title, description }: { title: string; description: str
       <div className="relative z-10">
         <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{title}</h3>
         <p className="text-neutral-600 dark:text-neutral-400 text-sm">{description}</p>
-        
+
         <div className="mt-4 flex justify-center items-center">
           <Link
             href="/login?mode=signup"
@@ -336,7 +336,7 @@ const LockedContent = ({ title, description }: { title: string; description: str
           </Link>
         </div>
       </div>
-      
+
       <div className="absolute inset-0 backdrop-blur-sm bg-gradient-to-t from-white/80 dark:from-black/80 to-transparent flex items-center justify-center">
         <div className="w-full h-full relative">
           <div className="absolute inset-0 bg-gradient-to-t from-white/80 dark:from-black/80 to-transparent" />
@@ -358,15 +358,6 @@ const DemandRankingCard = ({ ranking }: { ranking: DemandRanking }) => (
           <div className="flex items-center space-x-2">
             <span className="text-neutral-500 dark:text-neutral-400 w-6">{`#${index + 1}`}</span>
             <span className="text-neutral-800 dark:text-neutral-200">{tag.tag}</span>
-            {tag.trend === 'hot' && (
-              <span className="text-red-500">🔥</span>
-            )}
-            {tag.trend === 'rising' && (
-              <span className="text-green-500">📈</span>
-            )}
-            {tag.trend === 'stable' && (
-              <span className="text-blue-500">📊</span>
-            )}
           </div>
           <span className="text-sm text-neutral-500 dark:text-neutral-400">
             {tag.searchCount.toLocaleString()} searches
@@ -385,6 +376,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   // 添加引用用于滚动到特定区域
   const searchLogicRef = useRef<HTMLDivElement>(null);
   const competitorsRef = useRef<HTMLDivElement>(null);
+  const trendingSearchesRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const insightsRef = useRef<HTMLDivElement>(null);
   const recommendationsRef = useRef<HTMLDivElement>(null);
@@ -393,10 +385,30 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   const [loading, setLoading] = useState(true);
   const [logicSteps, setLogicSteps] = useState<{ title: string; description: string }[]>([]);
   const [competitors, setCompetitors] = useState<CompetitorData[]>([]);
+  const [hotKeysData, setHotKeysData] = useState<{
+    mostRelevant: DemandTag[];
+    allInSeeker: DemandTag[];
+    allFields: DemandTag[];
+  }>({
+    mostRelevant: [],
+    allInSeeker: [],
+    allFields: []
+  });
   const [error, setError] = useState<string | null>(null);
 
   // Store interval ID in a ref to access it in cleanup
   const intervalIdRef = useRef<number | null>(null);
+
+  /**
+   * 将后端热门关键词数据转换为组件需要的格式
+   */
+  const convertHotKeysToTags = (hotKeys: Record<string, number>): DemandTag[] => {
+    return Object.entries(hotKeys).map(([key, searchCount]) => ({
+      tag: key,
+      searchCount: searchCount,
+      trend: searchCount > 15000 ? 'hot' : searchCount > 10000 ? 'rising' : 'stable' as const
+    }));
+  };
 
   /**
    * 滚动到指定区域的函数
@@ -426,6 +438,16 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       onClick: () => {
         if (competitorsRef.current) {
           competitorsRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    },
+    {
+      title: "Trending Searches",
+      icon: <IconHash className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#trending-searches",
+      onClick: () => {
+        if (trendingSearchesRef.current) {
+          trendingSearchesRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       }
     },
@@ -469,10 +491,13 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     const cachedData = localStorage.getItem(`searchData_${searchId}`);
     if (cachedData) {
       try {
-        const { logicSteps: cachedSteps, competitors: cachedCompetitors } = JSON.parse(cachedData);
+        const { logicSteps: cachedSteps, competitors: cachedCompetitors, hotKeysData: cachedHotKeys } = JSON.parse(cachedData);
         if (cachedSteps && cachedCompetitors) {
           setLogicSteps(cachedSteps);
           setCompetitors(cachedCompetitors);
+          if (cachedHotKeys) {
+            setHotKeysData(cachedHotKeys);
+          }
           setLoading(false);
           return;
         }
@@ -490,33 +515,23 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         setLoading(true);
         setLogicSteps([]);
         setCompetitors([]);
+        setHotKeysData({
+          mostRelevant: [],
+          allInSeeker: [],
+          allFields: []
+        });
         setError(null);
 
         let response;
-        // Determine which API endpoint to use based on environment
-        if (isProxyChatEnabled()) {
-          // Development environment - use proxy API
-          response = await fetch('/api/proxy/chat', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'text/event-stream',
-            },
-            body: JSON.stringify({ query }),
-            signal: abortController.signal
-          });
-        } else {
-          // Production environment - direct API call
-          response = await fetch(ENV.TARGET_CHAT_API_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'text/event-stream',
-            },
-            body: JSON.stringify({ query }),
-            signal: abortController.signal
-          });
-        }
+        response = await fetch(ENV.TARGET_CHAT_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream',
+          },
+          body: JSON.stringify({ query }),
+          signal: abortController.signal
+        });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -529,13 +544,16 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
 
         const decoder = new TextDecoder();
         let buffer = '';
-        let currentLogicSteps: { title: string; description: string }[] = [];
-        let currentCompetitors: CompetitorData[] = [];
-
-        // Stream handling variables similar to proxy
         let lastDataTime = Date.now();
         const streamTimeout = 15000; // 15 seconds
         let hasReceivedCompetitors = false;
+        let currentLogicSteps: { title: string; description: string }[] = [];
+        let currentCompetitors: CompetitorData[] = [];
+        let currentHotKeysData = {
+          mostRelevant: [] as DemandTag[],
+          allInSeeker: [] as DemandTag[],
+          allFields: [] as DemandTag[]
+        };
 
         // Set up timeout monitoring
         if (!isProxyChatEnabled()) {
@@ -550,7 +568,8 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
               // Save data to localStorage before ending
               const dataToStore = {
                 logicSteps: currentLogicSteps,
-                competitors: currentCompetitors
+                competitors: currentCompetitors,
+                hotKeysData: currentHotKeysData
               };
               localStorage.setItem(`searchData_${searchId}`, JSON.stringify(dataToStore));
 
@@ -571,7 +590,8 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
               // 存储完整的数据到localStorage
               const dataToStore = {
                 logicSteps: currentLogicSteps,
-                competitors: currentCompetitors
+                competitors: currentCompetitors,
+                hotKeysData: currentHotKeysData
               };
               localStorage.setItem(`searchData_${searchId}`, JSON.stringify(dataToStore));
               setLoading(false);
@@ -616,7 +636,8 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
                       // 存储完整的数据到localStorage
                       const dataToStore = {
                         logicSteps: currentLogicSteps,
-                        competitors: currentCompetitors
+                        competitors: currentCompetitors,
+                        hotKeysData: currentHotKeysData
                       };
                       localStorage.setItem(`searchData_${searchId}`, JSON.stringify(dataToStore));
                       setLoading(false);
@@ -630,6 +651,24 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
 
                       currentLogicSteps = [...currentLogicSteps, { title, description }];
                       setLogicSteps(currentLogicSteps);
+                    }
+                    else if (jsonData.step === 'Hot Keys') {
+                      const hotKeysType = jsonData.type;
+                      const hotKeys = jsonData.hot_keys;
+
+                      if (hotKeys && typeof hotKeys === 'object') {
+                        const convertedTags = convertHotKeysToTags(hotKeys);
+
+                        if (hotKeysType === 'Most Relevant') {
+                          currentHotKeysData.mostRelevant = convertedTags;
+                        } else if (hotKeysType === 'All in Seeker') {
+                          currentHotKeysData.allInSeeker = convertedTags;
+                        } else if (hotKeysType === 'All Fields') {
+                          currentHotKeysData.allFields = convertedTags;
+                        }
+
+                        setHotKeysData({ ...currentHotKeysData });
+                      }
                     }
                     else if (jsonData.step === 'Main Competitors') {
                       const cardIndex = jsonData.card_index;
@@ -816,6 +855,8 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
 
         {/* 需求热度标签排行榜部分 */}
         <motion.div
+          ref={trendingSearchesRef}
+          id="trending-searches"
           className="mb-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -823,7 +864,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         >
           <h2 className="text-2xl font-semibold mb-6 dark:text-white flex items-center">
             <IconHash className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-            Trending Searches ( Monthly ) 
+            Trending Searches ( Monthly )
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {loading ? (
@@ -844,42 +885,35 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
               ))
             ) : (
               <>
-                <DemandRankingCard
-                  ranking={{
-                    title: <div className="flex items-center"><IconDevices className="mr-2 h-5 w-5 text-cyan-500" />Most Relevant</div>,
-                    tags: [
-                      { tag: "AI Integration", searchCount: 15420, trend: "hot" },
-                      { tag: "Real-time Analytics", searchCount: 12800, trend: "rising" },
-                      { tag: "Mobile Support", searchCount: 10500, trend: "stable" },
-                      { tag: "Cloud Storage", searchCount: 9300, trend: "stable" },
-                      { tag: "API Integration", searchCount: 8900, trend: "rising" }
-                    ]
-                  }}
-                />
-                <DemandRankingCard
-                  ranking={{
-                    title: <div className="flex items-center"><IconCategory className="mr-2 h-5 w-5 text-purple-500" />All in Seeker</div>,
-                    tags: [
-                      { tag: "Enterprise Solutions", searchCount: 18600, trend: "hot" },
-                      { tag: "Small Business", searchCount: 14200, trend: "rising" },
-                      { tag: "Startups", searchCount: 11800, trend: "stable" },
-                      { tag: "Freelancers", searchCount: 9600, trend: "rising" },
-                      { tag: "Education", searchCount: 8400, trend: "stable" }
-                    ]
-                  }}
-                />
-                <DemandRankingCard
-                  ranking={{
-                    title: <div className="flex items-center"><IconTrendingUp className="mr-2 h-5 w-5 text-green-500" />All Fields</div>,
-                    tags: [
-                      { tag: "Machine Learning", searchCount: 20100, trend: "hot" },
-                      { tag: "Blockchain", searchCount: 16500, trend: "rising" },
-                      { tag: "Cloud Native", searchCount: 13200, trend: "hot" },
-                      { tag: "Edge Computing", searchCount: 10800, trend: "rising" },
-                      { tag: "Microservices", searchCount: 9100, trend: "stable" }
-                    ]
-                  }}
-                />
+                {hotKeysData.mostRelevant.length > 0 && (
+                  <DemandRankingCard
+                    ranking={{
+                      title: <div className="flex items-center"><IconDevices className="mr-2 h-5 w-5 text-cyan-500" />Most Relevant</div>,
+                      tags: hotKeysData.mostRelevant
+                    }}
+                  />
+                )}
+                {hotKeysData.allInSeeker.length > 0 && (
+                  <DemandRankingCard
+                    ranking={{
+                      title: <div className="flex items-center"><IconCategory className="mr-2 h-5 w-5 text-purple-500" />All in Seeker</div>,
+                      tags: hotKeysData.allInSeeker
+                    }}
+                  />
+                )}
+                {hotKeysData.allFields.length > 0 && (
+                  <DemandRankingCard
+                    ranking={{
+                      title: <div className="flex items-center"><IconTrendingUp className="mr-2 h-5 w-5 text-green-500" />All Fields</div>,
+                      tags: hotKeysData.allFields
+                    }}
+                  />
+                )}
+                {hotKeysData.mostRelevant.length === 0 && hotKeysData.allInSeeker.length === 0 && hotKeysData.allFields.length === 0 && (
+                  <div className="col-span-3 text-center py-8 text-neutral-400">
+                    <p>No trending search data available. Please try searching again.</p>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -993,7 +1027,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         </motion.div>
 
         {/* MVP section */}
-        <motion.div 
+        <motion.div
           ref={insightsRef}
           id="insights"
           className="mb-10"
@@ -1016,7 +1050,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         </motion.div>
 
         {/* PMF section */}
-        <motion.div 
+        <motion.div
           ref={recommendationsRef}
           id="recommendations"
           className="mb-10"
