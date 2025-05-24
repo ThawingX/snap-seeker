@@ -3,7 +3,7 @@ import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { IconTable, IconBrain, IconChartBar, IconLock, IconBulb, IconTarget } from "@tabler/icons-react";
+import { IconTable, IconBrain, IconChartBar, IconLock, IconBulb, IconTarget, IconTrendingUp, IconCategory, IconDevices, IconHash } from "@tabler/icons-react";
 import { isProxyChatEnabled } from '@/lib/env';
 import { ENV } from '@/lib/env';
 import { normalizeSSEData } from '@/lib/utils';
@@ -41,6 +41,23 @@ interface CompetitorCardData {
   key_features: string[];
   potential_weaknesses: string[];
   revenue_model: string | string[];
+}
+
+/**
+ * 需求热度标签接口
+ */
+interface DemandTag {
+  tag: string;
+  searchCount: number;
+  trend: 'hot' | 'rising' | 'stable';
+}
+
+/**
+ * 需求排行榜接口
+ */
+interface DemandRanking {
+  title: string | React.ReactNode;
+  tags: DemandTag[];
 }
 
 /**
@@ -328,6 +345,37 @@ const LockedContent = ({ title, description }: { title: string; description: str
     </div>
   );
 };
+
+/**
+ * 需求热度标签卡片组件
+ */
+const DemandRankingCard = ({ ranking }: { ranking: DemandRanking }) => (
+  <div className="bg-white dark:bg-neutral-900 rounded-xl p-5 shadow-md">
+    <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">{ranking.title}</h3>
+    <div className="space-y-3">
+      {ranking.tags.map((tag, index) => (
+        <div key={index} className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="text-neutral-500 dark:text-neutral-400 w-6">{`#${index + 1}`}</span>
+            <span className="text-neutral-800 dark:text-neutral-200">{tag.tag}</span>
+            {tag.trend === 'hot' && (
+              <span className="text-red-500">🔥</span>
+            )}
+            {tag.trend === 'rising' && (
+              <span className="text-green-500">📈</span>
+            )}
+            {tag.trend === 'stable' && (
+              <span className="text-blue-500">📊</span>
+            )}
+          </div>
+          <span className="text-sm text-neutral-500 dark:text-neutral-400">
+            {tag.searchCount.toLocaleString()} searches
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 /**
  * 竞争对手分析表格组件
@@ -754,7 +802,6 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
               </>
             ) : (
               loading ? (
-                // 骨架屏加载效果
                 Array(3).fill(0).map((_, index) => (
                   <CompetitorCardSkeleton key={index} />
                 ))
@@ -763,6 +810,77 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
                   <p>No competitor data available. Please try searching again.</p>
                 </div>
               )
+            )}
+          </div>
+        </motion.div>
+
+        {/* 需求热度标签排行榜部分 */}
+        <motion.div
+          className="mb-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <h2 className="text-2xl font-semibold mb-6 dark:text-white flex items-center">
+            <IconHash className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+            Trending Searches ( Monthly ) 
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {loading ? (
+              // 骨架屏加载效果
+              Array(3).fill(0).map((_, index) => (
+                <div key={index} className="bg-neutral-900 rounded-xl p-5 shadow-md animate-pulse">
+                  <div className="h-6 bg-neutral-800 rounded-md w-2/3 mb-4"></div>
+                  {Array(5).fill(0).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <div className="h-4 bg-neutral-800 rounded-md w-6"></div>
+                        <div className="h-4 bg-neutral-800 rounded-md w-24"></div>
+                      </div>
+                      <div className="h-4 bg-neutral-800 rounded-md w-20"></div>
+                    </div>
+                  ))}
+                </div>
+              ))
+            ) : (
+              <>
+                <DemandRankingCard
+                  ranking={{
+                    title: <div className="flex items-center"><IconDevices className="mr-2 h-5 w-5 text-cyan-500" />Most Relevant</div>,
+                    tags: [
+                      { tag: "AI Integration", searchCount: 15420, trend: "hot" },
+                      { tag: "Real-time Analytics", searchCount: 12800, trend: "rising" },
+                      { tag: "Mobile Support", searchCount: 10500, trend: "stable" },
+                      { tag: "Cloud Storage", searchCount: 9300, trend: "stable" },
+                      { tag: "API Integration", searchCount: 8900, trend: "rising" }
+                    ]
+                  }}
+                />
+                <DemandRankingCard
+                  ranking={{
+                    title: <div className="flex items-center"><IconCategory className="mr-2 h-5 w-5 text-purple-500" />All in Seeker</div>,
+                    tags: [
+                      { tag: "Enterprise Solutions", searchCount: 18600, trend: "hot" },
+                      { tag: "Small Business", searchCount: 14200, trend: "rising" },
+                      { tag: "Startups", searchCount: 11800, trend: "stable" },
+                      { tag: "Freelancers", searchCount: 9600, trend: "rising" },
+                      { tag: "Education", searchCount: 8400, trend: "stable" }
+                    ]
+                  }}
+                />
+                <DemandRankingCard
+                  ranking={{
+                    title: <div className="flex items-center"><IconTrendingUp className="mr-2 h-5 w-5 text-green-500" />All Fields</div>,
+                    tags: [
+                      { tag: "Machine Learning", searchCount: 20100, trend: "hot" },
+                      { tag: "Blockchain", searchCount: 16500, trend: "rising" },
+                      { tag: "Cloud Native", searchCount: 13200, trend: "hot" },
+                      { tag: "Edge Computing", searchCount: 10800, trend: "rising" },
+                      { tag: "Microservices", searchCount: 9100, trend: "stable" }
+                    ]
+                  }}
+                />
+              </>
             )}
           </div>
         </motion.div>
