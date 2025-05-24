@@ -1,14 +1,41 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useRouter } from "next/navigation";
 import { addSearchToHistory } from "@/lib/searchHistory";
 
-export const SearchBar = () => {
+export interface SearchBarRef {
+  addTag: (tag: string) => void;
+}
+
+export const SearchBar = forwardRef<SearchBarRef>((props, ref) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showScrollbar, setShowScrollbar] = useState(false);
   const router = useRouter();
+
+  useImperativeHandle(ref, () => ({
+    addTag: (tag: string) => {
+      const newTag = `#${tag}`;
+      const currentInput = input;
+      
+      // 如果 textarea 中已经有内容，在前面添加标签
+      if (currentInput.trim()) {
+        setInput(`${newTag} ${currentInput}`);
+      } else {
+        setInput(newTag);
+      }
+      
+      // 聚焦到 textarea 并将光标移到标签后面
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          const newPosition = newTag.length + (currentInput.trim() ? 1 : 0);
+          textareaRef.current.setSelectionRange(newPosition, newPosition);
+        }
+      }, 0);
+    }
+  }));
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
@@ -127,4 +154,6 @@ export const SearchBar = () => {
       `}</style>
     </div>
   );
-}; 
+}); 
+
+SearchBar.displayName = 'SearchBar'; 
