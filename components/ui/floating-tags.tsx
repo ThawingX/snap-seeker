@@ -17,7 +17,7 @@ interface FloatingTagsProps {
   tags: string[];
   onTagSelected: (tag: string) => void;
   maxTags?: number;
-  searchBarRef?: React.RefObject<HTMLDivElement>;
+  searchBarRef?: React.RefObject<HTMLDivElement | null>;
   onShowMessage?: (message: string) => void;
 }
 
@@ -40,7 +40,7 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
   onShowMessage
 }) => {
   const [floatingTags, setFloatingTags] = useState<FloatingTag[]>([]);
-  const [clickedTag, setClickedTag] = useState<string | null>(null);
+  const [hoveredTag, setHoveredTag] = useState<string | null>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [searchBarBounds, setSearchBarBounds] = useState({ top: 0, height: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -84,20 +84,45 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
     };
   }, [searchBarRef]);
 
-  // 创建初始标签 - 限制在searchBar上方区域
+  // 创建初始标签 - 全屏显示，但避开搜索框和标题区域
   const createTag = useCallback((text: string, index: number): FloatingTag => {
     const safeWidth = Math.max(containerSize.width, 800);
+    const safeHeight = Math.max(containerSize.height, 600);
     
-    // 计算可用高度 - 只在searchBar上方区域
-    const availableHeight = Math.max(searchBarBounds.top - 100, 200); // 至少200px
-    const startY = 80; // 从80px开始，避免覆盖标题
-    const endY = startY + availableHeight;
+    // 全屏显示范围，但避开标题区域
+    const titleAreaBottom = safeHeight * 0.25; // 标题区域大约占25%高度
+    const startY = Math.max(titleAreaBottom, 120); // 从标题下方开始
+    const endY = safeHeight - 60; // 到底部，留一些边距
+    
+    // 如果有搜索框，在其区域周围留出空间
+    let y = startY + Math.random() * (endY - startY);
+    
+    // 如果标签会与搜索框重叠，则调整位置
+    if (searchBarBounds.top > 0) {
+      const searchTop = searchBarBounds.top - 50; // 搜索框上方50px
+      const searchBottom = searchBarBounds.top + searchBarBounds.height + 50; // 搜索框下方50px
+      
+      // 如果随机位置在搜索框区域内，重新分配到搜索框上方或下方
+      if (y >= searchTop && y <= searchBottom) {
+        // 随机选择放在搜索框上方还是下方
+        if (Math.random() > 0.5 && searchTop > startY + 100) {
+          // 放在搜索框上方（但在标题下方）
+          y = Math.max(startY, searchTop - 100) + Math.random() * Math.max(searchTop - startY - 100, 50);
+        } else if (searchBottom < endY - 100) {
+          // 放在搜索框下方
+          y = searchBottom + Math.random() * (endY - searchBottom - 100);
+        } else {
+          // 如果空间不够，放在搜索框上方
+          y = Math.max(startY, searchTop - 100) + Math.random() * Math.max(searchTop - startY - 100, 50);
+        }
+      }
+    }
     
     return {
       id: `${text}-${index}-${Date.now()}`,
       text,
       x: safeWidth + Math.random() * 300, // 从更远的右边开始
-      y: startY + Math.random() * (endY - startY),
+      y: Math.max(startY, Math.min(y, endY)), // 确保在范围内
       speed: 0.3 + Math.random() * 0.8, // 稍微降低速度，更平滑
       size: 0.75 + Math.random() * 0.35, // 稍微减小尺寸范围
       color: colors[Math.floor(Math.random() * colors.length)],
@@ -106,9 +131,9 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
     };
   }, [containerSize, searchBarBounds]);
 
-  // 初始化标签 - 只在容器尺寸和搜索框位置确定后执行
+  // 初始化标签 - 全屏显示
   useEffect(() => {
-    if (tags.length === 0 || containerSize.width === 0 || containerSize.height === 0 || searchBarBounds.top === 0) return;
+    if (tags.length === 0 || containerSize.width === 0 || containerSize.height === 0) return;
     
     const initialTags: FloatingTag[] = [];
     for (let i = 0; i < maxTags; i++) {
@@ -118,25 +143,49 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
     setFloatingTags(initialTags);
   }, [tags, maxTags, createTag, containerSize, searchBarBounds]);
 
-  // 动画循环 - 改进平滑度
+  // 动画循环 - 全屏移动
   useEffect(() => {
-    if (containerSize.width === 0 || containerSize.height === 0 || searchBarBounds.top === 0) return;
+    if (containerSize.width === 0 || containerSize.height === 0) return;
 
     const animate = () => {
       setFloatingTags(prevTags => 
         prevTags.map(tag => {
+          // 如果标签被悬停，则不移动
+          if (hoveredTag === tag.text) {
+            return tag;
+          }
+          
           let newX = tag.x - tag.speed;
           let newY = tag.y;
           let newRotation = tag.rotation;
           
           // 如果标签移出左边界，重新从右边进入
           if (newX < -200) {
-            const availableHeight = Math.max(searchBarBounds.top - 100, 200);
-            const startY = 80;
-            const endY = startY + availableHeight;
+            const safeHeight = Math.max(containerSize.height, 600);
+            const titleAreaBottom = safeHeight * 0.25; // 标题区域大约占25%高度
+            const startY = Math.max(titleAreaBottom, 120); // 从标题下方开始
+            const endY = safeHeight - 60;
             
             newX = containerSize.width + 200 + Math.random() * 300;
             newY = startY + Math.random() * (endY - startY);
+            
+            // 如果有搜索框，避开搜索框区域
+            if (searchBarBounds.top > 0) {
+              const searchTop = searchBarBounds.top - 50;
+              const searchBottom = searchBarBounds.top + searchBarBounds.height + 50;
+              
+              if (newY >= searchTop && newY <= searchBottom) {
+                if (Math.random() > 0.5 && searchTop > startY + 100) {
+                  newY = Math.max(startY, searchTop - 100) + Math.random() * Math.max(searchTop - startY - 100, 50);
+                } else if (searchBottom < endY - 100) {
+                  newY = searchBottom + Math.random() * (endY - searchBottom - 100);
+                } else {
+                  newY = Math.max(startY, searchTop - 100) + Math.random() * Math.max(searchTop - startY - 100, 50);
+                }
+              }
+            }
+            
+            newY = Math.max(startY, Math.min(newY, endY));
             newRotation = Math.random() * 6 - 3;
           }
           
@@ -159,32 +208,31 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [containerSize, searchBarBounds]);
+  }, [containerSize, searchBarBounds, hoveredTag]);
 
   const handleTagClick = (tag: FloatingTag) => {
-    if (clickedTag === tag.text) {
-      // 第二次点击同一个标签，添加到搜索
-      onTagSelected(tag.text);
-      setClickedTag(null);
-    } else {
-      // 第一次点击，显示消息提示
-      setClickedTag(tag.text);
-      if (onShowMessage) {
-        onShowMessage("Click again to add to search");
-      }
-      
-      // 3秒后自动清除选中状态
-      setTimeout(() => {
-        setClickedTag(null);
-      }, 3000);
+    // 单击直接添加到搜索框
+    onTagSelected(tag.text);
+    
+    // 显示成功提示
+    if (onShowMessage) {
+      onShowMessage("Tag added to search");
     }
+  };
+
+  const handleMouseEnter = (tagText: string) => {
+    setHoveredTag(tagText);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredTag(null);
   };
 
   return (
     <div 
       ref={containerRef}
       className="absolute inset-0 pointer-events-none overflow-hidden"
-      style={{ zIndex: 1 }}
+      style={{ zIndex: 50 }}
     >
       {floatingTags.map(tag => (
         <div
@@ -198,10 +246,13 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
             transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease'
           }}
           onClick={() => handleTagClick(tag)}
+          onMouseEnter={() => handleMouseEnter(tag.text)}
+          onMouseLeave={handleMouseLeave}
         >
           <span 
             className={`inline-block px-3 py-1.5 rounded-full text-white font-medium bg-gradient-to-r ${tag.color} 
-              ${clickedTag === tag.text ? 'opacity-95 scale-105' : 'opacity-70 hover:opacity-90'} 
+              opacity-70 hover:opacity-90 
+              ${hoveredTag === tag.text ? 'shadow-2xl scale-110' : ''}
               transition-all duration-300 shadow-lg backdrop-blur-sm border border-white border-opacity-20
               hover:shadow-xl hover:border-opacity-40`}
           >
