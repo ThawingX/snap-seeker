@@ -2,6 +2,8 @@
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useRouter } from "next/navigation";
 import { addSearchToHistory } from "@/lib/searchHistory";
+import { ENV } from "@/lib/env";
+import { useToast } from "@/components/ui/toast";
 
 export interface SearchBarRef {
   addTag: (tag: string) => void;
@@ -13,6 +15,7 @@ export const SearchBar = forwardRef<SearchBarRef>((props, ref) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showScrollbar, setShowScrollbar] = useState(false);
   const router = useRouter();
+  const { showToast } = useToast();
 
   useImperativeHandle(ref, () => ({
     addTag: (tag: string) => {
@@ -67,17 +70,26 @@ export const SearchBar = forwardRef<SearchBarRef>((props, ref) => {
     
     setIsLoading(true);
     
-    // 生成唯一id
-    const searchId = crypto.randomUUID();
-    
-    // 保存到localStorage并传递searchId
-    addSearchToHistory(input, searchId);
-    
-    // 存储到localStorage，key为id，value为内容
-    localStorage.setItem(searchId, JSON.stringify({ query: input }));
-    
-    // 跳转到results页面，带id参数
-    router.push(`/results?id=${searchId}`);
+    try {
+      // 生成一个临时ID用于页面跳转
+      const tempId = crypto.randomUUID();
+      
+      // 保存查询内容到localStorage，但不添加到历史记录
+      // 实际的ID处理和历史记录添加将在seek-table.tsx中完成
+      localStorage.setItem(tempId, JSON.stringify({ query: input }));
+      
+      // 立即跳转到results页面，带临时id参数
+      router.push(`/results?id=${tempId}`);
+    } catch (error) {
+      console.error('Error during search submission:', error);
+      // 使用toast组件显示错误信息
+      showToast({
+        message: '搜索请求失败，请稍后再试',
+        type: 'error',
+        duration: 3000
+      });
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -156,4 +168,4 @@ export const SearchBar = forwardRef<SearchBarRef>((props, ref) => {
   );
 }); 
 
-SearchBar.displayName = 'SearchBar'; 
+SearchBar.displayName = 'SearchBar';

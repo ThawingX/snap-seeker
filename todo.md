@@ -28,13 +28,16 @@ Mon May 19 2025:
 Sat May 24 2025:
 - [x] 弹幕+trendings 
 
-Tue June 3 2025:
+Wed June 4 2025:
 - [x] 删除无用代码
 - [x] seo删除，备份原来的seo代码
+- [x] id从后端获取
+- [ ] 优化step
 - [] 图表
 - [] 需求卡片
 - [] 功能清单 markdown
 - [] 导出
+- [] 登录页面样式重叠
 - [] google tag manager
 - [] 移动端适配
 - [] seo添加

@@ -4,11 +4,12 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { FloatingDock } from "@/components/ui/floating-dock";
 import { IconTable, IconBrain, IconChartBar, IconLock, IconBulb, IconTarget, IconTrendingUp, IconCategory, IconDevices, IconHash } from "@tabler/icons-react";
-import { isProxyChatEnabled } from '@/lib/env';
 import { ENV } from '@/lib/env';
 import { normalizeSSEData } from '@/lib/utils';
 import Image from "next/image";
 import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
+import { addSearchToHistory } from "@/lib/searchHistory";
+import { useToast } from "@/components/ui/toast";
 
 /**
  * 竞争对手数据接口
@@ -195,7 +196,7 @@ const CompetitorCardSkeleton = () => (
 
     <div className="mb-4">
       <div className="h-4 bg-neutral-800 rounded-md w-1/3 mb-2"></div>
-      <div className="flex flex-wrap gap-2">
+      <div className="space-y-2">
         {[1, 2, 3].map((i) => (
           <div key={i} className="h-6 bg-neutral-800 rounded-md w-20"></div>
         ))}
@@ -381,6 +382,9 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   const insightsRef = useRef<HTMLDivElement>(null);
   const recommendationsRef = useRef<HTMLDivElement>(null);
 
+  // 使用 Toast 组件
+  const { showToast } = useToast();
+
   // 添加状态用于存储 SSE 响应数据
   const [loading, setLoading] = useState(true);
   const [logicSteps, setLogicSteps] = useState<{ title: string; description: string }[]>([]);
@@ -522,6 +526,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         });
         setError(null);
 
+        // 只发送一次请求，使用SSE接收数据流
         let response;
         response = await fetch(ENV.TARGET_CHAT_API_URL, {
           method: 'POST',
@@ -529,7 +534,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
             'Content-Type': 'application/json',
             'Accept': 'text/event-stream',
           },
-          body: JSON.stringify({ query }),
+          body: JSON.stringify({ query, searchId }),
           signal: abortController.signal
         });
 
@@ -555,32 +560,34 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
           allFields: [] as DemandTag[]
         };
 
+        // 标记是否已获取到有效ID
+        let hasValidId = false;
+        let validSearchId = searchId;
+
         // Set up timeout monitoring
-        if (!isProxyChatEnabled()) {
-          // Only needed in production (direct API) as proxy handles this server-side
-          intervalIdRef.current = window.setInterval(() => {
-            const currentTime = Date.now();
-            // If no data for 15 seconds and we've received some competitor data, end the stream
-            if ((currentTime - lastDataTime > streamTimeout) && hasReceivedCompetitors) {
-              console.log("Stream processing timed out, sending end signal");
-              setLoading(false);
+        // Only needed in production (direct API) as proxy handles this server-side
+        intervalIdRef.current = window.setInterval(() => {
+          const currentTime = Date.now();
+          // If no data for 15 seconds and we've received some competitor data, end the stream
+          if ((currentTime - lastDataTime > streamTimeout) && hasReceivedCompetitors) {
+            console.log("Stream processing timed out, sending end signal");
+            setLoading(false);
 
-              // Save data to localStorage before ending
-              const dataToStore = {
-                logicSteps: currentLogicSteps,
-                competitors: currentCompetitors,
-                hotKeysData: currentHotKeysData
-              };
-              localStorage.setItem(`searchData_${searchId}`, JSON.stringify(dataToStore));
+            // Save data to localStorage before ending
+            const dataToStore = {
+              logicSteps: currentLogicSteps,
+              competitors: currentCompetitors,
+              hotKeysData: currentHotKeysData
+            };
+            localStorage.setItem(`searchData_${validSearchId}`, JSON.stringify(dataToStore));
 
-              // Clear the interval
-              if (intervalIdRef.current !== null) {
-                clearInterval(intervalIdRef.current);
-                intervalIdRef.current = null;
-              }
+            // Clear the interval
+            if (intervalIdRef.current !== null) {
+              clearInterval(intervalIdRef.current);
+              intervalIdRef.current = null;
             }
-          }, 1000);
-        }
+          }
+        }, 1000);
 
         const processChunk = async () => {
           try {
@@ -593,7 +600,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
                 competitors: currentCompetitors,
                 hotKeysData: currentHotKeysData
               };
-              localStorage.setItem(`searchData_${searchId}`, JSON.stringify(dataToStore));
+              localStorage.setItem(`searchData_${validSearchId}`, JSON.stringify(dataToStore));
               setLoading(false);
 
               // Clean up the interval if it exists
@@ -624,6 +631,34 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
                   const jsonString = normalizedLine.substring(5).trim();
                   const jsonData = JSON.parse(jsonString);
 
+                  // 检查是否包含chatID信息
+                  if (jsonData.step === "chatID" && jsonData.content) {
+                    validSearchId = jsonData.content;
+                    hasValidId = true;
+
+                    // 只有在有有效ID时才保存到localStorage和历史记录
+                    addSearchToHistory(query, validSearchId);
+                    localStorage.setItem(validSearchId, JSON.stringify({ query }));
+                  } else if (jsonData.id && !hasValidId) {
+                    // 兼容旧格式
+                    validSearchId = jsonData.id;
+                    hasValidId = true;
+
+                    // 只有在有有效ID时才保存到localStorage和历史记录
+                    addSearchToHistory(query, validSearchId);
+                    localStorage.setItem(validSearchId, JSON.stringify({ query }));
+                  }
+
+                  // 检查是否需要显示提示信息
+                  if (!hasValidId && jsonData.step === "Done") {
+                    // 如果到结束都没有获取到ID，显示提示信息
+                    showToast({
+                      message: '这次搜索将不会进行存储',
+                      type: 'warning',
+                      duration: 3000
+                    });
+                  }
+
                   // Check for competitor data to track progress
                   if (jsonData.step === 'Main Competitors') {
                     hasReceivedCompetitors = true;
@@ -639,7 +674,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
                         competitors: currentCompetitors,
                         hotKeysData: currentHotKeysData
                       };
-                      localStorage.setItem(`searchData_${searchId}`, JSON.stringify(dataToStore));
+                      localStorage.setItem(`searchData_${validSearchId}`, JSON.stringify(dataToStore));
                       setLoading(false);
                       return; // 结束处理
                     }
@@ -746,7 +781,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     <div className="relative">
       <FloatingDock
         items={dockItems}
-        desktopClassName="fixed bottom-8 right-1 -translate-x-1/2 z-50 shadow-lg"
+        desktopClassName="fixed bottom-8 right-8 z-50 shadow-lg"
         mobileClassName="fixed bottom-8 right-8 z-50 shadow-lg"
       />
 
@@ -1074,4 +1109,4 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       </div>
     </div>
   );
-} 
+}
