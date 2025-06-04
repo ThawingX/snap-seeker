@@ -61,7 +61,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
           onClick={onClose}
         >
           <motion.div
@@ -175,4 +175,4 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
       )}
     </AnimatePresence>
   );
-} 
+}
