@@ -117,7 +117,8 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         mobileClassName="fixed bottom-8 right-8 z-50 shadow-lg"
       />
 
-      <div className="space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-8">
         {/* 页面头部 */}
         <div className="mb-8">
           <Link href="/history" className="text-cyan-500 hover:text-cyan-400 flex items-center">
@@ -161,6 +162,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
 
         {/* PMF 分析部分 */}
         <PMFAnalysis loading={loading} recommendationsRef={recommendationsRef} />
+        </div>
       </div>
     </div>
   );
