@@ -1,15 +1,8 @@
 "use client";
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { IconTable, IconBrain, IconChartBar, IconLock, IconBulb, IconTarget, IconTrendingUp, IconCategory, IconDevices, IconHash } from "@tabler/icons-react";
-import { ENV } from '@/lib/env';
-import { normalizeSSEData } from '@/lib/utils';
-import Image from "next/image";
-import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
-import { addSearchToHistory } from "@/lib/searchHistory";
-import { useToast } from "@/components/ui/toast";
+import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash } from "@tabler/icons-react";
 
 import { SearchLogic } from "./search/SearchLogic";
 import { CompetitorCards } from "./competitor/CompetitorCards";
@@ -20,38 +13,7 @@ import { useSSEData } from "@/hooks/useSSEData";
 
 
 
-/**
- * 竞争对手数据接口
- * 定义了竞争对手分析中需要展示的数据结构
- */
-interface CompetitorData {
-  id: string;
-  name: string;
-  slogan: string;
-  relevance: string;
-  traffic: string;
-  targetUser: string[];
-  plainPoints: string[];
-  keyFeatures: string[];
-  potentialWeaknesses: string[];
-  revenueModel: string;
-}
 
-/**
- * 竞争对手卡片数据接口
- * 来自SSE响应的卡片数据结构
- */
-interface CompetitorCardData {
-  product_name: string;
-  slogan: string;
-  relevance: string;
-  traffic: string;
-  target_users: string[];
-  pain_points_addressed: string[];
-  key_features: string[];
-  potential_weaknesses: string[];
-  revenue_model: string | string[];
-}
 
 
 
@@ -65,15 +27,12 @@ interface CompetitorCardData {
  */
 export default function SeekTable({ query, searchId }: { query: string, searchId: string }) {
   // 添加引用用于滚动到特定区域
-  const searchLogicRef = useRef<HTMLDivElement>(null);
-  const competitorsRef = useRef<HTMLDivElement>(null);
-  const trendingSearchesRef = useRef<HTMLDivElement>(null);
-  const tableRef = useRef<HTMLDivElement>(null);
-  const insightsRef = useRef<HTMLDivElement>(null);
-  const recommendationsRef = useRef<HTMLDivElement>(null);
-
-  // 使用 Toast 组件
-  const { showToast } = useToast();
+  const searchLogicRef = useRef<HTMLDivElement>(null!);
+  const competitorsRef = useRef<HTMLDivElement>(null!);
+  const trendingSearchesRef = useRef<HTMLDivElement>(null!);
+  const tableRef = useRef<HTMLDivElement>(null!);
+  const insightsRef = useRef<HTMLDivElement>(null!);
+  const recommendationsRef = useRef<HTMLDivElement>(null!);
 
   // 使用 SSE 数据获取 Hook
   const {
@@ -83,17 +42,6 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     hotKeysData,
     error
   } = useSSEData({ query, searchId });
-
-
-
-  /**
-   * 滚动到指定区域的函数
-   */
-  const scrollToSection = (ref: React.RefObject<HTMLDivElement>) => {
-    if (ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   // 浮动导航菜单项
   const dockItems = [
@@ -197,24 +145,16 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         </div>
 
         {/* 搜索逻辑思考链部分 */}
-        <div ref={searchLogicRef} className="mb-12">
-          <SearchLogic searchSteps={searchSteps} loading={loading} query={query} />
-        </div>
+        <SearchLogic searchSteps={searchSteps} loading={loading} query={query} searchLogicRef={searchLogicRef} />
 
         {/* 主要竞争对手卡片部分 */}
-        <div ref={competitorsRef} className="mb-12">
-          <CompetitorCards competitorData={competitorData} loading={loading} />
-        </div>
+        <CompetitorCards competitorData={competitorData} loading={loading} competitorsRef={competitorsRef} />
 
         {/* 需求热度标签排行榜部分 */}
-        <div ref={trendingSearchesRef} className="mb-12">
-          <TrendingSearches hotKeysData={hotKeysData} loading={loading} />
-        </div>
+        <TrendingSearches hotKeysData={hotKeysData} loading={loading} trendingSearchesRef={trendingSearchesRef} />
 
         {/* 竞争对手数据表格部分 */}
-        <div ref={tableRef} className="mb-12">
-          <CompetitorTable competitorData={competitorData} loading={loading} />
-        </div>
+        <CompetitorTable competitorData={competitorData} loading={loading} tableRef={tableRef} />
 
         {/* MVP 策略推荐部分 */}
         <MVPStrategy loading={loading} insightsRef={insightsRef} />
