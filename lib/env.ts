@@ -15,11 +15,3 @@ export const ENV = {
   // Feature flags
   ENABLE_PROXY_CHAT: process.env.NODE_ENV === 'development',
 };
-
-/**
- * Checks if the proxy chat feature is enabled
- * This is only available in development environment
- */
-export function isProxyChatEnabled(): boolean {
-  return ENV.ENABLE_PROXY_CHAT;
-} 

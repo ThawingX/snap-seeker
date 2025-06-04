@@ -134,7 +134,7 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
     }
     
     return {
-      id: `${text}-${index}-${Date.now()}`,
+      id: `${text}-${index}-${Math.random().toString(36).substring(2, 9)}`,
       text,
       x: safeWidth + Math.random() * 300, // 从更远的右边开始
       y: Math.max(startY, Math.min(y, endY)), // 确保在范围内
