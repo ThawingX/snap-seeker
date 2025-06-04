@@ -134,9 +134,9 @@ export const Dashboard = () => {
           </div>
         )}
 
-        {/* 加载状态 - 最顶层 */}
+        {/* 加载状态 - 右上角显示 */}
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center" style={{ zIndex: 300 }}>
+          <div className="absolute top-4 right-4" style={{ zIndex: 300 }}>
             <div className="flex items-center space-x-3 text-neutral-400 bg-black bg-opacity-50 px-6 py-3 rounded-full backdrop-blur-sm">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-400"></div>
               <span className="text-sm">正在加载热门标签...</span>
@@ -146,4 +146,4 @@ export const Dashboard = () => {
       </div>
     </div>
   );
-}; 
+};
