@@ -24,3 +24,14 @@ Mon May 19 2025:
 - [x]logo优化
 - [x]slogan优化
 - [x] MVP和PMF
+
+Sat May 24 2025:
+- [x] 弹幕+trendings 
+
+Tue June 3 2025:
+- [] 删除无用代码
+- [] 图表
+- [] 需求卡片
+- [] 功能清单 markdown
+- [] 导出
+- [] 移动端适配
