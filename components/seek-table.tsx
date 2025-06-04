@@ -2,12 +2,13 @@
 import React, { useRef } from "react";
 import Link from "next/link";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash } from "@tabler/icons-react";
+import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash, IconPhoto } from "@tabler/icons-react";
 
 import { SearchLogic } from "./search/SearchLogic";
 import { CompetitorCards } from "./competitor/CompetitorCards";
 import { CompetitorTable } from "./competitor/CompetitorTable";
 import { TrendingSearches } from "./trending/TrendingSearches";
+import { FigureCards } from "./figure/FigureCards";
 import { PMFAnalysis, MVPStrategy } from "./premium/LockedContent";
 import { useSSEData } from "@/hooks/useSSEData";
 
@@ -30,6 +31,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   const searchLogicRef = useRef<HTMLDivElement>(null!);
   const competitorsRef = useRef<HTMLDivElement>(null!);
   const trendingSearchesRef = useRef<HTMLDivElement>(null!);
+  const figuresRef = useRef<HTMLDivElement>(null!);
   const tableRef = useRef<HTMLDivElement>(null!);
   const insightsRef = useRef<HTMLDivElement>(null!);
   const recommendationsRef = useRef<HTMLDivElement>(null!);
@@ -39,6 +41,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     loading,
     logicSteps: searchSteps,
     competitors: competitorData,
+    figures: figureData,
     hotKeysData,
     error
   } = useSSEData({ query, searchId });
@@ -82,6 +85,16 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       onClick: () => {
         if (tableRef.current) {
           tableRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    },
+    {
+      title: "Analysis Figures",
+      icon: <IconPhoto className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#figures",
+      onClick: () => {
+        if (figuresRef.current) {
+          figuresRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       }
     },
@@ -156,6 +169,9 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
 
         {/* 竞争对手数据表格部分 */}
         <CompetitorTable competitorData={competitorData} loading={loading} tableRef={tableRef} />
+
+        {/* 分析图片部分 */}
+        <FigureCards figureData={figureData} loading={loading} figuresRef={figuresRef} />
 
         {/* MVP 策略推荐部分 */}
         <MVPStrategy loading={loading} insightsRef={insightsRef} />

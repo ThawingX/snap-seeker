@@ -36,7 +36,7 @@ const FLOATING_TAGS_CONFIG = {
   creation: {
     batchSize: 1, // 每批创建的标签数量
     createInterval: 2000, // 批次间隔时间（毫秒）
-    initialDelay: 1000, // 首次创建延迟（毫秒）
+    initialDelay: 0, // 首次创建延迟（毫秒）
     horizontalSpacing: 600, // 同批标签间的水平间距
   },
   

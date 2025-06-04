@@ -4,6 +4,7 @@
  */
 
 import { CompetitorData, DemandTag } from '@/types/competitor';
+import { FigureData } from '@/components/figure/FigureCards';
 
 /**
  * SSE数据处理策略接口
@@ -19,6 +20,7 @@ export interface SSEDataStrategy {
 export interface SSEProcessingContext {
   currentLogicSteps: { title: string; description: string }[];
   currentCompetitors: CompetitorData[];
+  currentFigures: FigureData[];
   currentHotKeysData: {
     mostRelevant: DemandTag[];
     allInSeeker: DemandTag[];
@@ -26,6 +28,7 @@ export interface SSEProcessingContext {
   };
   setLogicSteps: (steps: { title: string; description: string }[]) => void;
   setCompetitors: (competitors: CompetitorData[]) => void;
+  setFigures: (figures: FigureData[]) => void;
   setHotKeysData: (data: any) => void;
   setLoading: (loading: boolean) => void;
   validSearchId: string;
@@ -144,6 +147,40 @@ export class CompetitorsStrategy implements SSEDataStrategy {
 }
 
 /**
+ * 图片处理策略
+ */
+export class FigureStrategy implements SSEDataStrategy {
+  canHandle(step: string): boolean {
+    return step === 'figure';
+  }
+
+  process(data: any, context: SSEProcessingContext): void {
+    const figureIndex = data.figureIndex;
+    const content = data.content;
+
+    const newFigure: FigureData = {
+      step: data.step,
+      figureIndex: figureIndex,
+      content: content
+    };
+
+    // 按照figureIndex排序插入
+    const updatedFigures = [...context.currentFigures];
+    const existingIndex = updatedFigures.findIndex(f => f.figureIndex === figureIndex);
+    
+    if (existingIndex >= 0) {
+      updatedFigures[existingIndex] = newFigure;
+    } else {
+      updatedFigures.push(newFigure);
+      updatedFigures.sort((a, b) => a.figureIndex - b.figureIndex);
+    }
+
+    context.currentFigures = updatedFigures;
+    context.setFigures(updatedFigures);
+  }
+}
+
+/**
  * 完成处理策略
  */
 export class DoneStrategy implements SSEDataStrategy {
@@ -167,6 +204,7 @@ export class DoneStrategy implements SSEDataStrategy {
     const dataToStore = {
       logicSteps: context.currentLogicSteps,
       competitors: context.currentCompetitors,
+      figures: context.currentFigures,
       hotKeysData: context.currentHotKeysData
     };
     localStorage.setItem(`searchData_${context.validSearchId}`, JSON.stringify(dataToStore));
@@ -183,6 +221,7 @@ export class SSEDataProcessor {
     new StepStrategy(),
     new HotKeysStrategy(),
     new CompetitorsStrategy(),
+    new FigureStrategy(),
     new DoneStrategy()
   ];
 

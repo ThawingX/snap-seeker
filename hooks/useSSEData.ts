@@ -6,6 +6,7 @@ import { addSearchToHistory } from "@/lib/searchHistory";
 import { useToast } from "@/components/ui/toast";
 import { SSEDataProcessor, SSEProcessingContext } from '@/lib/sse-data-strategies';
 import { CompetitorData, HotKeysData, SearchStep } from '@/types/competitor';
+import { FigureData } from '@/components/figure/FigureCards';
 
 interface UseSSEDataProps {
   query: string;
@@ -16,6 +17,7 @@ interface UseSSEDataReturn {
   loading: boolean;
   logicSteps: SearchStep[];
   competitors: CompetitorData[];
+  figures: FigureData[];
   hotKeysData: HotKeysData;
   error: string | null;
 }
@@ -28,6 +30,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
   const [loading, setLoading] = useState(true);
   const [logicSteps, setLogicSteps] = useState<SearchStep[]>([]);
   const [competitors, setCompetitors] = useState<CompetitorData[]>([]);
+  const [figures, setFigures] = useState<FigureData[]>([]);
   const [hotKeysData, setHotKeysData] = useState<HotKeysData>({
     mostRelevant: [],
     allInSeeker: [],
@@ -46,10 +49,13 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
     const cachedData = localStorage.getItem(`searchData_${searchId}`);
     if (cachedData) {
       try {
-        const { logicSteps: cachedSteps, competitors: cachedCompetitors, hotKeysData: cachedHotKeys } = JSON.parse(cachedData);
+        const { logicSteps: cachedSteps, competitors: cachedCompetitors, figures: cachedFigures, hotKeysData: cachedHotKeys } = JSON.parse(cachedData);
         if (cachedSteps && cachedCompetitors) {
           setLogicSteps(cachedSteps);
           setCompetitors(cachedCompetitors);
+          if (cachedFigures) {
+            setFigures(cachedFigures);
+          }
           if (cachedHotKeys) {
             setHotKeysData(cachedHotKeys);
           }
@@ -69,6 +75,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
         setLoading(true);
         setLogicSteps([]);
         setCompetitors([]);
+        setFigures([]);
         setHotKeysData({
           mostRelevant: [],
           allInSeeker: [],
@@ -104,6 +111,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
         // 创建处理上下文
         let currentLogicSteps: SearchStep[] = [];
         let currentCompetitors: CompetitorData[] = [];
+        let currentFigures: FigureData[] = [];
         let currentHotKeysData: HotKeysData = {
           mostRelevant: [],
           allInSeeker: [],
@@ -115,6 +123,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
         const context: SSEProcessingContext = {
           currentLogicSteps,
           currentCompetitors,
+          currentFigures,
           currentHotKeysData,
           setLogicSteps: (steps) => {
             currentLogicSteps = steps;
@@ -123,6 +132,10 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
           setCompetitors: (comps) => {
             currentCompetitors = comps;
             setCompetitors(comps);
+          },
+          setFigures: (figs) => {
+            currentFigures = figs;
+            setFigures(figs);
           },
           setHotKeysData: (data) => {
             currentHotKeysData = data;
@@ -147,6 +160,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
             const dataToStore = {
               logicSteps: currentLogicSteps,
               competitors: currentCompetitors,
+              figures: currentFigures,
               hotKeysData: currentHotKeysData
             };
             localStorage.setItem(`searchData_${validSearchId}`, JSON.stringify(dataToStore));
@@ -167,6 +181,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
               const dataToStore = {
                 logicSteps: currentLogicSteps,
                 competitors: currentCompetitors,
+                figures: currentFigures,
                 hotKeysData: currentHotKeysData
               };
               localStorage.setItem(`searchData_${validSearchId}`, JSON.stringify(dataToStore));
@@ -202,6 +217,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
                   context.hasValidId = hasValidId;
                   context.currentLogicSteps = currentLogicSteps;
                   context.currentCompetitors = currentCompetitors;
+                  context.currentFigures = currentFigures;
                   context.currentHotKeysData = currentHotKeysData;
 
                   // 检查是否需要标记已接收到竞争对手数据
@@ -217,6 +233,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
                   hasValidId = context.hasValidId;
                   currentLogicSteps = context.currentLogicSteps;
                   currentCompetitors = context.currentCompetitors;
+                  currentFigures = context.currentFigures;
                   currentHotKeysData = context.currentHotKeysData;
 
                   if (shouldEnd) {
@@ -260,6 +277,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
     loading,
     logicSteps,
     competitors,
+    figures,
     hotKeysData,
     error
   };
