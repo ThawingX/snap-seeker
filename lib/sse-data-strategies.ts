@@ -52,18 +52,8 @@ export class ChatIdStrategy implements SSEDataStrategy {
       context.hasValidId = true;
       // 确保搜索历史中的ID与SSE数据处理的ID一致
       context.addSearchToHistory(context.query, context.validSearchId);
-      // 使用统一的数据存储格式：id: { query: "xx", results: { logicSteps: [] } }
-      const completeData = {
-        query: context.query,
-        results: {
-          logicSteps: context.currentLogicSteps,
-          competitors: context.currentCompetitors,
-          figures: context.currentFigures,
-          hotKeysData: context.currentHotKeysData
-        },
-        timestamp: new Date().toISOString()
-      };
-      localStorage.setItem(context.validSearchId, JSON.stringify(completeData));
+      // 注意：不在这里保存数据，而是在流结束时保存完整的数据
+      // 这样确保所有数据都已经处理完成后再保存
     }
   }
 }

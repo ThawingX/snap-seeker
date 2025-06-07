@@ -171,7 +171,14 @@ const setupTimeoutMonitor = (
     if ((currentTime - lastDataTimeRef.current > streamTimeout) && hasReceivedCompetitorsRef.current) {
       console.log("Stream processing timed out, sending end signal");
       setLoading(false);
-      saveCompleteSearchData(validSearchId, query, currentResults);
+      // 保存当前数据并结束流，使用context中的最新数据
+      const latestResults: SearchResultData = {
+        logicSteps: context.currentLogicSteps,
+        competitors: context.currentCompetitors,
+        figures: context.currentFigures,
+        hotKeysData: context.currentHotKeysData
+      };
+      saveCompleteSearchData(validSearchId, query, latestResults);
       if (intervalIdRef.current !== null) {
         clearInterval(intervalIdRef.current);
         intervalIdRef.current = null;
@@ -257,7 +264,14 @@ const createStreamProcessor = (
         const { done, value } = await reader.read();
 
         if (done) {
-          saveCompleteSearchData(validSearchId, query, currentResults);
+          // 使用context中的最新数据进行保存
+          const latestResults: SearchResultData = {
+            logicSteps: context.currentLogicSteps,
+            competitors: context.currentCompetitors,
+            figures: context.currentFigures,
+            hotKeysData: context.currentHotKeysData
+          };
+          saveCompleteSearchData(validSearchId, query, latestResults);
           setLoading(false);
           clearTimeoutMonitor(intervalIdRef);
           return;
@@ -274,8 +288,14 @@ const createStreamProcessor = (
         for (const line of lines) {
           const shouldEnd = processSSELine(line, processor, context, hasReceivedCompetitorsRef);
           if (shouldEnd) {
-            // 在流结束时保存数据
-            saveCompleteSearchData(validSearchId, query, currentResults);
+            // 在流结束时保存数据，使用context中的最新数据
+            const latestResults: SearchResultData = {
+              logicSteps: context.currentLogicSteps,
+              competitors: context.currentCompetitors,
+              figures: context.currentFigures,
+              hotKeysData: context.currentHotKeysData
+            };
+            saveCompleteSearchData(validSearchId, query, latestResults);
             setLoading(false);
             clearTimeoutMonitor(intervalIdRef);
             return;
@@ -283,8 +303,14 @@ const createStreamProcessor = (
         }
       }
     } catch (error) {
-      // 在任何异常情况下都保存当前数据
-      saveCompleteSearchData(validSearchId, query, currentResults);
+      // 在任何异常情况下都保存当前数据，使用context中的最新数据
+      const latestResults: SearchResultData = {
+        logicSteps: context.currentLogicSteps,
+        competitors: context.currentCompetitors,
+        figures: context.currentFigures,
+        hotKeysData: context.currentHotKeysData
+      };
+      saveCompleteSearchData(validSearchId, query, latestResults);
       setLoading(false);
       clearTimeoutMonitor(intervalIdRef);
       
