@@ -111,16 +111,16 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         }
       }
     },
-    {
-      title: "MVP Strategy",
-      icon: <IconBulb className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
-      href: "#insights",
-      onClick: () => {
-        if (insightsRef.current) {
-          insightsRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-    },
+    // {
+    //   title: "MVP Strategy",
+    //   icon: <IconBulb className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+    //   href: "#insights",
+    //   onClick: () => {
+    //     if (insightsRef.current) {
+    //       insightsRef.current.scrollIntoView({ behavior: 'smooth' });
+    //     }
+    //   }
+    // },
     {
       title: "PMF Analysis",
       icon: <IconTarget className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
@@ -189,8 +189,8 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         {/* 产品需求卡片部分 */}
         <RequirementCard requirementData={requirementData} loading={loading} requirementRef={requirementRef} />
 
-        {/* MVP 策略推荐部分 */}
-        <MVPStrategy loading={loading} insightsRef={insightsRef} />
+        {/* MVP 策略推荐部分 - 已隐藏 */}
+        {/* <MVPStrategy loading={loading} insightsRef={insightsRef} /> */}
 
         {/* PMF 分析部分 */}
         <PMFAnalysis loading={loading} recommendationsRef={recommendationsRef} />
