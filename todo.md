@@ -30,7 +30,8 @@ Sat May 24 2025:
 
 Wed June 4 2025:
 - [x] 删除无用代码
-- [x] seo删除，备份原来的seo代码
+- [x] 调整项目结构，抽离可配置
+- [x] seo删除，备份原来的seo代码，准备重新处理seo文件，原来的过于冗余并且不精准
 - [x] id从后端获取
 - [x] 优化step
 - [x] 其中某个step的内容解析失败不应该导致所有请求停止
@@ -48,3 +49,4 @@ Thu June 5 2025:
 - [] google tag manager
 - [] 移动端适配
 - [] seo添加
+- [x] trae.rules

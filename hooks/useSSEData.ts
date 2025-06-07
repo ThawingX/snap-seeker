@@ -22,67 +22,247 @@ interface UseSSEDataReturn {
   error: string | null;
 }
 
+// 初始化状态数据
+const createInitialState = () => ({
+  logicSteps: [],
+  competitors: [],
+  figures: [],
+  hotKeysData: {
+    mostRelevant: [],
+    allInSeeker: [],
+    allFields: []
+  }
+});
+
+// 尝试从缓存加载数据
+const loadCachedData = (searchId: string) => {
+  try {
+    const cachedData = localStorage.getItem(`searchData_${searchId}`);
+    if (cachedData) {
+      const parsed = JSON.parse(cachedData);
+      if (parsed.logicSteps && parsed.competitors) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error('Error parsing cached data:', err);
+  }
+  return null;
+};
+
+// 保存数据到缓存
+const saveDataToCache = (searchId: string, data: any) => {
+  try {
+    localStorage.setItem(`searchData_${searchId}`, JSON.stringify(data));
+  } catch (err) {
+    console.error('Error saving data to cache:', err);
+  }
+};
+
+// 创建SSE处理上下文
+const createSSEContext = (
+  initialData: any,
+  setters: any,
+  searchId: string,
+  query: string,
+  showToast: any
+): SSEProcessingContext => ({
+  currentLogicSteps: initialData.logicSteps,
+  currentCompetitors: initialData.competitors,
+  currentFigures: initialData.figures,
+  currentHotKeysData: initialData.hotKeysData,
+  setLogicSteps: (steps) => {
+    initialData.logicSteps = steps;
+    setters.setLogicSteps(steps);
+  },
+  setCompetitors: (comps) => {
+    initialData.competitors = comps;
+    setters.setCompetitors(comps);
+  },
+  setFigures: (figs) => {
+    initialData.figures = figs;
+    setters.setFigures(figs);
+  },
+  setHotKeysData: (data) => {
+    initialData.hotKeysData = data;
+    setters.setHotKeysData(data);
+  },
+  setLoading: setters.setLoading,
+  validSearchId: searchId,
+  hasValidId: false,
+  showToast,
+  addSearchToHistory,
+  query
+});
+
+// 设置超时监控
+const setupTimeoutMonitor = (
+  intervalIdRef: React.MutableRefObject<number | null>,
+  lastDataTimeRef: React.MutableRefObject<number>,
+  hasReceivedCompetitorsRef: React.MutableRefObject<boolean>,
+  currentData: any,
+  validSearchId: string,
+  setLoading: (loading: boolean) => void,
+  streamTimeout: number = 15000
+) => {
+  intervalIdRef.current = window.setInterval(() => {
+    const currentTime = Date.now();
+    if ((currentTime - lastDataTimeRef.current > streamTimeout) && hasReceivedCompetitorsRef.current) {
+      console.log("Stream processing timed out, sending end signal");
+      setLoading(false);
+      saveDataToCache(validSearchId, currentData);
+      if (intervalIdRef.current !== null) {
+        clearInterval(intervalIdRef.current);
+        intervalIdRef.current = null;
+      }
+    }
+  }, 1000);
+};
+
+// 清理超时监控
+const clearTimeoutMonitor = (intervalIdRef: React.MutableRefObject<number | null>) => {
+  if (intervalIdRef.current !== null) {
+    clearInterval(intervalIdRef.current);
+    intervalIdRef.current = null;
+  }
+};
+
+// 处理SSE数据行
+const processSSELine = (
+  line: string,
+  processor: SSEDataProcessor,
+  context: SSEProcessingContext,
+  hasReceivedCompetitorsRef: React.MutableRefObject<boolean>
+): boolean => {
+  if (line.trim() === '') return false;
+
+  try {
+    const normalizedLine = normalizeSSEData(line);
+    
+    if (normalizedLine.startsWith('data:')) {
+      const jsonString = normalizedLine.substring(5).trim();
+      const jsonData = JSON.parse(jsonString);
+
+      // 检查是否需要标记已接收到竞争对手数据
+      if (jsonData.step === 'Main Competitors') {
+        hasReceivedCompetitorsRef.current = true;
+      }
+
+      // 使用策略模式处理数据
+      return processor.process(jsonData, context);
+    }
+  } catch (err) {
+    console.error('Error parsing SSE data:', err, line);
+  }
+  
+  return false;
+};
+
+// 创建流处理函数
+const createStreamProcessor = (
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  decoder: TextDecoder,
+  processor: SSEDataProcessor,
+  context: SSEProcessingContext,
+  currentData: any,
+  validSearchId: string,
+  lastDataTimeRef: React.MutableRefObject<number>,
+  hasReceivedCompetitorsRef: React.MutableRefObject<boolean>,
+  intervalIdRef: React.MutableRefObject<number | null>,
+  setLoading: (loading: boolean) => void,
+  setError: (error: string | null) => void
+) => {
+  return async () => {
+    try {
+      let buffer = '';
+      
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          saveDataToCache(validSearchId, currentData);
+          setLoading(false);
+          clearTimeoutMonitor(intervalIdRef);
+          return;
+        }
+
+        // 更新最后数据时间
+        lastDataTimeRef.current = Date.now();
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        // 处理每一行
+        for (const line of lines) {
+          console.log(lines)
+          const shouldEnd = processSSELine(line, processor, context, hasReceivedCompetitorsRef);
+          if (shouldEnd) {
+            return;
+          }
+        }
+      }
+    } catch (error) {
+      // 检查是否是 AbortError（组件卸载导致的中断）
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Stream processing aborted');
+        return;
+      }
+      
+      console.error('Error processing stream chunk:', error);
+      setError('Error processing response data. Please try again.');
+      setLoading(false);
+    }
+  };
+};
+
 /**
  * SSE数据获取自定义Hook
  * 处理服务器发送事件的数据流
  */
 export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataReturn => {
+  const initialState = createInitialState();
   const [loading, setLoading] = useState(true);
-  const [logicSteps, setLogicSteps] = useState<SearchStep[]>([]);
-  const [competitors, setCompetitors] = useState<CompetitorData[]>([]);
-  const [figures, setFigures] = useState<FigureData[]>([]);
-  const [hotKeysData, setHotKeysData] = useState<HotKeysData>({
-    mostRelevant: [],
-    allInSeeker: [],
-    allFields: []
-  });
+  const [logicSteps, setLogicSteps] = useState<SearchStep[]>(initialState.logicSteps);
+  const [competitors, setCompetitors] = useState<CompetitorData[]>(initialState.competitors);
+  const [figures, setFigures] = useState<FigureData[]>(initialState.figures);
+  const [hotKeysData, setHotKeysData] = useState<HotKeysData>(initialState.hotKeysData);
   const [error, setError] = useState<string | null>(null);
   
   const { showToast } = useToast();
   const intervalIdRef = useRef<number | null>(null);
+  const lastDataTimeRef = useRef<number>(Date.now());
+  const hasReceivedCompetitorsRef = useRef<boolean>(false);
   const processor = useRef(new SSEDataProcessor());
 
   useEffect(() => {
     if (!searchId || !query) return;
 
-    // 检查是否已有缓存数据
-    const cachedData = localStorage.getItem(`searchData_${searchId}`);
+    // 尝试加载缓存数据
+    const cachedData = loadCachedData(searchId);
     if (cachedData) {
-      try {
-        const { logicSteps: cachedSteps, competitors: cachedCompetitors, figures: cachedFigures, hotKeysData: cachedHotKeys } = JSON.parse(cachedData);
-        if (cachedSteps && cachedCompetitors) {
-          setLogicSteps(cachedSteps);
-          setCompetitors(cachedCompetitors);
-          if (cachedFigures) {
-            setFigures(cachedFigures);
-          }
-          if (cachedHotKeys) {
-            setHotKeysData(cachedHotKeys);
-          }
-          setLoading(false);
-          return;
-        }
-      } catch (err) {
-        console.error('Error parsing cached data:', err);
-        // 如果解析缓存数据出错，继续执行获取新数据
-      }
+      setLogicSteps(cachedData.logicSteps);
+      setCompetitors(cachedData.competitors);
+      if (cachedData.figures) setFigures(cachedData.figures);
+      if (cachedData.hotKeysData) setHotKeysData(cachedData.hotKeysData);
+      setLoading(false);
+      return;
     }
 
-    let abortController = new AbortController();
+    const abortController = new AbortController();
 
     const fetchData = async () => {
       try {
+        // 重置状态
+        const resetState = createInitialState();
         setLoading(true);
-        setLogicSteps([]);
-        setCompetitors([]);
-        setFigures([]);
-        setHotKeysData({
-          mostRelevant: [],
-          allInSeeker: [],
-          allFields: []
-        });
+        setLogicSteps(resetState.logicSteps);
+        setCompetitors(resetState.competitors);
+        setFigures(resetState.figures);
+        setHotKeysData(resetState.hotKeysData);
         setError(null);
 
+        // 发起请求
         const response = await fetch(ENV.TARGET_CHAT_API_URL, {
           method: 'POST',
           headers: {
@@ -92,7 +272,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
           body: JSON.stringify({ query, searchId }),
           signal: abortController.signal
         });
-
+        console.log(response)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -102,159 +282,41 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
           throw new Error('Response body is not readable');
         }
 
-        const decoder = new TextDecoder();
-        let buffer = '';
-        let lastDataTime = Date.now();
-        const streamTimeout = 15000; // 15 seconds
-        let hasReceivedCompetitors = false;
+        // 初始化处理数据
+        const currentData = createInitialState();
+        const setters = { setLogicSteps, setCompetitors, setFigures, setHotKeysData, setLoading };
+        const context = createSSEContext(currentData, setters, searchId, query, showToast);
         
-        // 创建处理上下文
-        let currentLogicSteps: SearchStep[] = [];
-        let currentCompetitors: CompetitorData[] = [];
-        let currentFigures: FigureData[] = [];
-        let currentHotKeysData: HotKeysData = {
-          mostRelevant: [],
-          allInSeeker: [],
-          allFields: []
-        };
-        let hasValidId = false;
-        let validSearchId = searchId;
-
-        const context: SSEProcessingContext = {
-          currentLogicSteps,
-          currentCompetitors,
-          currentFigures,
-          currentHotKeysData,
-          setLogicSteps: (steps) => {
-            currentLogicSteps = steps;
-            setLogicSteps(steps);
-          },
-          setCompetitors: (comps) => {
-            currentCompetitors = comps;
-            setCompetitors(comps);
-          },
-          setFigures: (figs) => {
-            currentFigures = figs;
-            setFigures(figs);
-          },
-          setHotKeysData: (data) => {
-            currentHotKeysData = data;
-            setHotKeysData(data);
-          },
-          setLoading,
-          validSearchId,
-          hasValidId,
-          showToast,
-          addSearchToHistory,
-          query
-        };
-
         // 设置超时监控
-        intervalIdRef.current = window.setInterval(() => {
-          const currentTime = Date.now();
-          if ((currentTime - lastDataTime > streamTimeout) && hasReceivedCompetitors) {
-            console.log("Stream processing timed out, sending end signal");
-            setLoading(false);
+        lastDataTimeRef.current = Date.now();
+        hasReceivedCompetitorsRef.current = false;
+        setupTimeoutMonitor(
+          intervalIdRef,
+          lastDataTimeRef,
+          hasReceivedCompetitorsRef,
+          currentData,
+          searchId,
+          setLoading
+        );
 
-            // 保存数据到localStorage
-            const dataToStore = {
-              logicSteps: currentLogicSteps,
-              competitors: currentCompetitors,
-              figures: currentFigures,
-              hotKeysData: currentHotKeysData
-            };
-            localStorage.setItem(`searchData_${validSearchId}`, JSON.stringify(dataToStore));
+        // 创建并启动流处理器
+        const processStream = createStreamProcessor(
+          reader,
+          new TextDecoder(),
+          processor.current,
+          context,
+          currentData,
+          searchId,
+          lastDataTimeRef,
+          hasReceivedCompetitorsRef,
+          intervalIdRef,
+          setLoading,
+          setError
+        );
 
-            if (intervalIdRef.current !== null) {
-              clearInterval(intervalIdRef.current);
-              intervalIdRef.current = null;
-            }
-          }
-        }, 1000);
+        await processStream();
 
-        const processChunk = async () => {
-          try {
-            const { done, value } = await reader.read();
 
-            if (done) {
-              // 存储完整的数据到localStorage
-              const dataToStore = {
-                logicSteps: currentLogicSteps,
-                competitors: currentCompetitors,
-                figures: currentFigures,
-                hotKeysData: currentHotKeysData
-              };
-              localStorage.setItem(`searchData_${validSearchId}`, JSON.stringify(dataToStore));
-              setLoading(false);
-
-              if (intervalIdRef.current !== null) {
-                clearInterval(intervalIdRef.current);
-                intervalIdRef.current = null;
-              }
-              return;
-            }
-
-            // 更新最后数据时间
-            lastDataTime = Date.now();
-
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || '';
-
-            // 处理每一行
-            for (const line of lines) {
-              if (line.trim() === '') continue;
-
-              try {
-                const normalizedLine = normalizeSSEData(line);
-
-                if (normalizedLine.startsWith('data:')) {
-                  const jsonString = normalizedLine.substring(5).trim();
-                  const jsonData = JSON.parse(jsonString);
-
-                  // 更新上下文中的状态
-                  context.validSearchId = validSearchId;
-                  context.hasValidId = hasValidId;
-                  context.currentLogicSteps = currentLogicSteps;
-                  context.currentCompetitors = currentCompetitors;
-                  context.currentFigures = currentFigures;
-                  context.currentHotKeysData = currentHotKeysData;
-
-                  // 检查是否需要标记已接收到竞争对手数据
-                  if (jsonData.step === 'Main Competitors') {
-                    hasReceivedCompetitors = true;
-                  }
-
-                  // 使用策略模式处理数据
-                  const shouldEnd = processor.current.process(jsonData, context);
-                  
-                  // 更新本地变量
-                  validSearchId = context.validSearchId;
-                  hasValidId = context.hasValidId;
-                  currentLogicSteps = context.currentLogicSteps;
-                  currentCompetitors = context.currentCompetitors;
-                  currentFigures = context.currentFigures;
-                  currentHotKeysData = context.currentHotKeysData;
-
-                  if (shouldEnd) {
-                    return; // 结束处理
-                  }
-                }
-              } catch (err) {
-                console.error('Error parsing SSE data:', err, line);
-                // 继续处理下一行，不让单个解析错误中断整个流程
-              }
-            }
-
-            processChunk();
-          } catch (error) {
-            console.error('Error processing stream chunk:', error);
-            setError('Error processing response data. Please try again.');
-            setLoading(false);
-          }
-        };
-
-        processChunk();
       } catch (err) {
         console.error('Error in SSE connection:', err);
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -266,10 +328,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
 
     return () => {
       abortController.abort();
-      if (intervalIdRef.current !== null) {
-        clearInterval(intervalIdRef.current);
-        intervalIdRef.current = null;
-      }
+      clearTimeoutMonitor(intervalIdRef);
     };
   }, [query, searchId]);
 
