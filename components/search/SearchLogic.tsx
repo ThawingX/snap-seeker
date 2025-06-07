@@ -85,7 +85,7 @@ export const SearchLogic: React.FC<SearchLogicProps> = ({
       </div>
       <div className="space-y-0">
         {searchSteps.length > 0 ? (
-          searchSteps.map((step, index) => (
+          searchSteps.filter(step => step != null).map((step, index) => (
             <Step
               key={index}
               number={index + 1}

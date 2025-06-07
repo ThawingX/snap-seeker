@@ -115,7 +115,7 @@ export function HistoryCard({
               {date}
             </div>
             <div ref={tagsContainerRef} className="flex flex-nowrap overflow-hidden h-[28px]">
-              {visibleCategories.map((cat, index) => (
+              {visibleCategories.filter(cat => cat != null).map((cat, index) => (
                 <span 
                   key={index}
                   className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded text-xs text-neutral-600 dark:text-neutral-300 whitespace-nowrap mr-2"
@@ -271,4 +271,4 @@ const Sparkles = () => {
       ))}
     </div>
   );
-}; 
+};

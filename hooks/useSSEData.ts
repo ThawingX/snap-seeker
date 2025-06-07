@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/toast";
 import { SSEDataProcessor, SSEProcessingContext } from '@/lib/sse-data-strategies';
 import { CompetitorData, HotKeysData, SearchStep } from '@/types/competitor';
 import { FigureData } from '@/components/figure/FigureCards';
+import { RequirementCardData } from '@/components/requirement/RequirementCard';
 
 interface UseSSEDataProps {
   query: string;
@@ -19,6 +20,7 @@ interface UseSSEDataReturn {
   competitors: CompetitorData[];
   figures: FigureData[];
   hotKeysData: HotKeysData;
+  requirementCard: RequirementCardData | null;
   error: string | null;
 }
 
@@ -30,6 +32,7 @@ interface SearchResultData {
   competitors: CompetitorData[];
   figures: FigureData[];
   hotKeysData: HotKeysData;
+  requirementCard: RequirementCardData | null;
 }
 
 /**
@@ -52,7 +55,8 @@ const createInitialResultsState = (): SearchResultData => ({
     mostRelevant: [],
     allInSeeker: [],
     allFields: []
-  }
+  },
+  requirementCard: null
 });
 
 /**
@@ -115,6 +119,7 @@ const createSSEContext = (
     setCompetitors: (competitors: CompetitorData[]) => void;
     setFigures: (figures: FigureData[]) => void;
     setHotKeysData: (data: HotKeysData) => void;
+    setRequirementCard: (data: RequirementCardData | null) => void;
     setLoading: (loading: boolean) => void;
   },
   searchId: string,
@@ -125,6 +130,7 @@ const createSSEContext = (
   currentCompetitors: currentResults.competitors,
   currentFigures: currentResults.figures,
   currentHotKeysData: currentResults.hotKeysData,
+  currentRequirementCard: currentResults.requirementCard,
   setLogicSteps: (steps) => {
     currentResults.logicSteps = steps;
     setters.setLogicSteps(steps);
@@ -140,6 +146,10 @@ const createSSEContext = (
   setHotKeysData: (data) => {
     currentResults.hotKeysData = data;
     setters.setHotKeysData(data);
+  },
+  setRequirementCard: (data) => {
+    currentResults.requirementCard = data;
+    setters.setRequirementCard(data);
   },
   setLoading: setters.setLoading,
   validSearchId: searchId,
@@ -180,7 +190,8 @@ const setupTimeoutMonitor = (
         logicSteps: context.currentLogicSteps,
         competitors: context.currentCompetitors,
         figures: context.currentFigures,
-        hotKeysData: context.currentHotKeysData
+        hotKeysData: context.currentHotKeysData,
+        requirementCard: context.currentRequirementCard
       };
       saveCompleteSearchData(validSearchId, query, latestResults);
       // 数据保存完成后添加到历史记录
@@ -275,7 +286,8 @@ const createStreamProcessor = (
             logicSteps: context.currentLogicSteps,
             competitors: context.currentCompetitors,
             figures: context.currentFigures,
-            hotKeysData: context.currentHotKeysData
+            hotKeysData: context.currentHotKeysData,
+            requirementCard: context.currentRequirementCard
           };
           saveCompleteSearchData(validSearchId, query, latestResults);
           // 数据保存完成后添加到历史记录
@@ -301,7 +313,8 @@ const createStreamProcessor = (
               logicSteps: context.currentLogicSteps,
               competitors: context.currentCompetitors,
               figures: context.currentFigures,
-              hotKeysData: context.currentHotKeysData
+              hotKeysData: context.currentHotKeysData,
+              requirementCard: context.currentRequirementCard
             };
             saveCompleteSearchData(validSearchId, query, latestResults);
             // 数据保存完成后添加到历史记录
@@ -318,7 +331,8 @@ const createStreamProcessor = (
         logicSteps: context.currentLogicSteps,
         competitors: context.currentCompetitors,
         figures: context.currentFigures,
-        hotKeysData: context.currentHotKeysData
+        hotKeysData: context.currentHotKeysData,
+        requirementCard: context.currentRequirementCard
       };
       saveCompleteSearchData(validSearchId, query, latestResults);
       // 数据保存完成后添加到历史记录
@@ -349,6 +363,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
   const [competitors, setCompetitors] = useState<CompetitorData[]>(initialResults.competitors);
   const [figures, setFigures] = useState<FigureData[]>(initialResults.figures);
   const [hotKeysData, setHotKeysData] = useState<HotKeysData>(initialResults.hotKeysData);
+  const [requirementCard, setRequirementCard] = useState<RequirementCardData | null>(initialResults.requirementCard);
   const [error, setError] = useState<string | null>(null);
   
   const { showToast } = useToast();
@@ -366,9 +381,10 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
       logicSteps,
       competitors,
       figures,
-      hotKeysData
+      hotKeysData,
+      requirementCard
     };
-  }, [logicSteps, competitors, figures, hotKeysData]);
+  }, [logicSteps, competitors, figures, hotKeysData, requirementCard]);
 
   useEffect(() => {
     if (!searchId || !query) return;
@@ -381,6 +397,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
       setCompetitors(results.competitors);
       setFigures(results.figures);
       setHotKeysData(results.hotKeysData);
+      setRequirementCard(results.requirementCard);
       setLoading(false);
       return; // 确保这里返回，不继续执行下面的代码
     }
@@ -397,6 +414,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
         setCompetitors(resetResults.competitors);
         setFigures(resetResults.figures);
         setHotKeysData(resetResults.hotKeysData);
+        setRequirementCard(resetResults.requirementCard);
         setError(null);
 
         // 发起请求
@@ -421,7 +439,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
 
         // 初始化处理数据
         const currentResults = createInitialResultsState();
-        const setters = { setLogicSteps, setCompetitors, setFigures, setHotKeysData, setLoading };
+        const setters = { setLogicSteps, setCompetitors, setFigures, setHotKeysData, setRequirementCard, setLoading };
         const context = createSSEContext(currentResults, setters, searchId, query, showToast);
         
         // 设置超时监控
@@ -461,7 +479,8 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
           logicSteps,
           competitors,
           figures,
-          hotKeysData
+          hotKeysData,
+          requirementCard
         };
         saveCompleteSearchData(searchId, query, currentResults);
         
@@ -488,6 +507,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
     competitors,
     figures,
     hotKeysData,
+    requirementCard,
     error
   };
 };

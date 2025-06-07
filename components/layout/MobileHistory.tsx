@@ -89,7 +89,7 @@ export const MobileHistory = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
-              {historyItems.map((item) => (
+              {historyItems.filter(item => item != null).map((item) => (
                 <HistoryCard
                   key={item.id}
                   title={item.query}
@@ -107,4 +107,4 @@ export const MobileHistory = () => {
       </div>
     </div>
   );
-}; 
+};

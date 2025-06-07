@@ -91,7 +91,7 @@ export const History = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-8">
-              {historyItems.map((item) => (
+              {historyItems.filter(item => item != null).map((item) => (
                 <HistoryCard
                   key={item.id}
                   title={item.query}
@@ -109,4 +109,4 @@ export const History = () => {
       </div>
     </div>
   );
-}; 
+};

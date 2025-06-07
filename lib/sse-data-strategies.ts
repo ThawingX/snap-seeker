@@ -5,6 +5,7 @@
 
 import { CompetitorData, DemandTag } from '@/types/competitor';
 import { FigureData } from '@/components/figure/FigureCards';
+import { RequirementCardData } from '@/components/requirement/RequirementCard';
 
 /**
  * SSE数据处理策略接口
@@ -26,10 +27,12 @@ export interface SSEProcessingContext {
     allInSeeker: DemandTag[];
     allFields: DemandTag[];
   };
+  currentRequirementCard: RequirementCardData | null;
   setLogicSteps: (steps: { title: string; description: string }[]) => void;
   setCompetitors: (competitors: CompetitorData[]) => void;
   setFigures: (figures: FigureData[]) => void;
   setHotKeysData: (data: any) => void;
+  setRequirementCard: (data: RequirementCardData | null) => void;
   setLoading: (loading: boolean) => void;
   validSearchId: string;
   hasValidId: boolean;
@@ -167,7 +170,7 @@ export class FigureStrategy implements SSEDataStrategy {
     // 按照figureIndex排序插入
     const updatedFigures = [...context.currentFigures];
     const existingIndex = updatedFigures.findIndex(f => f.figureIndex === figureIndex);
-    
+
     if (existingIndex >= 0) {
       updatedFigures[existingIndex] = newFigure;
     } else {
@@ -190,7 +193,7 @@ export class DoneStrategy implements SSEDataStrategy {
 
   process(data: any, context: SSEProcessingContext): void {
     console.log('收到结束信号，流处理完成');
-    
+
     // 检查是否需要显示提示信息
     if (!context.hasValidId) {
       context.showToast({
@@ -207,6 +210,49 @@ export class DoneStrategy implements SSEDataStrategy {
 }
 
 /**
+ * 需求卡片处理策略
+ */
+export class RequirementCardStrategy implements SSEDataStrategy {
+  canHandle(step: string): boolean {
+    return step === 'requirementCard';
+  }
+
+  process(data: any, context: SSEProcessingContext): void {
+    // 处理两种可能的数据结构：data.content 或直接在 data 中
+    const sourceData = data.content || data;
+    
+    if (sourceData) {
+      try {
+        const requirementData: RequirementCardData = {
+          step: sourceData.step || 'requirementCard',
+          userStory: sourceData.userStory || '',
+          slogan: sourceData.slogan || '',
+          targetUser: sourceData.targetUser || '',
+          plainPoints: sourceData.painPoints || sourceData.plainPoints || '',
+          usp: Array.isArray(sourceData.usp) ? sourceData.usp : [],
+          revenueModel: sourceData.revenueModel || ''
+        };
+
+        context.setRequirementCard(requirementData);
+
+        context.showToast({
+          message: 'Product requirements generated successfully!',
+          type: 'success',
+          duration: 3000
+        });
+      } catch (error) {
+        console.error('Error processing requirement card data:', error);
+        context.showToast({
+          message: 'Error processing requirement data',
+          type: 'error',
+          duration: 3000
+        });
+      }
+    }
+  }
+}
+
+/**
  * SSE数据处理器
  */
 export class SSEDataProcessor {
@@ -216,6 +262,7 @@ export class SSEDataProcessor {
     new HotKeysStrategy(),
     new CompetitorsStrategy(),
     new FigureStrategy(),
+    new RequirementCardStrategy(),
     new DoneStrategy()
   ];
 

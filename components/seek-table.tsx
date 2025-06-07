@@ -2,13 +2,14 @@
 import React, { useRef } from "react";
 import Link from "next/link";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash, IconPhoto } from "@tabler/icons-react";
+import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash, IconPhoto, IconClipboardList } from "@tabler/icons-react";
 
 import { SearchLogic } from "./search/SearchLogic";
 import { CompetitorCards } from "./competitor/CompetitorCards";
 import { CompetitorTable } from "./competitor/CompetitorTable";
 import { TrendingSearches } from "./trending/TrendingSearches";
 import { FigureCards } from "./figure/FigureCards";
+import { RequirementCard } from "./requirement/RequirementCard";
 import { PMFAnalysis, MVPStrategy } from "./premium/LockedContent";
 import { useSSEData } from "@/hooks/useSSEData";
 
@@ -32,6 +33,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   const competitorsRef = useRef<HTMLDivElement>(null!);
   const trendingSearchesRef = useRef<HTMLDivElement>(null!);
   const figuresRef = useRef<HTMLDivElement>(null!);
+  const requirementRef = useRef<HTMLDivElement>(null!);
   const tableRef = useRef<HTMLDivElement>(null!);
   const insightsRef = useRef<HTMLDivElement>(null!);
   const recommendationsRef = useRef<HTMLDivElement>(null!);
@@ -43,6 +45,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     competitors: competitorData,
     figures: figureData,
     hotKeysData,
+    requirementCard: requirementData,
     error
   } = useSSEData({ query, searchId });
 
@@ -95,6 +98,16 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       onClick: () => {
         if (figuresRef.current) {
           figuresRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    },
+    {
+      title: "Product Requirements",
+      icon: <IconClipboardList className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#requirement-card",
+      onClick: () => {
+        if (requirementRef.current) {
+          requirementRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       }
     },
@@ -169,6 +182,9 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
 
         {/* 竞争对手数据表格部分 */}
         <CompetitorTable competitorData={competitorData} loading={loading} tableRef={tableRef} />
+
+        {/* 产品需求卡片部分 */}
+        <RequirementCard requirementData={requirementData} loading={loading} requirementRef={requirementRef} />
 
         {/* 分析图片部分 */}
         <FigureCards figureData={figureData} loading={loading} figuresRef={figuresRef} />

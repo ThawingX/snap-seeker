@@ -11,7 +11,7 @@ const DemandRankingCard = ({ ranking }: { ranking: DemandRanking }) => (
   <div className="bg-white dark:bg-neutral-900 rounded-xl p-5 shadow-md">
     <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">{ranking.title}</h3>
     <div className="space-y-3">
-      {ranking.tags.map((tag, index) => (
+      {ranking.tags.filter(tag => tag != null).map((tag, index) => (
         <div key={index} className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <span className="text-neutral-500 dark:text-neutral-400 w-6">{`#${index + 1}`}</span>
@@ -69,7 +69,7 @@ export const TrendingSearches: React.FC<TrendingSearchesProps> = ({
       className="mb-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.5, delay: 0.3 }}
+      transition={{ duration: 0.5 }}
     >
       <h2 className="text-2xl font-semibold mb-6 dark:text-white flex items-center">
         <IconHash className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />

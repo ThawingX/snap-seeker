@@ -86,7 +86,7 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {competitorData.map((competitor) => (
+                  {competitorData.filter(competitor => competitor != null).map((competitor) => (
                     <tr key={competitor.id} className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors">
                       <td className="p-4 font-medium text-cyan-400">{competitor.name}</td>
                       <td className="p-4 italic text-sm text-neutral-300">{competitor.slogan}</td>
@@ -104,21 +104,21 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
                       <td className="p-4 text-neutral-300">{competitor.traffic}</td>
                       <td className="p-4 text-neutral-300">
                         <ul className="list-disc list-inside">
-                          {competitor.targetUser.map((user, idx) => (
+                          {competitor.targetUser.filter(user => user != null).map((user, idx) => (
                             <li key={idx} className="text-sm py-1">{user}</li>
                           ))}
                         </ul>
                       </td>
                       <td className="p-4 text-neutral-300">
                         <ul className="list-disc list-inside">
-                          {competitor.plainPoints.map((point, idx) => (
+                          {competitor.plainPoints.filter(point => point != null).map((point, idx) => (
                             <li key={idx} className="text-sm py-1">{point}</li>
                           ))}
                         </ul>
                       </td>
                       <td className="p-4 text-neutral-300">
                         <ul className="list-disc list-inside">
-                          {competitor.keyFeatures.map((feature, idx) => (
+                          {competitor.keyFeatures.filter(feature => feature != null).map((feature, idx) => (
                             <li key={idx} className="text-sm py-1">{feature}</li>
                           ))}
                         </ul>
