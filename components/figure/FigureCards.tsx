@@ -32,12 +32,12 @@ const FigureCard = ({
       </h3>
     </div>
     
-    <div className="w-full h-64 bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg">
-      <div className="relative w-full h-full">
+    <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg">
+      <div className="relative w-full">
         <img 
           src={`data:image/png;base64,${figure.content}`}
           alt={`Figure ${figure.figureIndex}`}
-          className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
           onClick={() => onImageClick(`data:image/png;base64,${figure.content}`, `Figure ${figure.figureIndex}`)}
           onError={(e) => {
             console.error('Image load error:', e);
@@ -127,30 +127,62 @@ export const FigureCards: React.FC<FigureCardsProps> = ({
             (Click to enlarge)
           </span>
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-6">
           {figureData.length > 0 ? (
             <>
-              {figureData.filter(figure => figure != null).map((figure, index) => (
-                <FigureCard 
-                  key={`figure-${figure.figureIndex}`} 
-                  figure={figure} 
-                  index={index}
-                  onImageClick={handleImageClick}
-                />
+              {/* Figure 1 和 Figure 2 在同一行 */}
+              {figureData.filter(figure => figure != null && figure.figureIndex <= 2).length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {figureData
+                    .filter(figure => figure != null && figure.figureIndex <= 2)
+                    .map((figure, index) => (
+                      <FigureCard 
+                        key={`figure-${figure.figureIndex}`} 
+                        figure={figure} 
+                        index={index}
+                        onImageClick={handleImageClick}
+                      />
+                    ))
+                  }
+                  {/* 如果只有一个图片且正在加载，显示骨架屏 */}
+                  {loading && figureData.filter(figure => figure != null && figure.figureIndex <= 2).length === 1 && (
+                    <FigureCardSkeleton />
+                  )}
+                </div>
+              )}
+              
+              {/* Figure 3 及以后的图片单独占一行 */}
+              {figureData.filter(figure => figure != null && figure.figureIndex >= 3).map((figure, index) => (
+                <div key={`figure-row-${figure.figureIndex}`} className="grid grid-cols-1">
+                  <FigureCard 
+                    figure={figure} 
+                    index={index + 2}
+                    onImageClick={handleImageClick}
+                  />
+                </div>
               ))}
-              {loading && figureData.length < 3 &&
-                Array(3 - figureData.length).fill(0).map((_, index) => (
-                  <FigureCardSkeleton key={`skeleton-${index}`} />
-                ))
-              }
+              
+              {/* 加载状态的骨架屏 */}
+              {loading && figureData.length === 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FigureCardSkeleton />
+                  <FigureCardSkeleton />
+                </div>
+              )}
+              {loading && figureData.length === 2 && (
+                <div className="grid grid-cols-1">
+                  <FigureCardSkeleton />
+                </div>
+              )}
             </>
           ) : (
             loading ? (
-              Array(3).fill(0).map((_, index) => (
-                <FigureCardSkeleton key={index} />
-              ))
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FigureCardSkeleton />
+                <FigureCardSkeleton />
+              </div>
             ) : (
-              <div className="col-span-3 text-center py-8 text-neutral-400">
+              <div className="text-center py-8 text-neutral-400">
                 <p>No figure data available. Please try searching again.</p>
               </div>
             )
