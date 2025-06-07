@@ -31,10 +31,13 @@ export const addSearchToHistory = (query: string, id?: string): void => {
 
   try {
     const history = getSearchHistory();
+    const searchId = id || '-1';
 
-    // 创建新的历史记录项
-    const newItem: SearchHistoryItem = {
-      id:id || '-1',
+    // 检查历史记录中是否已存在当前ID
+    const existingIndex = history.findIndex(item => item.id === searchId);
+
+    const historyItem: SearchHistoryItem = {
+      id: searchId,
       query,
       description: generateDescription(query),
       timestamp: new Date().toISOString(),
@@ -42,8 +45,14 @@ export const addSearchToHistory = (query: string, id?: string): void => {
       logoUrl: getRandomLogoUrl(),
     };
 
-    // 添加到历史记录的开头
-    history.unshift(newItem);
+    if (existingIndex !== -1) {
+      // 如果存在相同ID的记录，更新该记录并移到最前面
+      history.splice(existingIndex, 1);
+      history.unshift(historyItem);
+    } else {
+      // 如果不存在，添加到历史记录的开头
+      history.unshift(historyItem);
+    }
 
     // 限制历史记录数量（例如保留最新的20条）
     const limitedHistory = history.slice(0, 20);
@@ -55,21 +64,26 @@ export const addSearchToHistory = (query: string, id?: string): void => {
   }
 };
 
-// 清除所有搜索历史
+/**
+ * 清除搜索历史
+ * 删除历史记录列表和对应的搜索数据
+ */
 export const clearSearchHistory = (): void => {
   if (typeof window === 'undefined') return;
 
-  // 获取当前历史记录，以便删除每个单独的搜索数据
-  const history = getSearchHistory();
-
-  // 删除每个搜索ID对应的localStorage条目
-  history.forEach(item => {
-    localStorage.removeItem(item.id);
-    localStorage.removeItem(`searchData_${item.id}`);
-  });
-
-  // 删除历史记录列表
-  localStorage.removeItem(STORAGE_KEY);
+  try {
+    const history = getSearchHistory();
+    
+    // 删除历史记录列表
+    localStorage.removeItem(STORAGE_KEY);
+    
+    // 删除每个历史记录项对应的搜索数据（使用统一的存储格式）
+    history.forEach(item => {
+      localStorage.removeItem(item.id);
+    });
+  } catch (error) {
+    console.error('Failed to clear search history:', error);
+  }
 };
 
 // 最大描述长度
@@ -111,4 +125,4 @@ const getRandomLogoUrl = (): string => {
   ];
 
   return logos[Math.floor(Math.random() * logos.length)];
-}; 
+};

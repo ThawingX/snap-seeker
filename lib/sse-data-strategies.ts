@@ -50,8 +50,20 @@ export class ChatIdStrategy implements SSEDataStrategy {
     if (data.content) {
       context.validSearchId = data.content;
       context.hasValidId = true;
+      // 确保搜索历史中的ID与SSE数据处理的ID一致
       context.addSearchToHistory(context.query, context.validSearchId);
-      localStorage.setItem(context.validSearchId, JSON.stringify({ query: context.query }));
+      // 使用统一的数据存储格式：id: { query: "xx", results: { logicSteps: [] } }
+      const completeData = {
+        query: context.query,
+        results: {
+          logicSteps: context.currentLogicSteps,
+          competitors: context.currentCompetitors,
+          figures: context.currentFigures,
+          hotKeysData: context.currentHotKeysData
+        },
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem(context.validSearchId, JSON.stringify(completeData));
     }
   }
 }
@@ -230,8 +242,20 @@ export class SSEDataProcessor {
     if (jsonData.id && !context.hasValidId) {
       context.validSearchId = jsonData.id;
       context.hasValidId = true;
+      // 确保搜索历史中的ID与SSE数据处理的ID一致
       context.addSearchToHistory(context.query, context.validSearchId);
-      localStorage.setItem(context.validSearchId, JSON.stringify({ query: context.query }));
+      // 使用统一的数据存储格式：id: { query: "xx", results: { logicSteps: [] } }
+      const completeData = {
+        query: context.query,
+        results: {
+          logicSteps: context.currentLogicSteps,
+          competitors: context.currentCompetitors,
+          figures: context.currentFigures,
+          hotKeysData: context.currentHotKeysData
+        },
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem(context.validSearchId, JSON.stringify(completeData));
     }
 
     if (!jsonData.step) {

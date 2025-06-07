@@ -22,8 +22,29 @@ interface UseSSEDataReturn {
   error: string | null;
 }
 
-// 初始化状态数据
-const createInitialState = () => ({
+/**
+ * 搜索结果数据结构
+ */
+interface SearchResultData {
+  logicSteps: SearchStep[];
+  competitors: CompetitorData[];
+  figures: FigureData[];
+  hotKeysData: HotKeysData;
+}
+
+/**
+ * 完整的搜索数据结构（包含查询和结果）
+ */
+interface CompleteSearchData {
+  query: string;
+  results: SearchResultData;
+  timestamp: string;
+}
+
+/**
+ * 初始化搜索结果状态数据
+ */
+const createInitialResultsState = (): SearchResultData => ({
   logicSteps: [],
   competitors: [],
   figures: [],
@@ -34,57 +55,86 @@ const createInitialState = () => ({
   }
 });
 
-// 尝试从缓存加载数据
-const loadCachedData = (searchId: string) => {
+/**
+ * 从localStorage加载完整的搜索数据
+ * @param searchId 搜索ID
+ * @returns 完整的搜索数据或null
+ */
+const loadCompleteSearchData = (searchId: string): CompleteSearchData | null => {
   try {
-    const cachedData = localStorage.getItem(`searchData_${searchId}`);
+    const cachedData = localStorage.getItem(searchId);
     if (cachedData) {
       const parsed = JSON.parse(cachedData);
-      if (parsed.logicSteps && parsed.competitors) {
+      // 检查数据结构完整性
+      if (parsed.query && parsed.results && parsed.results.logicSteps && parsed.results.competitors) {
         return parsed;
       }
     }
   } catch (err) {
-    console.error('Error parsing cached data:', err);
+    console.error('Error parsing cached search data:', err);
   }
   return null;
 };
 
-// 保存数据到缓存
-const saveDataToCache = (searchId: string, data: any) => {
+/**
+ * 保存完整的搜索数据到localStorage
+ * @param searchId 搜索ID
+ * @param query 搜索查询
+ * @param results 搜索结果数据
+ */
+const saveCompleteSearchData = (searchId: string, query: string, results: SearchResultData) => {
   try {
-    localStorage.setItem(`searchData_${searchId}`, JSON.stringify(data));
+    const completeData: CompleteSearchData = {
+      query,
+      results,
+      timestamp: new Date().toISOString()
+    };
+    localStorage.setItem(searchId, JSON.stringify(completeData));
   } catch (err) {
-    console.error('Error saving data to cache:', err);
+    console.error('Error saving complete search data:', err);
   }
 };
 
-// 创建SSE处理上下文
+/**
+ * 创建SSE处理上下文
+ * @param currentResults 当前搜索结果数据
+ * @param setters 状态设置函数集合
+ * @param searchId 搜索ID
+ * @param query 搜索查询
+ * @param showToast 提示函数
+ * @returns SSE处理上下文
+ */
 const createSSEContext = (
-  initialData: any,
-  setters: any,
+  currentResults: SearchResultData,
+  setters: {
+    setLogicSteps: (steps: SearchStep[]) => void;
+    setCompetitors: (competitors: CompetitorData[]) => void;
+    setFigures: (figures: FigureData[]) => void;
+    setHotKeysData: (data: HotKeysData) => void;
+    setLoading: (loading: boolean) => void;
+  },
   searchId: string,
   query: string,
   showToast: any
 ): SSEProcessingContext => ({
-  currentLogicSteps: initialData.logicSteps,
-  currentCompetitors: initialData.competitors,
-  currentFigures: initialData.figures,
-  currentHotKeysData: initialData.hotKeysData,
+  currentLogicSteps: currentResults.logicSteps,
+  currentCompetitors: currentResults.competitors,
+  currentFigures: currentResults.figures,
+  currentHotKeysData: currentResults.hotKeysData,
   setLogicSteps: (steps) => {
-    initialData.logicSteps = steps;
+    currentResults.logicSteps = steps;
     setters.setLogicSteps(steps);
   },
   setCompetitors: (comps) => {
-    initialData.competitors = comps;
+    currentResults.competitors = comps;
     setters.setCompetitors(comps);
   },
   setFigures: (figs) => {
-    initialData.figures = figs;
+    currentResults.figures = figs;
     setters.setFigures(figs);
   },
   setHotKeysData: (data) => {
-    initialData.hotKeysData = data;
+    currentResults.hotKeysData = data;
     setters.setHotKeysData(data);
   },
   setLoading: setters.setLoading,
@@ -95,13 +145,24 @@ const createSSEContext = (
   query
 });
 
-// 设置超时监控
+/**
+ * 设置超时监控
+ * @param intervalIdRef 定时器引用
+ * @param lastDataTimeRef 最后数据时间引用
+ * @param hasReceivedCompetitorsRef 是否已接收竞争对手数据引用
+ * @param currentResults 当前搜索结果数据
+ * @param validSearchId 有效搜索ID
+ * @param query 搜索查询
+ * @param setLoading 设置加载状态函数
+ * @param streamTimeout 流超时时间（毫秒）
+ */
 const setupTimeoutMonitor = (
   intervalIdRef: React.MutableRefObject<number | null>,
   lastDataTimeRef: React.MutableRefObject<number>,
   hasReceivedCompetitorsRef: React.MutableRefObject<boolean>,
-  currentData: any,
+  currentResults: SearchResultData,
   validSearchId: string,
+  query: string,
   setLoading: (loading: boolean) => void,
   streamTimeout: number = 15000
 ) => {
@@ -110,7 +171,7 @@ const setupTimeoutMonitor = (
     if ((currentTime - lastDataTimeRef.current > streamTimeout) && hasReceivedCompetitorsRef.current) {
       console.log("Stream processing timed out, sending end signal");
       setLoading(false);
-      saveDataToCache(validSearchId, currentData);
+      saveCompleteSearchData(validSearchId, query, currentResults);
       if (intervalIdRef.current !== null) {
         clearInterval(intervalIdRef.current);
         intervalIdRef.current = null;
@@ -158,14 +219,30 @@ const processSSELine = (
   return false;
 };
 
-// 创建流处理函数
+/**
+ * 创建流处理函数
+ * @param reader 流读取器
+ * @param decoder 文本解码器
+ * @param processor SSE数据处理器
+ * @param context SSE处理上下文
+ * @param currentResults 当前搜索结果数据
+ * @param validSearchId 有效搜索ID
+ * @param query 搜索查询
+ * @param lastDataTimeRef 最后数据时间引用
+ * @param hasReceivedCompetitorsRef 是否已接收竞争对手数据引用
+ * @param intervalIdRef 定时器引用
+ * @param setLoading 设置加载状态函数
+ * @param setError 设置错误状态函数
+ * @returns 异步流处理函数
+ */
 const createStreamProcessor = (
   reader: ReadableStreamDefaultReader<Uint8Array>,
   decoder: TextDecoder,
   processor: SSEDataProcessor,
   context: SSEProcessingContext,
-  currentData: any,
+  currentResults: SearchResultData,
   validSearchId: string,
+  query: string,
   lastDataTimeRef: React.MutableRefObject<number>,
   hasReceivedCompetitorsRef: React.MutableRefObject<boolean>,
   intervalIdRef: React.MutableRefObject<number | null>,
@@ -180,7 +257,7 @@ const createStreamProcessor = (
         const { done, value } = await reader.read();
 
         if (done) {
-          saveDataToCache(validSearchId, currentData);
+          saveCompleteSearchData(validSearchId, query, currentResults);
           setLoading(false);
           clearTimeoutMonitor(intervalIdRef);
           return;
@@ -197,11 +274,20 @@ const createStreamProcessor = (
         for (const line of lines) {
           const shouldEnd = processSSELine(line, processor, context, hasReceivedCompetitorsRef);
           if (shouldEnd) {
+            // 在流结束时保存数据
+            saveCompleteSearchData(validSearchId, query, currentResults);
+            setLoading(false);
+            clearTimeoutMonitor(intervalIdRef);
             return;
           }
         }
       }
     } catch (error) {
+      // 在任何异常情况下都保存当前数据
+      saveCompleteSearchData(validSearchId, query, currentResults);
+      setLoading(false);
+      clearTimeoutMonitor(intervalIdRef);
+      
       // 检查是否是 AbortError（组件卸载导致的中断）
       if (error instanceof Error && error.name === 'AbortError') {
         console.log('Stream processing aborted');
@@ -210,22 +296,21 @@ const createStreamProcessor = (
       
       console.error('Error processing stream chunk:', error);
       setError('Error processing response data. Please try again.');
-      setLoading(false);
     }
   };
 };
 
 /**
  * SSE数据获取自定义Hook
- * 处理服务器发送事件的数据流
+ * 处理服务器发送事件的数据流，统一管理搜索数据存储
  */
 export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataReturn => {
-  const initialState = createInitialState();
+  const initialResults = createInitialResultsState();
   const [loading, setLoading] = useState(true);
-  const [logicSteps, setLogicSteps] = useState<SearchStep[]>(initialState.logicSteps);
-  const [competitors, setCompetitors] = useState<CompetitorData[]>(initialState.competitors);
-  const [figures, setFigures] = useState<FigureData[]>(initialState.figures);
-  const [hotKeysData, setHotKeysData] = useState<HotKeysData>(initialState.hotKeysData);
+  const [logicSteps, setLogicSteps] = useState<SearchStep[]>(initialResults.logicSteps);
+  const [competitors, setCompetitors] = useState<CompetitorData[]>(initialResults.competitors);
+  const [figures, setFigures] = useState<FigureData[]>(initialResults.figures);
+  const [hotKeysData, setHotKeysData] = useState<HotKeysData>(initialResults.hotKeysData);
   const [error, setError] = useState<string | null>(null);
   
   const { showToast } = useToast();
@@ -237,14 +322,15 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
   useEffect(() => {
     if (!searchId || !query) return;
 
-    // 尝试加载缓存数据
-    const cachedData = loadCachedData(searchId);
-    console.log(cachedData)
-    if (cachedData) {
-      setLogicSteps(cachedData.logicSteps);
-      setCompetitors(cachedData.competitors);
-      if (cachedData.figures) setFigures(cachedData.figures);
-      if (cachedData.hotKeysData) setHotKeysData(cachedData.hotKeysData);
+    // 尝试加载完整的搜索数据
+    const cachedData = loadCompleteSearchData(searchId);
+    console.log('Loaded cached data:', cachedData);
+    if (cachedData && cachedData.results) {
+      const { results } = cachedData;
+      setLogicSteps(results.logicSteps);
+      setCompetitors(results.competitors);
+      setFigures(results.figures);
+      setHotKeysData(results.hotKeysData);
       setLoading(false);
       return;
     }
@@ -254,12 +340,12 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
     const fetchData = async () => {
       try {
         // 重置状态
-        const resetState = createInitialState();
+        const resetResults = createInitialResultsState();
         setLoading(true);
-        setLogicSteps(resetState.logicSteps);
-        setCompetitors(resetState.competitors);
-        setFigures(resetState.figures);
-        setHotKeysData(resetState.hotKeysData);
+        setLogicSteps(resetResults.logicSteps);
+        setCompetitors(resetResults.competitors);
+        setFigures(resetResults.figures);
+        setHotKeysData(resetResults.hotKeysData);
         setError(null);
 
         // 发起请求
@@ -272,7 +358,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
           body: JSON.stringify({ query, searchId }),
           signal: abortController.signal
         });
-        console.log(response)
+        console.log('SSE Response:', response);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -283,9 +369,9 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
         }
 
         // 初始化处理数据
-        const currentData = createInitialState();
+        const currentResults = createInitialResultsState();
         const setters = { setLogicSteps, setCompetitors, setFigures, setHotKeysData, setLoading };
-        const context = createSSEContext(currentData, setters, searchId, query, showToast);
+        const context = createSSEContext(currentResults, setters, searchId, query, showToast);
         
         // 设置超时监控
         lastDataTimeRef.current = Date.now();
@@ -294,8 +380,9 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
           intervalIdRef,
           lastDataTimeRef,
           hasReceivedCompetitorsRef,
-          currentData,
+          currentResults,
           searchId,
+          query,
           setLoading
         );
 
@@ -305,8 +392,9 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
           new TextDecoder(),
           processor.current,
           context,
-          currentData,
+          currentResults,
           searchId,
+          query,
           lastDataTimeRef,
           hasReceivedCompetitorsRef,
           intervalIdRef,
@@ -316,8 +404,16 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
 
         await processStream();
 
-
       } catch (err) {
+        // 在fetchData异常时也保存当前数据
+        const currentResults: SearchResultData = {
+          logicSteps,
+          competitors,
+          figures,
+          hotKeysData
+        };
+        saveCompleteSearchData(searchId, query, currentResults);
+        
         console.error('Error in SSE connection:', err);
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
         setLoading(false);
@@ -327,6 +423,15 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
     fetchData();
 
     return () => {
+      // 在组件卸载时保存当前数据
+      const currentResults: SearchResultData = {
+        logicSteps,
+        competitors,
+        figures,
+        hotKeysData
+      };
+      saveCompleteSearchData(searchId, query, currentResults);
+      
       abortController.abort();
       clearTimeoutMonitor(intervalIdRef);
     };
