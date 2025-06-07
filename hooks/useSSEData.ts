@@ -356,6 +356,19 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
   const lastDataTimeRef = useRef<number>(Date.now());
   const hasReceivedCompetitorsRef = useRef<boolean>(false);
   const processor = useRef(new SSEDataProcessor());
+  
+  // 添加 ref 来保存最新的状态数据
+  const latestDataRef = useRef<SearchResultData>(initialResults);
+  
+  // 每次状态更新时同步到 ref
+  useEffect(() => {
+    latestDataRef.current = {
+      logicSteps,
+      competitors,
+      figures,
+      hotKeysData
+    };
+  }, [logicSteps, competitors, figures, hotKeysData]);
 
   useEffect(() => {
     if (!searchId || !query) return;
@@ -369,14 +382,15 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
       setFigures(results.figures);
       setHotKeysData(results.hotKeysData);
       setLoading(false);
-      return;
+      return; // 确保这里返回，不继续执行下面的代码
     }
 
+    // 只有在没有缓存数据时才执行网络请求和状态重置
     const abortController = new AbortController();
 
     const fetchData = async () => {
       try {
-        // 重置状态
+        // 重置状态 - 只在确实需要重新获取数据时执行
         const resetResults = createInitialResultsState();
         setLoading(true);
         setLogicSteps(resetResults.logicSteps);
@@ -460,14 +474,8 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
     fetchData();
 
     return () => {
-      // 在组件卸载时保存当前数据
-      const currentResults: SearchResultData = {
-        logicSteps,
-        competitors,
-        figures,
-        hotKeysData
-      };
-      saveCompleteSearchData(searchId, query, currentResults);
+      // 使用 ref 中的最新数据而不是闭包中的状态
+      saveCompleteSearchData(searchId, query, latestDataRef.current);
       
       abortController.abort();
       clearTimeoutMonitor(intervalIdRef);
