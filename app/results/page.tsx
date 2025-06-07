@@ -10,13 +10,24 @@ function ResultsContent() {
   const searchParams = useSearchParams();
   
   useEffect(() => {
-    // Get query from localStorage based on URL id parameter
+    // Get query from localStorage based on URL id parameter using new unified data structure
     const id = searchParams.get("id");
+    
     if (id && typeof window !== "undefined") {
-      const storedQuery = localStorage.getItem(id);
-      if (storedQuery) {
-        setQuery(JSON.parse(storedQuery).query);
-        setSearchId(id);
+      const storedData = localStorage.getItem(id);
+      
+      if (storedData) {
+        try {
+          const parsedData = JSON.parse(storedData);
+          
+          // 使用新的统一数据结构：{ query: "xx", results: { logicSteps: [] } }
+          if (parsedData.query) {
+            setQuery(parsedData.query);
+            setSearchId(id);
+          }
+        } catch (error) {
+          console.error('Error parsing stored search data:', error);
+        }
       }
     }
   }, [searchParams]);
@@ -46,4 +57,4 @@ export default function ResultsPage() {
       </Suspense>
     </main>
   );
-} 
+}

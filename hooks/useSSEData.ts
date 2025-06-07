@@ -65,8 +65,12 @@ const loadCompleteSearchData = (searchId: string): CompleteSearchData | null => 
     const cachedData = localStorage.getItem(searchId);
     if (cachedData) {
       const parsed = JSON.parse(cachedData);
-      // 检查数据结构完整性
-      if (parsed.query && parsed.results && parsed.results.logicSteps && parsed.results.competitors) {
+      // 检查数据结构完整性 - 允许数组为空
+      if (parsed.query && parsed.results && 
+          Array.isArray(parsed.results.logicSteps) && 
+          Array.isArray(parsed.results.competitors) &&
+          Array.isArray(parsed.results.figures) &&
+          parsed.results.hotKeysData) {
         return parsed;
       }
     }
@@ -150,7 +154,7 @@ const createSSEContext = (
  * @param intervalIdRef 定时器引用
  * @param lastDataTimeRef 最后数据时间引用
  * @param hasReceivedCompetitorsRef 是否已接收竞争对手数据引用
- * @param currentResults 当前搜索结果数据
+ * @param context SSE处理上下文
  * @param validSearchId 有效搜索ID
  * @param query 搜索查询
  * @param setLoading 设置加载状态函数
@@ -160,7 +164,7 @@ const setupTimeoutMonitor = (
   intervalIdRef: React.MutableRefObject<number | null>,
   lastDataTimeRef: React.MutableRefObject<number>,
   hasReceivedCompetitorsRef: React.MutableRefObject<boolean>,
-  currentResults: SearchResultData,
+  context: SSEProcessingContext,
   validSearchId: string,
   query: string,
   setLoading: (loading: boolean) => void,
@@ -179,6 +183,8 @@ const setupTimeoutMonitor = (
         hotKeysData: context.currentHotKeysData
       };
       saveCompleteSearchData(validSearchId, query, latestResults);
+      // 数据保存完成后添加到历史记录
+      context.addSearchToHistory(query, validSearchId);
       if (intervalIdRef.current !== null) {
         clearInterval(intervalIdRef.current);
         intervalIdRef.current = null;
@@ -272,6 +278,8 @@ const createStreamProcessor = (
             hotKeysData: context.currentHotKeysData
           };
           saveCompleteSearchData(validSearchId, query, latestResults);
+          // 数据保存完成后添加到历史记录
+          context.addSearchToHistory(query, validSearchId);
           setLoading(false);
           clearTimeoutMonitor(intervalIdRef);
           return;
@@ -296,6 +304,8 @@ const createStreamProcessor = (
               hotKeysData: context.currentHotKeysData
             };
             saveCompleteSearchData(validSearchId, query, latestResults);
+            // 数据保存完成后添加到历史记录
+            context.addSearchToHistory(query, validSearchId);
             setLoading(false);
             clearTimeoutMonitor(intervalIdRef);
             return;
@@ -311,6 +321,8 @@ const createStreamProcessor = (
         hotKeysData: context.currentHotKeysData
       };
       saveCompleteSearchData(validSearchId, query, latestResults);
+      // 数据保存完成后添加到历史记录
+      context.addSearchToHistory(query, validSearchId);
       setLoading(false);
       clearTimeoutMonitor(intervalIdRef);
       
@@ -350,7 +362,6 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
 
     // 尝试加载完整的搜索数据
     const cachedData = loadCompleteSearchData(searchId);
-    console.log('Loaded cached data:', cachedData);
     if (cachedData && cachedData.results) {
       const { results } = cachedData;
       setLogicSteps(results.logicSteps);
@@ -406,7 +417,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
           intervalIdRef,
           lastDataTimeRef,
           hasReceivedCompetitorsRef,
-          currentResults,
+          context,
           searchId,
           query,
           setLoading

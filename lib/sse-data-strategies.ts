@@ -47,13 +47,11 @@ export class ChatIdStrategy implements SSEDataStrategy {
   }
 
   process(data: any, context: SSEProcessingContext): void {
-    if (data.content) {
+    if (data.content && data.content.trim() !== '') {
       context.validSearchId = data.content;
       context.hasValidId = true;
-      // 确保搜索历史中的ID与SSE数据处理的ID一致
-      context.addSearchToHistory(context.query, context.validSearchId);
-      // 注意：不在这里保存数据，而是在流结束时保存完整的数据
-      // 这样确保所有数据都已经处理完成后再保存
+      // 注意：不在这里保存数据和添加历史记录，而是在流结束时统一处理
+      // 这样确保所有数据都已经处理完成后再保存和添加历史记录
     }
   }
 }
@@ -202,14 +200,8 @@ export class DoneStrategy implements SSEDataStrategy {
       });
     }
 
-    // 存储完整的数据到localStorage
-    const dataToStore = {
-      logicSteps: context.currentLogicSteps,
-      competitors: context.currentCompetitors,
-      figures: context.currentFigures,
-      hotKeysData: context.currentHotKeysData
-    };
-    localStorage.setItem(`searchData_${context.validSearchId}`, JSON.stringify(dataToStore));
+    // 注意：数据保存和历史记录添加已在useSSEData中统一处理
+    // 这里只需要设置加载状态为false
     context.setLoading(false);
   }
 }
@@ -232,20 +224,8 @@ export class SSEDataProcessor {
     if (jsonData.id && !context.hasValidId) {
       context.validSearchId = jsonData.id;
       context.hasValidId = true;
-      // 确保搜索历史中的ID与SSE数据处理的ID一致
-      context.addSearchToHistory(context.query, context.validSearchId);
-      // 使用统一的数据存储格式：id: { query: "xx", results: { logicSteps: [] } }
-      const completeData = {
-        query: context.query,
-        results: {
-          logicSteps: context.currentLogicSteps,
-          competitors: context.currentCompetitors,
-          figures: context.currentFigures,
-          hotKeysData: context.currentHotKeysData
-        },
-        timestamp: new Date().toISOString()
-      };
-      localStorage.setItem(context.validSearchId, JSON.stringify(completeData));
+      // 注意：不在这里添加历史记录和保存数据，而是在流结束时统一处理
+      // 这样确保所有数据都已经处理完成后再保存和添加历史记录
     }
 
     if (!jsonData.step) {
