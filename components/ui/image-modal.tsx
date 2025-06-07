@@ -19,7 +19,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
   imageAlt,
   title
 }) => {
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(0.8);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -31,7 +31,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
     } else {
       document.body.style.overflow = "unset";
       // 重置缩放和位置
-      setScale(1);
+      setScale(0.8);
       setPosition({ x: 0, y: 0 });
     }
     return () => {
@@ -56,7 +56,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
 
   // 重置缩放和位置
   const handleReset = () => {
-    setScale(1);
+    setScale(0.8);
     setPosition({ x: 0, y: 0 });
   };
 
@@ -225,7 +225,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
               onMouseDown={handleMouseDown}
               onDoubleClick={(e) => {
                 e.stopPropagation();
-                if (scale === 1) {
+                if (scale === 0.8) {
                   handleZoomIn();
                 } else {
                   handleReset();

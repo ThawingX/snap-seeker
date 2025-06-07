@@ -47,7 +47,7 @@ Thu June 5 2025:
 - [x] 历史数据存储，并不是done才会存，失败了也要存
 - [x] 结果页面直接跳转history，导致seek-table卸载时清理了持久化数据
 - [x] 图表点击放大
-- [ ] figure1 figure2 改名
+- [x] figure1 figure2 改名
 - [x] 需求卡片
 - [] 功能清单 markdown
 - [] 导出
