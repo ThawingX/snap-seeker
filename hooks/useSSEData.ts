@@ -195,7 +195,6 @@ const createStreamProcessor = (
 
         // 处理每一行
         for (const line of lines) {
-          console.log(lines)
           const shouldEnd = processSSELine(line, processor, context, hasReceivedCompetitorsRef);
           if (shouldEnd) {
             return;
@@ -240,6 +239,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
 
     // 尝试加载缓存数据
     const cachedData = loadCachedData(searchId);
+    console.log(cachedData)
     if (cachedData) {
       setLogicSteps(cachedData.logicSteps);
       setCompetitors(cachedData.competitors);

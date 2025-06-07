@@ -32,14 +32,6 @@ export const addSearchToHistory = (query: string, id?: string): void => {
   try {
     const history = getSearchHistory();
 
-    // 检查是否存在相同查询
-    const existingIndex = history.findIndex(item => item.query.toLowerCase() === query.toLowerCase());
-
-    // 如果存在，从历史记录中移除旧条目
-    if (existingIndex !== -1) {
-      history.splice(existingIndex, 1);
-    }
-
     // 创建新的历史记录项
     const newItem: SearchHistoryItem = {
       id:id || '-1',

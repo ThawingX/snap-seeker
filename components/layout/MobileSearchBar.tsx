@@ -1,8 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { addSearchToHistory } from "@/lib/searchHistory";
-import { ENV } from "@/lib/env";
 import { useToast } from "@/components/ui/toast";
 
 export const MobileSearchBar = () => {
