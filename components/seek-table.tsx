@@ -102,7 +102,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       }
     },
     {
-      title: "Product Requirements",
+      title: "Finalized Requirement Card",
       icon: <IconClipboardList className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
       href: "#requirement-card",
       onClick: () => {

@@ -1,7 +1,14 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
-import { IconClipboardList } from "@tabler/icons-react";
+import { 
+  IconClipboardList, 
+  IconUser, 
+  IconBook, 
+  IconAlertTriangle, 
+  IconCoin, 
+  IconStar 
+} from "@tabler/icons-react";
 
 /**
  * 需求卡片数据类型
@@ -18,109 +25,177 @@ export interface RequirementCardData {
 
 /**
  * 需求卡片组件
- * 展示收敛后的产品需求信息
+ * 展示收敛后的产品需求信息 - 卡片嵌套卡片布局
  */
 const RequirementCardContent = ({ requirement }: { requirement: RequirementCardData }) => (
-  <div className="bg-white dark:bg-neutral-900 rounded-xl p-6 shadow-md border border-neutral-200 dark:border-neutral-700">
-    <div className="mb-6">
-      <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">Product Requirements</h3>
-      <p className="text-lg text-cyan-600 dark:text-cyan-400 font-medium italic">{requirement.slogan}</p>
+  <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 shadow-md border border-neutral-200 dark:border-neutral-800">
+    {/* 主标题卡片 */}
+    <div className="bg-gray-50/60 dark:bg-gray-800/60 rounded-xl p-6 mb-8 shadow-sm border border-gray-200/30 dark:border-gray-600/30">
+      <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-3">Finalized Requirement Card</h3>
+      <p className="text-xl text-gray-600 dark:text-gray-400 font-medium italic">{requirement.slogan}</p>
     </div>
 
-    <div className="space-y-6">
-      {/* 用户故事 */}
-      <div>
-        <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">User Story</p>
-        <p className="text-neutral-800 dark:text-neutral-200 leading-relaxed">{requirement.userStory}</p>
-      </div>
-
-      {/* 目标用户 */}
-      <div>
-        <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Target User</p>
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-          <p className="text-blue-800 dark:text-blue-300 font-medium">{requirement.targetUser}</p>
+    {/* 卡片网格布局 */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* 用户故事卡片 - 采用目标用户的青色调 */}
+      <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-900/30 dark:to-teal-900/30 rounded-xl p-6 shadow-md border border-cyan-200 dark:border-cyan-700 hover:shadow-lg transition-shadow duration-300">
+        <div className="flex items-center mb-4">
+          <div className="w-8 h-8 bg-cyan-500 dark:bg-cyan-600 rounded-lg flex items-center justify-center mr-3">
+            <IconBook className="w-4 h-4 text-white" />
+          </div>
+          <h4 className="text-lg font-bold text-cyan-800 dark:text-cyan-200">User Story</h4>
+        </div>
+        <div className="bg-gradient-to-br from-cyan-50/80 to-teal-50/80 dark:from-cyan-900/50 dark:to-teal-900/50 border border-cyan-200 dark:border-cyan-700 rounded-lg p-4">
+          <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed font-medium">{requirement.userStory}</p>
         </div>
       </div>
 
-      {/* 痛点 */}
-      <div>
-        <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Pain Points</p>
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-          <p className="text-red-800 dark:text-red-300">{requirement.plainPoints}</p>
+      {/* 目标用户卡片 - 突出青色调 */}
+      <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-900/30 dark:to-teal-900/30 rounded-xl p-6 shadow-md border border-cyan-200 dark:border-cyan-700 hover:shadow-lg transition-shadow duration-300">
+        <div className="flex items-center mb-4">
+          <div className="w-8 h-8 bg-cyan-500 dark:bg-cyan-600 rounded-lg flex items-center justify-center mr-3">
+            <IconUser className="w-4 h-4 text-white" />
+          </div>
+          <h4 className="text-lg font-bold text-cyan-800 dark:text-cyan-200">Target User</h4>
+        </div>
+        <div className="bg-gradient-to-br from-cyan-50/80 to-teal-50/80 dark:from-cyan-900/50 dark:to-teal-900/50 border border-cyan-200 dark:border-cyan-700 rounded-lg p-4">
+          <p className="text-neutral-700 dark:text-neutral-300 font-medium">{requirement.targetUser}</p>
         </div>
       </div>
 
-      {/* 独特卖点 */}
-      <div>
-        <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Unique Selling Points</p>
-        <div className="grid grid-cols-1 gap-2">
-          {requirement.usp.filter(point => point != null).map((point, index) => (
-            <div key={index} className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-              <div className="flex items-start">
-                <span className="bg-green-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
-                  {index + 1}
-                </span>
-                <p className="text-green-800 dark:text-green-300 font-medium">{point}</p>
-              </div>
+      {/* 痛点卡片 - 采用默认颜色 */}
+      <div className="bg-gradient-to-br from-zinc-50/50 to-gray-50/50 dark:from-zinc-800/40 dark:to-gray-800/40 rounded-xl p-6 shadow-sm border border-zinc-200/30 dark:border-zinc-600/30 hover:shadow-md transition-shadow duration-300">
+        <div className="flex items-center mb-4">
+          <div className="w-8 h-8 bg-zinc-500/70 dark:bg-zinc-600/70 rounded-lg flex items-center justify-center mr-3">
+            <IconAlertTriangle className="w-4 h-4 text-white" />
+          </div>
+          <h4 className="text-lg font-bold text-zinc-700 dark:text-zinc-200">Pain Points</h4>
+        </div>
+        <div className="bg-gradient-to-br from-zinc-50/80 to-gray-50/80 dark:from-zinc-800/60 dark:to-gray-800/60 border border-zinc-200/30 dark:border-zinc-600/30 rounded-lg p-4">
+          <p className="text-neutral-700 dark:text-neutral-300 font-medium">{requirement.plainPoints}</p>
+        </div>
+      </div>
+
+      {/* 盈利模型卡片 - 低调冷灰色调 */}
+      <div className="bg-gradient-to-br from-zinc-50/50 to-gray-50/50 dark:from-zinc-800/40 dark:to-gray-800/40 rounded-xl p-6 shadow-sm border border-zinc-200/30 dark:border-zinc-600/30 hover:shadow-md transition-shadow duration-300">
+        <div className="flex items-center mb-4">
+          <div className="w-8 h-8 bg-zinc-500/70 dark:bg-zinc-600/70 rounded-lg flex items-center justify-center mr-3">
+            <IconCoin className="w-4 h-4 text-white" />
+          </div>
+          <h4 className="text-lg font-bold text-zinc-700 dark:text-zinc-200">Revenue Model</h4>
+        </div>
+        <div className="bg-gradient-to-br from-zinc-50/80 to-gray-50/80 dark:from-zinc-800/60 dark:to-gray-800/60 border border-zinc-200/30 dark:border-zinc-600/30 rounded-lg p-4">
+          <p className="text-zinc-700 dark:text-zinc-300 font-medium">{requirement.revenueModel}</p>
+        </div>
+      </div>
+    </div>
+
+    {/* 独特卖点卡片 - 低调中性灰色调 */}
+    <div className="bg-gradient-to-br from-neutral-50/50 to-gray-50/50 dark:from-neutral-800/40 dark:to-gray-800/40 rounded-xl p-6 shadow-sm border border-neutral-200/30 dark:border-neutral-600/30 hover:shadow-md transition-shadow duration-300 mt-6">
+      <div className="flex items-center mb-4">
+        <div className="w-8 h-8 bg-neutral-500/70 dark:bg-neutral-600/70 rounded-lg flex items-center justify-center mr-3">
+          <IconStar className="w-4 h-4 text-white" />
+        </div>
+        <h4 className="text-lg font-bold text-neutral-700 dark:text-neutral-200">Unique Selling Points</h4>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {requirement.usp.filter(point => point != null).map((point, index) => (
+          <div key={index} className="bg-gradient-to-br from-neutral-50/80 to-gray-50/80 dark:from-neutral-800/60 dark:to-gray-800/60 border border-neutral-200/30 dark:border-neutral-600/30 rounded-lg p-4">
+            <div className="flex items-start">
+              <span className="bg-neutral-500/70 text-white text-sm font-bold rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5 flex-shrink-0">
+                {index + 1}
+              </span>
+              <p className="text-neutral-700 dark:text-neutral-300 font-medium">{point}</p>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 盈利模型 */}
-      <div>
-        <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Revenue Model</p>
-        <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-3">
-          <p className="text-purple-800 dark:text-purple-300 font-medium">{requirement.revenueModel}</p>
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   </div>
 );
 
 /**
- * 骨架加载样式 - 需求卡片
+ * 骨架加载样式 - 需求卡片（卡片嵌套布局）
  */
 const RequirementCardSkeleton = () => (
-  <div className="bg-neutral-900 rounded-xl p-6 shadow-md border border-neutral-700 animate-pulse">
-    <div className="mb-6">
-      <div className="h-8 bg-neutral-800 rounded-md w-1/2 mb-2"></div>
-      <div className="h-6 bg-neutral-800 rounded-md w-3/4"></div>
+  <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 shadow-md border border-neutral-200 dark:border-neutral-800 animate-pulse">
+    {/* 主标题卡片骨架 */}
+    <div className="bg-gray-100/60 dark:bg-gray-700/60 rounded-xl p-6 mb-8 shadow-sm border border-gray-200/30 dark:border-gray-600/30">
+      <div className="h-8 bg-gray-200/70 dark:bg-gray-600/70 rounded-lg mb-3 w-3/4"></div>
+      <div className="h-6 bg-gray-200/70 dark:bg-gray-600/70 rounded-lg w-1/2"></div>
     </div>
 
-    <div className="space-y-6">
-      {/* 用户故事骨架 */}
-      <div>
-        <div className="h-4 bg-neutral-800 rounded-md w-1/4 mb-2"></div>
-        <div className="h-16 bg-neutral-800 rounded-md w-full"></div>
-      </div>
-
-      {/* 目标用户骨架 */}
-      <div>
-        <div className="h-4 bg-neutral-800 rounded-md w-1/4 mb-2"></div>
-        <div className="h-12 bg-neutral-800 rounded-lg w-full"></div>
-      </div>
-
-      {/* 痛点骨架 */}
-      <div>
-        <div className="h-4 bg-neutral-800 rounded-md w-1/4 mb-2"></div>
-        <div className="h-12 bg-neutral-800 rounded-lg w-full"></div>
-      </div>
-
-      {/* USP骨架 */}
-      <div>
-        <div className="h-4 bg-neutral-800 rounded-md w-1/3 mb-2"></div>
-        <div className="space-y-2">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-12 bg-neutral-800 rounded-lg w-full"></div>
-          ))}
+    {/* 卡片网格布局骨架 */}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* 用户故事卡片骨架 - 采用目标用户的青色调 */}
+      <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-900/30 dark:to-teal-900/30 rounded-xl p-6 shadow-md border border-cyan-200 dark:border-cyan-700">
+        <div className="flex items-center mb-4">
+          <div className="w-8 h-8 bg-cyan-300 dark:bg-cyan-600 rounded-lg mr-3"></div>
+          <div className="h-6 bg-cyan-200 dark:bg-cyan-600 rounded-lg w-24"></div>
+        </div>
+        <div className="bg-gradient-to-br from-cyan-50/80 to-teal-50/80 dark:from-cyan-900/50 dark:to-teal-900/50 rounded-lg p-4">
+          <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded mb-2"></div>
+          <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded mb-2 w-4/5"></div>
+          <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-3/5"></div>
         </div>
       </div>
 
-      {/* 盈利模型骨架 */}
-      <div>
-        <div className="h-4 bg-neutral-800 rounded-md w-1/4 mb-2"></div>
-        <div className="h-12 bg-neutral-800 rounded-lg w-full"></div>
+      {/* 目标用户卡片骨架 - 突出青色调 */}
+      <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-900/30 dark:to-teal-900/30 rounded-xl p-6 shadow-md border border-cyan-200 dark:border-cyan-700">
+        <div className="flex items-center mb-4">
+          <div className="w-8 h-8 bg-cyan-300 dark:bg-cyan-600 rounded-lg mr-3"></div>
+          <div className="h-6 bg-cyan-200 dark:bg-cyan-600 rounded-lg w-28"></div>
+        </div>
+        <div className="bg-gradient-to-br from-cyan-50/80 to-teal-50/80 dark:from-cyan-900/50 dark:to-teal-900/50 rounded-lg p-4">
+          <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded mb-2"></div>
+          <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-3/4"></div>
+        </div>
+      </div>
+
+      {/* 痛点卡片骨架 - 采用默认颜色 */}
+      <div className="bg-gradient-to-br from-zinc-50/50 to-gray-50/50 dark:from-zinc-800/40 dark:to-gray-800/40 rounded-xl p-6 shadow-sm border border-zinc-200/30 dark:border-zinc-600/30">
+        <div className="flex items-center mb-4">
+          <div className="w-8 h-8 bg-zinc-300/60 dark:bg-zinc-600/60 rounded-lg mr-3"></div>
+          <div className="h-6 bg-zinc-200/60 dark:bg-zinc-600/60 rounded-lg w-24"></div>
+        </div>
+        <div className="bg-gradient-to-br from-zinc-50/80 to-gray-50/80 dark:from-zinc-800/60 dark:to-gray-800/60 rounded-lg p-4">
+          <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded mb-2"></div>
+          <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded mb-2 w-5/6"></div>
+          <div className="h-4 bg-neutral-200 dark:bg-neutral-700 rounded w-2/3"></div>
+        </div>
+      </div>
+
+      {/* 盈利模型卡片骨架 - 冷灰色调 */}
+      <div className="bg-gradient-to-br from-zinc-50/50 to-gray-50/50 dark:from-zinc-800/40 dark:to-gray-800/40 rounded-xl p-6 shadow-sm border border-zinc-200/30 dark:border-zinc-600/30">
+        <div className="flex items-center mb-4">
+          <div className="w-8 h-8 bg-zinc-300/60 dark:bg-zinc-600/60 rounded-lg mr-3"></div>
+          <div className="h-6 bg-zinc-200/60 dark:bg-zinc-600/60 rounded-lg w-32"></div>
+        </div>
+        <div className="bg-gradient-to-br from-zinc-50/80 to-gray-50/80 dark:from-zinc-800/60 dark:to-gray-800/60 rounded-lg p-4">
+          <div className="h-4 bg-zinc-200/50 dark:bg-zinc-700/50 rounded mb-2"></div>
+          <div className="h-4 bg-zinc-200/50 dark:bg-zinc-700/50 rounded w-4/5"></div>
+        </div>
+      </div>
+    </div>
+
+    {/* 独特卖点卡片骨架 - 中性灰色调 */}
+    <div className="bg-gradient-to-br from-neutral-50/50 to-gray-50/50 dark:from-neutral-800/40 dark:to-gray-800/40 rounded-xl p-6 shadow-sm border border-neutral-200/30 dark:border-neutral-600/30 mt-6">
+      <div className="flex items-center mb-4">
+        <div className="w-8 h-8 bg-neutral-300/60 dark:bg-neutral-600/60 rounded-lg mr-3"></div>
+        <div className="h-6 bg-neutral-200/60 dark:bg-neutral-600/60 rounded-lg w-40"></div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[1, 2, 3].map((index) => (
+          <div key={index} className="bg-gradient-to-br from-neutral-50/80 to-gray-50/80 dark:from-neutral-800/60 dark:to-gray-800/60 rounded-lg p-4">
+            <div className="flex items-start">
+              <div className="bg-neutral-300/60 dark:bg-neutral-600/60 rounded-full w-6 h-6 mr-3 mt-0.5 flex-shrink-0"></div>
+              <div className="flex-1">
+                <div className="h-4 bg-neutral-200/50 dark:bg-neutral-700/50 rounded mb-2"></div>
+                <div className="h-4 bg-neutral-200/50 dark:bg-neutral-700/50 rounded w-3/4"></div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   </div>
@@ -151,9 +226,9 @@ export const RequirementCard: React.FC<RequirementCardProps> = ({
     >
       <h2 className="text-2xl font-semibold mb-6 dark:text-white flex items-center">
         <IconClipboardList className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-        Product Requirements
+        Finalized Requirement Card
       </h2>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {requirementData ? (
           <RequirementCardContent requirement={requirementData} />
         ) : (
