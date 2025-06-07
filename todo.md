@@ -48,8 +48,7 @@ Thu June 5 2025:
 - [x] 结果页面直接跳转history，导致seek-table卸载时清理了持久化数据
 - [ ] 图表点击放大
 - [ ] figure1 figure2 改名
-- [] 重构整个项目
-- [] 需求卡片
+- [x] 需求卡片
 - [] 功能清单 markdown
 - [] 导出
 - [] google tag manager

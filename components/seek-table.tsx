@@ -92,22 +92,22 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       }
     },
     {
-      title: "Analysis Figures",
-      icon: <IconPhoto className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
-      href: "#figures",
-      onClick: () => {
-        if (figuresRef.current) {
-          figuresRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-    },
-    {
       title: "Finalized Requirement Card",
       icon: <IconClipboardList className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
       href: "#requirement-card",
       onClick: () => {
         if (requirementRef.current) {
           requirementRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    },
+    {
+      title: "Analysis Figures",
+      icon: <IconPhoto className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#figures",
+      onClick: () => {
+        if (figuresRef.current) {
+          figuresRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       }
     },
@@ -183,11 +183,11 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         {/* 竞争对手数据表格部分 */}
         <CompetitorTable competitorData={competitorData} loading={loading} tableRef={tableRef} />
 
-        {/* 产品需求卡片部分 */}
-        <RequirementCard requirementData={requirementData} loading={loading} requirementRef={requirementRef} />
-
         {/* 分析图片部分 */}
         <FigureCards figureData={figureData} loading={loading} figuresRef={figuresRef} />
+
+        {/* 产品需求卡片部分 */}
+        <RequirementCard requirementData={requirementData} loading={loading} requirementRef={requirementRef} />
 
         {/* MVP 策略推荐部分 */}
         <MVPStrategy loading={loading} insightsRef={insightsRef} />
