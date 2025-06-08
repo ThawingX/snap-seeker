@@ -2,7 +2,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash, IconPhoto, IconClipboardList, IconList, IconArrowLeft } from "@tabler/icons-react";
+import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash, IconPhoto, IconClipboardList, IconList, IconArrowLeft, IconDownload } from "@tabler/icons-react";
 
 import { SearchLogic } from "./search/SearchLogic";
 import { CompetitorCards } from "./competitor/CompetitorCards";
@@ -13,6 +13,7 @@ import { RequirementCard } from "./requirement/RequirementCard";
 import { FunctionList } from "./function/FunctionList";
 import { PMFAnalysis, MVPStrategy } from "./premium/LockedContent";
 import { useSSEData } from "@/hooks/useSSEData";
+import { ENV } from "@/lib/env";
 
 
 
@@ -42,6 +43,9 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
 
   // 滚动状态管理
   const [isScrolled, setIsScrolled] = useState(false);
+  
+  // 导出状态管理
+  const [isExporting, setIsExporting] = useState(false);
 
   // 使用 SSE 数据获取 Hook
   const {
@@ -188,6 +192,46 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     };
   }, [searchSteps, competitorData, figureData, hotKeysData, requirementData, functionListData, searchId, query]);
 
+  // 导出MVP.md文件的处理函数
+  const handleExportMVP = async () => {
+    if (isExporting) return;
+    
+    setIsExporting(true);
+    try {
+      const response = await fetch(`${ENV.TARGET_CHAT_API_URL}/${searchId}/download`, {
+         method: 'GET',
+         headers: {
+           'Content-Type': 'application/json',
+         },
+       });
+      
+      if (!response.ok) {
+        throw new Error('导出失败');
+      }
+      
+      // 获取文件内容
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // 创建下载链接
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `prd-${query.replace(/\s+/g, '-')}-${searchId}.md`;
+      document.body.appendChild(a);
+      a.click();
+      
+      // 清理
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+    } catch (error) {
+      console.error('导出PRD文件失败:', error);
+      // 这里可以添加错误提示
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   // 浮动导航菜单项
   const dockItems = [
     {
@@ -302,6 +346,45 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
           Back to History
         </span>
       </Link>
+
+      {/* 导出MVP.md按钮 - 仅在数据加载完成时显示 */}
+      {!loading && (
+        <div className="fixed top-6 right-6 z-50">
+          <div className="relative group">
+            <button
+              onClick={handleExportMVP}
+              disabled={isExporting}
+              className={`transition-all duration-300 ${
+                isScrolled 
+                  ? 'bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-lg border border-neutral-200 dark:border-neutral-700' 
+                  : 'bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm shadow-md border border-neutral-200/50 dark:border-neutral-700/50'
+              } text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300 flex items-center px-4 py-2 rounded-full hover:bg-emerald-50 dark:hover:bg-emerald-900/20 disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {isExporting ? (
+                <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <IconDownload className="h-5 w-5 mr-2" />
+              )}
+              <span className={`transition-opacity duration-300 ${
+                isScrolled ? 'opacity-100' : 'opacity-0 sm:opacity-100'
+              }`}>
+                {isExporting ? 'Exporting...' : 'Export PRD.md'}
+              </span>
+            </button>
+            
+            {/* Tooltip */}
+            <div className="absolute top-full right-0 mt-2 px-3 py-2 bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 text-sm rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-60">
+              <div className="relative">
+                Export Product Requirements Document for get your product off the ground faster.
+                <div className="absolute bottom-full right-4 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-neutral-900 dark:border-b-neutral-100"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <FloatingDock
         items={dockItems}
