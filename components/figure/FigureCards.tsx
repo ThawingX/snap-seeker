@@ -29,7 +29,7 @@ const getFigureTitle = (figureIndex: number): string => {
  * 获取图表对应的图标
  */
 const getFigureIcon = (figureIndex: number) => {
-  const iconMap: { [key: number]: JSX.Element } = {
+  const iconMap: { [key: number]: React.ReactElement } = {
     1: <IconTarget className="w-5 h-5 text-white" />, // Solutions-Pain Matrix - 目标定位
     2: <IconChartBar className="w-5 h-5 text-white" />, // Revenue-Users Matrix - 数据图表
     3: <IconBulb className="w-5 h-5 text-white" /> // Feature-ROI Analysis - 分析洞察
@@ -169,7 +169,6 @@ export const FigureCards: React.FC<FigureCardsProps> = ({
                       <FigureCard
                         key={`figure-${figure.figureIndex}`}
                         figure={figure}
-                        index={index}
                         onImageClick={handleImageClick}
                       />
                     ))
@@ -186,7 +185,6 @@ export const FigureCards: React.FC<FigureCardsProps> = ({
                 <div key={`figure-row-${figure.figureIndex}`} className="grid grid-cols-1">
                   <FigureCard
                     figure={figure}
-                    index={index + 2}
                     onImageClick={handleImageClick}
                   />
                 </div>

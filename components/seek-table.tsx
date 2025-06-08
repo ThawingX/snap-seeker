@@ -77,7 +77,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       const hasUnsavedData = searchSteps.length > 0 || 
                             competitorData.length > 0 || 
                             figureData.length > 0 || 
-                            hotKeysData.length > 0 || 
+                            (hotKeysData && (hotKeysData.mostRelevant.length > 0 || hotKeysData.allInSeeker.length > 0 || hotKeysData.allFields.length > 0)) || 
                             requirementData || 
                             functionListData.length > 0;
       
@@ -122,7 +122,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         const hasUnsavedData = searchSteps.length > 0 || 
                               competitorData.length > 0 || 
                               figureData.length > 0 || 
-                              hotKeysData.length > 0 || 
+                              (hotKeysData && (hotKeysData.mostRelevant.length > 0 || hotKeysData.allInSeeker.length > 0 || hotKeysData.allFields.length > 0)) || 
                               requirementData || 
                               functionListData.length > 0;
         
@@ -166,7 +166,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       const hasUnsavedData = searchSteps.length > 0 || 
                             competitorData.length > 0 || 
                             figureData.length > 0 || 
-                            hotKeysData.length > 0 || 
+                            (hotKeysData && (hotKeysData.mostRelevant.length > 0 || hotKeysData.allInSeeker.length > 0 || hotKeysData.allFields.length > 0)) || 
                             requirementData || 
                             functionListData.length > 0;
       

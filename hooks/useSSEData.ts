@@ -156,24 +156,16 @@ const createSSEContext = (
       setters.setFigures(figs);
     },
     setHotKeysData: (data) => {
-      currentResults.hotKeysData = data;
+      currentResults.hotKeysData = data;we'r'fwerf
       setters.setHotKeysData(data);
     },
     setRequirementCard: (data) => {
       currentResults.requirementCard = data;
       setters.setRequirementCard(data);
     },
-    setFunctionList: (data) => {
-      if (typeof data === 'function') {
-        // 处理函数式更新
-        const newData = data(currentResults.functionList);
-        currentResults.functionList = newData;
-        setters.setFunctionList(newData);
-      } else {
-        // 处理直接值更新
-        currentResults.functionList = data;
-        setters.setFunctionList(data);
-      }
+    setFunctionList: (data: FunctionListData[]) => {
+      currentResults.functionList = data;
+      setters.setFunctionList(data);
     },
     setLoading: setters.setLoading,
     validSearchId: searchId, // 初始值使用传入的searchId
