@@ -62,16 +62,46 @@ export function normalizeSSEData(line: string): string {
       JSON.parse(jsonPart);
       return line; // If valid JSON, return as is
     } catch (e) {
-      // If parsing fails, try converting single quotes to double quotes
+      // If parsing fails, try multiple normalization strategies
       try {
-        const standardJson = jsonPart.replace(/'/g, '"');
+        let normalizedJson = jsonPart;
+        
+        // Strategy 1: Convert single quotes to double quotes
+        normalizedJson = normalizedJson.replace(/'/g, '"');
+        
+        // Strategy 2: Fix common JSON formatting issues
+        // Handle unquoted property names
+        normalizedJson = normalizedJson.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":');
+        
+        // Strategy 3: Handle trailing commas
+        normalizedJson = normalizedJson.replace(/,\s*([}\]])/g, '$1');
+        
+        // Strategy 4: Ensure proper array/object structure
+        normalizedJson = normalizedJson.replace(/([^\s,{\[])\s*([{\[])/g, '$1,$2');
+        
         // Verify the converted JSON is valid
-        JSON.parse(standardJson);
-        return `data: ${standardJson}`;
+        JSON.parse(normalizedJson);
+        return `data: ${normalizedJson}`;
       } catch (jsonErr) {
-        // If still can't parse, return original
-        console.error("JSON normalization failed:", jsonErr);
-        return line;
+        // If still can't parse, try a more aggressive approach
+        try {
+          // Remove any problematic characters and try to reconstruct
+          let cleanJson = jsonPart
+            .replace(/'/g, '"')
+            .replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')
+            .replace(/,\s*([}\]])/g, '$1')
+            .replace(/\n/g, ' ')
+            .replace(/\r/g, ' ')
+            .replace(/\t/g, ' ')
+            .replace(/\s+/g, ' ');
+          
+          JSON.parse(cleanJson);
+          return `data: ${cleanJson}`;
+        } catch (finalErr) {
+          // If all strategies fail, log detailed error and return original
+          console.error("JSON normalization failed:", finalErr, "Original data:", jsonPart.substring(0, 200) + '...');
+          return line;
+        }
       }
     }
   }

@@ -2,7 +2,7 @@
 import React, { useRef } from "react";
 import Link from "next/link";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash, IconPhoto, IconClipboardList } from "@tabler/icons-react";
+import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash, IconPhoto, IconClipboardList, IconList } from "@tabler/icons-react";
 
 import { SearchLogic } from "./search/SearchLogic";
 import { CompetitorCards } from "./competitor/CompetitorCards";
@@ -10,6 +10,7 @@ import { CompetitorTable } from "./competitor/CompetitorTable";
 import { TrendingSearches } from "./trending/TrendingSearches";
 import { FigureCards } from "./figure/FigureCards";
 import { RequirementCard } from "./requirement/RequirementCard";
+import { FunctionList } from "./function/FunctionList";
 import { PMFAnalysis, MVPStrategy } from "./premium/LockedContent";
 import { useSSEData } from "@/hooks/useSSEData";
 
@@ -34,6 +35,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   const trendingSearchesRef = useRef<HTMLDivElement>(null!);
   const figuresRef = useRef<HTMLDivElement>(null!);
   const requirementRef = useRef<HTMLDivElement>(null!);
+  const functionListRef = useRef<HTMLDivElement>(null!);
   const tableRef = useRef<HTMLDivElement>(null!);
   const insightsRef = useRef<HTMLDivElement>(null!);
   const recommendationsRef = useRef<HTMLDivElement>(null!);
@@ -46,6 +48,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     figures: figureData,
     hotKeysData,
     requirementCard: requirementData,
+    functionList: functionListData,
     error
   } = useSSEData({ query, searchId });
 
@@ -108,6 +111,16 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       onClick: () => {
         if (figuresRef.current) {
           figuresRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    },
+    {
+      title: "Function List",
+      icon: <IconList className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#function-list",
+      onClick: () => {
+        if (functionListRef.current) {
+          functionListRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       }
     },
@@ -188,6 +201,9 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
 
         {/* 产品需求卡片部分 */}
         <RequirementCard requirementData={requirementData} loading={loading} requirementRef={requirementRef} />
+
+        {/* 功能清单部分 */}
+        <FunctionList functionData={functionListData} loading={loading} functionListRef={functionListRef} />
 
         {/* MVP 策略推荐部分 - 已隐藏 */}
         {/* <MVPStrategy loading={loading} insightsRef={insightsRef} /> */}

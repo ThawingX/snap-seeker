@@ -8,6 +8,7 @@ import { SSEDataProcessor, SSEProcessingContext } from '@/lib/sse-data-strategie
 import { CompetitorData, HotKeysData, SearchStep } from '@/types/competitor';
 import { FigureData } from '@/components/figure/FigureCards';
 import { RequirementCardData } from '@/components/requirement/RequirementCard';
+import { FunctionListData } from '@/components/function/FunctionList';
 
 interface UseSSEDataProps {
   query: string;
@@ -21,6 +22,7 @@ interface UseSSEDataReturn {
   figures: FigureData[];
   hotKeysData: HotKeysData;
   requirementCard: RequirementCardData | null;
+  functionList: FunctionListData[];
   error: string | null;
 }
 
@@ -33,6 +35,7 @@ interface SearchResultData {
   figures: FigureData[];
   hotKeysData: HotKeysData;
   requirementCard: RequirementCardData | null;
+  functionList: FunctionListData[];
 }
 
 /**
@@ -56,7 +59,8 @@ const createInitialResultsState = (): SearchResultData => ({
     allInSeeker: [],
     allFields: []
   },
-  requirementCard: null
+  requirementCard: null,
+  functionList: []
 });
 
 /**
@@ -120,6 +124,7 @@ const createSSEContext = (
     setFigures: (figures: FigureData[]) => void;
     setHotKeysData: (data: HotKeysData) => void;
     setRequirementCard: (data: RequirementCardData | null) => void;
+    setFunctionList: (data: FunctionListData[]) => void;
     setLoading: (loading: boolean) => void;
   },
   searchId: string,
@@ -131,6 +136,7 @@ const createSSEContext = (
   currentFigures: currentResults.figures,
   currentHotKeysData: currentResults.hotKeysData,
   currentRequirementCard: currentResults.requirementCard,
+  currentFunctionList: currentResults.functionList,
   setLogicSteps: (steps) => {
     currentResults.logicSteps = steps;
     setters.setLogicSteps(steps);
@@ -150,6 +156,18 @@ const createSSEContext = (
   setRequirementCard: (data) => {
     currentResults.requirementCard = data;
     setters.setRequirementCard(data);
+  },
+  setFunctionList: (data) => {
+    if (typeof data === 'function') {
+      // 处理函数式更新
+      const newData = data(currentResults.functionList);
+      currentResults.functionList = newData;
+      setters.setFunctionList(newData);
+    } else {
+      // 处理直接值更新
+      currentResults.functionList = data;
+      setters.setFunctionList(data);
+    }
   },
   setLoading: setters.setLoading,
   validSearchId: searchId,
@@ -191,7 +209,8 @@ const setupTimeoutMonitor = (
         competitors: context.currentCompetitors,
         figures: context.currentFigures,
         hotKeysData: context.currentHotKeysData,
-        requirementCard: context.currentRequirementCard
+        requirementCard: context.currentRequirementCard,
+        functionList: context.currentFunctionList
       };
       saveCompleteSearchData(validSearchId, query, latestResults);
       // 数据保存完成后添加到历史记录
@@ -226,7 +245,37 @@ const processSSELine = (
     
     if (normalizedLine.startsWith('data:')) {
       const jsonString = normalizedLine.substring(5).trim();
-      const jsonData = JSON.parse(jsonString);
+      
+      // 添加更详细的JSON解析错误处理
+      let jsonData;
+      try {
+        jsonData = JSON.parse(jsonString);
+      } catch (parseErr) {
+        console.error('JSON parse error details:', {
+          error: parseErr,
+          originalLine: line.substring(0, 200) + (line.length > 200 ? '...' : ''),
+          normalizedLine: normalizedLine.substring(0, 200) + (normalizedLine.length > 200 ? '...' : ''),
+          jsonString: jsonString.substring(0, 200) + (jsonString.length > 200 ? '...' : '')
+        });
+        
+        // 尝试手动修复常见的JSON问题
+        try {
+          let fixedJson = jsonString
+            .replace(/'/g, '"')  // 单引号转双引号
+            .replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:/g, '$1"$2":')  // 给属性名加引号
+            .replace(/,\s*([}\]])/g, '$1')  // 移除尾随逗号
+            .replace(/\n/g, ' ')  // 移除换行符
+            .replace(/\r/g, ' ')  // 移除回车符
+            .replace(/\t/g, ' ')  // 移除制表符
+            .replace(/\s+/g, ' ');  // 合并多个空格
+          
+          jsonData = JSON.parse(fixedJson);
+          console.log('Successfully fixed JSON:', fixedJson.substring(0, 100) + '...');
+        } catch (fixErr) {
+          console.error('Failed to fix JSON:', fixErr);
+          return false;
+        }
+      }
 
       // 检查是否需要标记已接收到竞争对手数据
       if (jsonData.step === 'Main Competitors') {
@@ -237,7 +286,10 @@ const processSSELine = (
       return processor.process(jsonData, context);
     }
   } catch (err) {
-    console.error('Error parsing SSE data:', err, line);
+    console.error('Error processing SSE line:', {
+      error: err,
+      line: line.substring(0, 200) + (line.length > 200 ? '...' : '')
+    });
   }
   
   return false;
@@ -287,7 +339,8 @@ const createStreamProcessor = (
             competitors: context.currentCompetitors,
             figures: context.currentFigures,
             hotKeysData: context.currentHotKeysData,
-            requirementCard: context.currentRequirementCard
+            requirementCard: context.currentRequirementCard,
+            functionList: context.currentFunctionList
           };
           saveCompleteSearchData(validSearchId, query, latestResults);
           // 数据保存完成后添加到历史记录
@@ -314,7 +367,8 @@ const createStreamProcessor = (
               competitors: context.currentCompetitors,
               figures: context.currentFigures,
               hotKeysData: context.currentHotKeysData,
-              requirementCard: context.currentRequirementCard
+              requirementCard: context.currentRequirementCard,
+              functionList: context.currentFunctionList
             };
             saveCompleteSearchData(validSearchId, query, latestResults);
             // 数据保存完成后添加到历史记录
@@ -332,7 +386,8 @@ const createStreamProcessor = (
         competitors: context.currentCompetitors,
         figures: context.currentFigures,
         hotKeysData: context.currentHotKeysData,
-        requirementCard: context.currentRequirementCard
+        requirementCard: context.currentRequirementCard,
+        functionList: context.currentFunctionList
       };
       saveCompleteSearchData(validSearchId, query, latestResults);
       // 数据保存完成后添加到历史记录
@@ -364,6 +419,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
   const [figures, setFigures] = useState<FigureData[]>(initialResults.figures);
   const [hotKeysData, setHotKeysData] = useState<HotKeysData>(initialResults.hotKeysData);
   const [requirementCard, setRequirementCard] = useState<RequirementCardData | null>(initialResults.requirementCard);
+  const [functionList, setFunctionList] = useState<FunctionListData[]>(initialResults.functionList);
   const [error, setError] = useState<string | null>(null);
   
   const { showToast } = useToast();
@@ -382,9 +438,10 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
       competitors,
       figures,
       hotKeysData,
-      requirementCard
+      requirementCard,
+      functionList
     };
-  }, [logicSteps, competitors, figures, hotKeysData, requirementCard]);
+  }, [logicSteps, competitors, figures, hotKeysData, requirementCard, functionList]);
 
   useEffect(() => {
     if (!searchId || !query) return;
@@ -398,6 +455,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
       setFigures(results.figures);
       setHotKeysData(results.hotKeysData);
       setRequirementCard(results.requirementCard);
+      setFunctionList(results.functionList);
       setLoading(false);
       return; // 确保这里返回，不继续执行下面的代码
     }
@@ -415,6 +473,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
         setFigures(resetResults.figures);
         setHotKeysData(resetResults.hotKeysData);
         setRequirementCard(resetResults.requirementCard);
+        setFunctionList(resetResults.functionList);
         setError(null);
 
         // 发起请求
@@ -439,7 +498,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
 
         // 初始化处理数据
         const currentResults = createInitialResultsState();
-        const setters = { setLogicSteps, setCompetitors, setFigures, setHotKeysData, setRequirementCard, setLoading };
+        const setters = { setLogicSteps, setCompetitors, setFigures, setHotKeysData, setRequirementCard, setFunctionList, setLoading };
         const context = createSSEContext(currentResults, setters, searchId, query, showToast);
         
         // 设置超时监控
@@ -480,7 +539,8 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
           competitors,
           figures,
           hotKeysData,
-          requirementCard
+          requirementCard,
+          functionList
         };
         saveCompleteSearchData(searchId, query, currentResults);
         
@@ -508,6 +568,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
     figures,
     hotKeysData,
     requirementCard,
+    functionList,
     error
   };
 };

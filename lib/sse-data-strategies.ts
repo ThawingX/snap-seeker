@@ -6,6 +6,7 @@
 import { CompetitorData, DemandTag } from '@/types/competitor';
 import { FigureData } from '@/components/figure/FigureCards';
 import { RequirementCardData } from '@/components/requirement/RequirementCard';
+import { FunctionListData } from '@/components/function/FunctionList';
 
 /**
  * SSE数据处理策略接口
@@ -28,11 +29,13 @@ export interface SSEProcessingContext {
     allFields: DemandTag[];
   };
   currentRequirementCard: RequirementCardData | null;
+  currentFunctionList: FunctionListData[];
   setLogicSteps: (steps: { title: string; description: string }[]) => void;
   setCompetitors: (competitors: CompetitorData[]) => void;
   setFigures: (figures: FigureData[]) => void;
   setHotKeysData: (data: any) => void;
   setRequirementCard: (data: RequirementCardData | null) => void;
+  setFunctionList: (data: FunctionListData[]) => void;
   setLoading: (loading: boolean) => void;
   validSearchId: string;
   hasValidId: boolean;
@@ -253,6 +256,85 @@ export class RequirementCardStrategy implements SSEDataStrategy {
 }
 
 /**
+ * 功能清单处理策略
+ */
+export class FunctionListStrategy implements SSEDataStrategy {
+  canHandle(step: string): boolean {
+    return step === 'functionList';
+  }
+
+  process(sourceData: any, context: SSEProcessingContext): void {
+    console.log('Processing function list data:', sourceData);
+    
+    try {
+      // 创建功能清单数据
+      const functionData: FunctionListData = {
+        step: sourceData.step || 'functionList',
+        type: sourceData.type || 'others',
+        content: sourceData.content || {}
+      };
+
+      // 使用函数式更新来确保获取最新状态
+      context.setFunctionList((prevFunctionList: FunctionListData[]) => {
+        // 创建新的数组副本
+        const currentFunctionList = [...prevFunctionList];
+        
+        // 查找是否已存在相同类型的数据
+        const existingIndex = currentFunctionList.findIndex(item => item.type === functionData.type);
+        
+        if (existingIndex >= 0) {
+          // 如果已存在相同类型的数据，合并内容而不是替换
+          const existingData = currentFunctionList[existingIndex];
+          const mergedContent = { ...existingData.content };
+          
+          // 合并新内容到现有内容中
+          Object.keys(functionData.content).forEach(key => {
+            if (mergedContent[key]) {
+              // 如果已存在该模块，合并功能列表并去重
+              const existingFeatures = mergedContent[key] || [];
+              const newFeatures = functionData.content[key] || [];
+              mergedContent[key] = [...new Set([...existingFeatures, ...newFeatures])];
+            } else {
+              // 如果不存在该模块，直接添加
+              mergedContent[key] = functionData.content[key];
+            }
+          });
+          
+          // 更新现有数据
+          currentFunctionList[existingIndex] = {
+            ...existingData,
+            content: mergedContent
+          };
+        } else {
+          // 如果不存在相同类型的数据，直接添加新数据
+          currentFunctionList.push(functionData);
+        }
+        
+        console.log('Updated function list:', currentFunctionList);
+        return currentFunctionList;
+      });
+      
+      if (context.showToast) {
+        context.showToast({
+          message: `Function list updated: ${functionData.type}`,
+          type: "info",
+          duration: 3000
+        });
+      }
+    } catch (error) {
+      console.error('Error processing function list data:', error);
+      if (context.showToast) {
+        context.showToast({
+          message: "Error processing function list data",
+          type: "error",
+          duration: 3000
+        });
+      }
+    }
+  }
+}
+
+/**
  * SSE数据处理器
  */
 export class SSEDataProcessor {
@@ -263,6 +345,7 @@ export class SSEDataProcessor {
     new CompetitorsStrategy(),
     new FigureStrategy(),
     new RequirementCardStrategy(),
+    new FunctionListStrategy(),
     new DoneStrategy()
   ];
 
