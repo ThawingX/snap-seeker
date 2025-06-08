@@ -156,7 +156,7 @@ const createSSEContext = (
       setters.setFigures(figs);
     },
     setHotKeysData: (data) => {
-      currentResults.hotKeysData = data;we'r'fwerf
+      currentResults.hotKeysData = data;
       setters.setHotKeysData(data);
     },
     setRequirementCard: (data) => {
