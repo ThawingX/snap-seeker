@@ -41,6 +41,8 @@ export interface SSEProcessingContext {
   hasValidId: boolean;
   showToast: (options: { message: string; type?: "info" | "success" | "warning" | "error"; duration?: number }) => void;
   addSearchToHistory: (query: string, searchId: string) => void;
+  updateURL: (newSearchId: string) => void;
+  setFinalSearchId: (id: string) => void;
   query: string;
 }
 
@@ -56,6 +58,10 @@ export class ChatIdStrategy implements SSEDataStrategy {
     if (data.content && data.content.trim() !== '') {
       context.validSearchId = data.content;
       context.hasValidId = true;
+      // 更新浏览器URL为后端返回的真实ID
+      context.updateURL(data.content);
+      // 更新finalSearchId状态，供组件使用
+      context.setFinalSearchId(data.content);
       // 注意：不在这里保存数据和添加历史记录，而是在流结束时统一处理
       // 这样确保所有数据都已经处理完成后再保存和添加历史记录
     }

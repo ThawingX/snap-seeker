@@ -56,7 +56,8 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     hotKeysData,
     requirementCard: requirementData,
     functionList: functionListData,
-    error
+    error,
+    finalSearchId
   } = useSSEData({ query, searchId });
 
   // 监听滚动事件
@@ -93,8 +94,10 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
           };
           
           // 使用同步方式保存到localStorage
+          // 使用finalSearchId（后端返回的真实ID）而不是searchId（临时ID）
+          const saveId = finalSearchId || searchId;
           const searchData = {
-            id: searchId,
+            id: saveId,
             query: query,
             timestamp: Date.now(),
             results: currentResults
@@ -134,8 +137,10 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
               functionList: functionListData
             };
             
+            // 使用finalSearchId（后端返回的真实ID）而不是searchId（临时ID）
+            const saveId = finalSearchId || searchId;
             const searchData = {
-              id: searchId,
+              id: saveId,
               query: query,
               timestamp: Date.now(),
               results: currentResults
@@ -176,8 +181,10 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
             functionList: functionListData
           };
           
+          // 使用finalSearchId（后端返回的真实ID）而不是searchId（临时ID）
+          const saveId = finalSearchId || searchId;
           const searchData = {
-            id: searchId,
+            id: saveId,
             query: query,
             timestamp: Date.now(),
             results: currentResults
@@ -190,7 +197,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         }
       }
     };
-  }, [searchSteps, competitorData, figureData, hotKeysData, requirementData, functionListData, searchId, query]);
+  }, [searchSteps, competitorData, figureData, hotKeysData, requirementData, functionListData, searchId, query, finalSearchId]);
 
   // 导出MVP.md文件的处理函数
   const handleExportMVP = async () => {
@@ -198,7 +205,9 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     
     setIsExporting(true);
     try {
-      const response = await fetch(`${ENV.TARGET_CHAT_API_URL}/${searchId}/download`, {
+      // 使用finalSearchId（后端返回的真实ID）而不是searchId（临时ID）
+      const exportId = finalSearchId || searchId;
+      const response = await fetch(`${ENV.TARGET_CHAT_API_URL}/${exportId}/download`, {
          method: 'GET',
          headers: {
            'Content-Type': 'application/json',
@@ -216,7 +225,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       // 创建下载链接
       const a = document.createElement('a');
       a.href = url;
-      a.download = `prd-${query.replace(/\s+/g, '-')}-${searchId}.md`;
+      a.download = `prd-${query.replace(/\s+/g, '-')}-${exportId}.md`;
       document.body.appendChild(a);
       a.click();
       

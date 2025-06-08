@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { ENV } from '@/lib/env';
 import { normalizeSSEData } from '@/lib/utils';
 import { addSearchToHistory } from "@/lib/searchHistory";
@@ -24,6 +25,7 @@ interface UseSSEDataReturn {
   requirementCard: RequirementCardData | null;
   functionList: FunctionListData[];
   error: string | null;
+  finalSearchId: string; // 添加finalSearchId字段，返回最终使用的searchId（后端返回的或初始的）
 }
 
 /**
@@ -129,53 +131,65 @@ const createSSEContext = (
   },
   searchId: string,
   query: string,
-  showToast: any
-): SSEProcessingContext => ({
-  currentLogicSteps: currentResults.logicSteps,
-  currentCompetitors: currentResults.competitors,
-  currentFigures: currentResults.figures,
-  currentHotKeysData: currentResults.hotKeysData,
-  currentRequirementCard: currentResults.requirementCard,
-  currentFunctionList: currentResults.functionList,
-  setLogicSteps: (steps) => {
-    currentResults.logicSteps = steps;
-    setters.setLogicSteps(steps);
-  },
-  setCompetitors: (comps) => {
-    currentResults.competitors = comps;
-    setters.setCompetitors(comps);
-  },
-  setFigures: (figs) => {
-    currentResults.figures = figs;
-    setters.setFigures(figs);
-  },
-  setHotKeysData: (data) => {
-    currentResults.hotKeysData = data;
-    setters.setHotKeysData(data);
-  },
-  setRequirementCard: (data) => {
-    currentResults.requirementCard = data;
-    setters.setRequirementCard(data);
-  },
-  setFunctionList: (data) => {
-    if (typeof data === 'function') {
-      // 处理函数式更新
-      const newData = data(currentResults.functionList);
-      currentResults.functionList = newData;
-      setters.setFunctionList(newData);
-    } else {
-      // 处理直接值更新
-      currentResults.functionList = data;
-      setters.setFunctionList(data);
-    }
-  },
-  setLoading: setters.setLoading,
-  validSearchId: searchId,
-  hasValidId: false,
-  showToast,
-  addSearchToHistory,
-  query
-});
+  showToast: any,
+  router: any,
+  setFinalSearchId: (id: string) => void
+): SSEProcessingContext => {
+  // 创建一个可变的上下文对象，允许validSearchId被动态更新
+  const context: SSEProcessingContext = {
+    currentLogicSteps: currentResults.logicSteps,
+    currentCompetitors: currentResults.competitors,
+    currentFigures: currentResults.figures,
+    currentHotKeysData: currentResults.hotKeysData,
+    currentRequirementCard: currentResults.requirementCard,
+    currentFunctionList: currentResults.functionList,
+    setLogicSteps: (steps) => {
+      currentResults.logicSteps = steps;
+      setters.setLogicSteps(steps);
+    },
+    setCompetitors: (comps) => {
+      currentResults.competitors = comps;
+      setters.setCompetitors(comps);
+    },
+    setFigures: (figs) => {
+      currentResults.figures = figs;
+      setters.setFigures(figs);
+    },
+    setHotKeysData: (data) => {
+      currentResults.hotKeysData = data;
+      setters.setHotKeysData(data);
+    },
+    setRequirementCard: (data) => {
+      currentResults.requirementCard = data;
+      setters.setRequirementCard(data);
+    },
+    setFunctionList: (data) => {
+      if (typeof data === 'function') {
+        // 处理函数式更新
+        const newData = data(currentResults.functionList);
+        currentResults.functionList = newData;
+        setters.setFunctionList(newData);
+      } else {
+        // 处理直接值更新
+        currentResults.functionList = data;
+        setters.setFunctionList(data);
+      }
+    },
+    setLoading: setters.setLoading,
+    validSearchId: searchId, // 初始值使用传入的searchId
+    hasValidId: false, // 初始为false，等待后端返回真实的id
+    showToast,
+    addSearchToHistory,
+    query,
+    updateURL: (newSearchId: string) => {
+      // 更新浏览器URL，使用replace避免在历史记录中创建新条目
+      router.replace(`/results?id=${newSearchId}`);
+    },
+    setFinalSearchId
+  };
+  
+  return context;
+};
 
 /**
  * 设置超时监控
@@ -203,7 +217,7 @@ const setupTimeoutMonitor = (
     if ((currentTime - lastDataTimeRef.current > streamTimeout) && hasReceivedCompetitorsRef.current) {
       console.log("Stream processing timed out, sending end signal");
       setLoading(false);
-      // 保存当前数据并结束流，使用context中的最新数据
+      // 保存当前数据并结束流，使用context中的最新数据和动态searchId
       const latestResults: SearchResultData = {
         logicSteps: context.currentLogicSteps,
         competitors: context.currentCompetitors,
@@ -212,9 +226,11 @@ const setupTimeoutMonitor = (
         requirementCard: context.currentRequirementCard,
         functionList: context.currentFunctionList
       };
-      saveCompleteSearchData(validSearchId, query, latestResults);
+      // 使用context中的validSearchId，这个值可能已经被后端返回的id更新了
+      const finalSearchId = context.hasValidId ? context.validSearchId : validSearchId;
+      saveCompleteSearchData(finalSearchId, query, latestResults);
       // 数据保存完成后添加到历史记录
-      context.addSearchToHistory(query, validSearchId);
+      context.addSearchToHistory(query, finalSearchId);
       if (intervalIdRef.current !== null) {
         clearInterval(intervalIdRef.current);
         intervalIdRef.current = null;
@@ -298,9 +314,10 @@ const processSSELine = (
           functionList: context.currentFunctionList
         };
         
-        // 异步保存，不阻塞数据处理
+        // 异步保存，不阻塞数据处理，使用动态的searchId
         setTimeout(() => {
-          saveCompleteSearchData(searchId, query, currentResults);
+          const finalSearchId = context.hasValidId ? context.validSearchId : searchId;
+          saveCompleteSearchData(finalSearchId, query, currentResults);
           console.log(`Data persisted after processing: ${jsonData.step}`);
         }, 0);
       }
@@ -355,7 +372,7 @@ const createStreamProcessor = (
         const { done, value } = await reader.read();
 
         if (done) {
-          // 使用context中的最新数据进行保存
+          // 使用context中的最新数据进行保存，使用动态的searchId
           const latestResults: SearchResultData = {
             logicSteps: context.currentLogicSteps,
             competitors: context.currentCompetitors,
@@ -364,9 +381,10 @@ const createStreamProcessor = (
             requirementCard: context.currentRequirementCard,
             functionList: context.currentFunctionList
           };
-          saveCompleteSearchData(validSearchId, query, latestResults);
+          const finalSearchId = context.hasValidId ? context.validSearchId : validSearchId;
+          saveCompleteSearchData(finalSearchId, query, latestResults);
           // 数据保存完成后添加到历史记录
-          context.addSearchToHistory(query, validSearchId);
+          context.addSearchToHistory(query, finalSearchId);
           setLoading(false);
           clearTimeoutMonitor(intervalIdRef);
           return;
@@ -383,7 +401,7 @@ const createStreamProcessor = (
         for (const line of lines) {
           const shouldEnd = processSSELine(line, processor, context, hasReceivedCompetitorsRef, validSearchId, query);
           if (shouldEnd) {
-            // 在流结束时保存数据，使用context中的最新数据
+            // 在流结束时保存数据，使用context中的最新数据和动态searchId
             const latestResults: SearchResultData = {
               logicSteps: context.currentLogicSteps,
               competitors: context.currentCompetitors,
@@ -392,9 +410,10 @@ const createStreamProcessor = (
               requirementCard: context.currentRequirementCard,
               functionList: context.currentFunctionList
             };
-            saveCompleteSearchData(validSearchId, query, latestResults);
+            const finalSearchId = context.hasValidId ? context.validSearchId : validSearchId;
+            saveCompleteSearchData(finalSearchId, query, latestResults);
             // 数据保存完成后添加到历史记录
-            context.addSearchToHistory(query, validSearchId);
+            context.addSearchToHistory(query, finalSearchId);
             setLoading(false);
             clearTimeoutMonitor(intervalIdRef);
             return;
@@ -402,7 +421,7 @@ const createStreamProcessor = (
         }
       }
     } catch (error) {
-      // 在任何异常情况下都保存当前数据，使用context中的最新数据
+      // 在任何异常情况下都保存当前数据，使用context中的最新数据和动态searchId
       const latestResults: SearchResultData = {
         logicSteps: context.currentLogicSteps,
         competitors: context.currentCompetitors,
@@ -411,9 +430,10 @@ const createStreamProcessor = (
         requirementCard: context.currentRequirementCard,
         functionList: context.currentFunctionList
       };
-      saveCompleteSearchData(validSearchId, query, latestResults);
+      const finalSearchId = context.hasValidId ? context.validSearchId : validSearchId;
+      saveCompleteSearchData(finalSearchId, query, latestResults);
       // 数据保存完成后添加到历史记录
-      context.addSearchToHistory(query, validSearchId);
+      context.addSearchToHistory(query, finalSearchId);
       setLoading(false);
       clearTimeoutMonitor(intervalIdRef);
       
@@ -443,8 +463,10 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
   const [requirementCard, setRequirementCard] = useState<RequirementCardData | null>(initialResults.requirementCard);
   const [functionList, setFunctionList] = useState<FunctionListData[]>(initialResults.functionList);
   const [error, setError] = useState<string | null>(null);
+  const [finalSearchId, setFinalSearchId] = useState<string>(searchId); // 跟踪最终使用的searchId
   
   const { showToast } = useToast();
+  const router = useRouter();
   const intervalIdRef = useRef<number | null>(null);
   const lastDataTimeRef = useRef<number>(Date.now());
   const hasReceivedCompetitorsRef = useRef<boolean>(false);
@@ -521,7 +543,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
         // 初始化处理数据
         const currentResults = createInitialResultsState();
         const setters = { setLogicSteps, setCompetitors, setFigures, setHotKeysData, setRequirementCard, setFunctionList, setLoading };
-        const context = createSSEContext(currentResults, setters, searchId, query, showToast);
+        const context = createSSEContext(currentResults, setters, searchId, query, showToast, router, setFinalSearchId);
         
         // 设置超时监控
         lastDataTimeRef.current = Date.now();
@@ -591,6 +613,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
     hotKeysData,
     requirementCard,
     functionList,
-    error
+    error,
+    finalSearchId
   };
 };
