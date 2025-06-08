@@ -29,8 +29,15 @@ const FunctionListContent = ({ functionData }: { functionData: FunctionListData[
     return priority[a.type] - priority[b.type];
   });
 
-  // 获取优先级配置
-  const getPriorityConfig = (type: string) => {
+  // 计算内容高度和获取优先级配置
+  const getPriorityConfig = (type: string, contentLength: number) => {
+    // 根据内容量动态调整Others区域大小
+    const getOthersSize = () => {
+      if (contentLength > 15) return "col-span-2 row-span-1"; // 内容多时占更大空间
+      if (contentLength > 8) return "col-span-1 row-span-2"; // 中等内容
+      return "col-span-1 row-span-1"; // 内容少时保持小尺寸
+    };
+
     switch (type) {
       case "must-have":
         return {
@@ -42,7 +49,7 @@ const FunctionListContent = ({ functionData }: { functionData: FunctionListData[
           textColor: "text-red-800 dark:text-red-200",
           innerBg: "bg-gradient-to-br from-red-50/80 to-pink-50/80 dark:from-red-900/50 dark:to-pink-900/50",
           innerBorder: "border-red-200 dark:border-red-700",
-          size: "col-span-2 row-span-2" // 最大区域
+          size: "col-span-2 row-span-1" // 减少高度
         };
       case "could-have":
         return {
@@ -54,7 +61,7 @@ const FunctionListContent = ({ functionData }: { functionData: FunctionListData[
           textColor: "text-orange-800 dark:text-orange-200",
           innerBg: "bg-gradient-to-br from-orange-50/80 to-yellow-50/80 dark:from-orange-900/50 dark:to-yellow-900/50",
           innerBorder: "border-orange-200 dark:border-orange-700",
-          size: "col-span-1 row-span-2" // 中等区域
+          size: "col-span-1 row-span-1" // 减少高度
         };
       case "may-have":
         return {
@@ -78,7 +85,7 @@ const FunctionListContent = ({ functionData }: { functionData: FunctionListData[
           textColor: "text-gray-800 dark:text-gray-200",
           innerBg: "bg-gradient-to-br from-gray-50/80 to-zinc-50/80 dark:from-gray-900/50 dark:to-zinc-900/50",
           innerBorder: "border-gray-200 dark:border-gray-700",
-          size: "col-span-1 row-span-1" // 最小区域
+          size: getOthersSize() // 动态调整Others区域大小
         };
       default:
         return {
@@ -95,33 +102,49 @@ const FunctionListContent = ({ functionData }: { functionData: FunctionListData[
     }
   };
 
+  // 计算总内容数量用于动态布局
+  const calculateContentLength = (content: Record<string, string[]>) => {
+    return Object.values(content).reduce((total, features) => total + features.length, 0);
+  };
+
+  // 动态计算网格高度
+  const calculateGridHeight = () => {
+    const totalItems = sortedData.length;
+    const hasLargeContent = sortedData.some(item => calculateContentLength(item.content) > 10);
+    
+    if (totalItems <= 2) return "min-h-[300px]";
+    if (totalItems === 3 && hasLargeContent) return "min-h-[400px]";
+    if (totalItems >= 4 || hasLargeContent) return "min-h-[450px]";
+    return "min-h-[350px]";
+  };
+
   return (
     <div className="bg-white dark:bg-neutral-900 rounded-2xl p-8 shadow-md border border-neutral-200 dark:border-neutral-800">
-
-      {/* 网格布局 - 使用CSS Grid实现不同大小的区域 */}
-      <div className="grid grid-cols-3 grid-rows-3 gap-6 min-h-[600px]">
+      {/* 网格布局 - 使用CSS Grid实现不同大小的区域，动态调整高度 */}
+      <div className={`grid grid-cols-3 auto-rows-fr gap-6 ${calculateGridHeight()}`}>
         {sortedData.map((item, index) => {
-          const config = getPriorityConfig(item.type);
+          const contentLength = calculateContentLength(item.content);
+          const config = getPriorityConfig(item.type, contentLength);
 
           return (
             <motion.div
               key={`${item.type}-${index}`}
-              className={`${config.bgColor} ${config.borderColor} ${config.size} rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300`}
+              className={`${config.bgColor} ${config.borderColor} ${config.size} rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col`}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.1 }}
             >
               {/* 标题区域 */}
-              <div className="flex items-center mb-4">
+              <div className="flex items-center mb-4 flex-shrink-0">
                 <div className={`w-8 h-8 ${config.iconBg} rounded-lg flex items-center justify-center mr-3`}>
                   {config.icon}
                 </div>
                 <h4 className={`text-lg font-bold ${config.textColor}`}>{config.title}</h4>
               </div>
 
-              {/* 功能列表内容 */}
-              <div className={`${config.innerBg} ${config.innerBorder} border rounded-lg p-4 h-full overflow-y-auto`}>
-                <div className="space-y-4">
+              {/* 功能列表内容 - 使用flex-1确保填满剩余空间 */}
+              <div className={`${config.innerBg} ${config.innerBorder} border rounded-lg p-4 flex-1 overflow-y-auto`}>
+                <div className="space-y-4 h-full">
                   {Object.entries(item.content).map(([module, features]) => (
                     <div key={module} className="space-y-2">
                       <h5 className="font-semibold text-neutral-800 dark:text-neutral-200 text-sm border-b border-neutral-200 dark:border-neutral-600 pb-1">
@@ -140,11 +163,30 @@ const FunctionListContent = ({ functionData }: { functionData: FunctionListData[
                       </ul>
                     </div>
                   ))}
+                  {/* 如果内容较少，添加填充空间 */}
+                  {contentLength < 5 && (
+                    <div className="flex-1 flex items-end justify-center text-neutral-400 dark:text-neutral-600 text-xs">
+                      <span className="opacity-50">• • •</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
           );
         })}
+        
+        {/* 如果数据不足4个，填充空白区域 */}
+        {sortedData.length < 4 && Array.from({ length: 4 - sortedData.length }).map((_, index) => (
+          <div 
+            key={`empty-${index}`} 
+            className="col-span-1 row-span-1 bg-gray-50/30 dark:bg-gray-900/30 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex items-center justify-center"
+          >
+            <div className="text-gray-400 dark:text-gray-600 text-sm opacity-50">
+              <IconDots className="w-6 h-6 mx-auto mb-2" />
+              <span>Available</span>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

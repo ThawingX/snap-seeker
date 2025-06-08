@@ -236,7 +236,9 @@ const processSSELine = (
   line: string,
   processor: SSEDataProcessor,
   context: SSEProcessingContext,
-  hasReceivedCompetitorsRef: React.MutableRefObject<boolean>
+  hasReceivedCompetitorsRef: React.MutableRefObject<boolean>,
+  searchId: string,
+  query: string
 ): boolean => {
   if (line.trim() === '') return false;
 
@@ -283,7 +285,27 @@ const processSSELine = (
       }
 
       // 使用策略模式处理数据
-      return processor.process(jsonData, context);
+      const processed = processor.process(jsonData, context);
+      
+      // 每次成功处理数据后立即持久化
+      if (processed) {
+        const currentResults: SearchResultData = {
+          logicSteps: context.currentLogicSteps,
+          competitors: context.currentCompetitors,
+          figures: context.currentFigures,
+          hotKeysData: context.currentHotKeysData,
+          requirementCard: context.currentRequirementCard,
+          functionList: context.currentFunctionList
+        };
+        
+        // 异步保存，不阻塞数据处理
+        setTimeout(() => {
+          saveCompleteSearchData(searchId, query, currentResults);
+          console.log(`Data persisted after processing: ${jsonData.step}`);
+        }, 0);
+      }
+      
+      return processed;
     }
   } catch (err) {
     console.error('Error processing SSE line:', {
@@ -359,7 +381,7 @@ const createStreamProcessor = (
 
         // 处理每一行
         for (const line of lines) {
-          const shouldEnd = processSSELine(line, processor, context, hasReceivedCompetitorsRef);
+          const shouldEnd = processSSELine(line, processor, context, hasReceivedCompetitorsRef, validSearchId, query);
           if (shouldEnd) {
             // 在流结束时保存数据，使用context中的最新数据
             const latestResults: SearchResultData = {

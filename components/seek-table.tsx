@@ -1,8 +1,8 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash, IconPhoto, IconClipboardList, IconList } from "@tabler/icons-react";
+import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash, IconPhoto, IconClipboardList, IconList, IconArrowLeft } from "@tabler/icons-react";
 
 import { SearchLogic } from "./search/SearchLogic";
 import { CompetitorCards } from "./competitor/CompetitorCards";
@@ -40,6 +40,9 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   const insightsRef = useRef<HTMLDivElement>(null!);
   const recommendationsRef = useRef<HTMLDivElement>(null!);
 
+  // 滚动状态管理
+  const [isScrolled, setIsScrolled] = useState(false);
+
   // 使用 SSE 数据获取 Hook
   const {
     loading,
@@ -51,6 +54,139 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     functionList: functionListData,
     error
   } = useSSEData({ query, searchId });
+
+  // 监听滚动事件
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 100);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // 页面卸载时确保数据持久化
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // 检查是否有未保存的数据
+      const hasUnsavedData = searchSteps.length > 0 || 
+                            competitorData.length > 0 || 
+                            figureData.length > 0 || 
+                            hotKeysData.length > 0 || 
+                            requirementData || 
+                            functionListData.length > 0;
+      
+      if (hasUnsavedData) {
+        // 尝试最后一次保存
+        try {
+          const currentResults = {
+            logicSteps: searchSteps,
+            competitors: competitorData,
+            figures: figureData,
+            hotKeysData,
+            requirementCard: requirementData,
+            functionList: functionListData
+          };
+          
+          // 使用同步方式保存到localStorage
+          const searchData = {
+            id: searchId,
+            query: query,
+            timestamp: Date.now(),
+            results: currentResults
+          };
+          
+          localStorage.setItem(`search_${searchData.id}`, JSON.stringify(searchData));
+          console.log('Emergency data save completed before page unload');
+        } catch (error) {
+          console.error('Failed to save data before unload:', error);
+        }
+        
+        // 提示用户有未保存的数据
+        e.preventDefault();
+        e.returnValue = '您有未保存的搜索数据，确定要离开吗？';
+        return '您有未保存的搜索数据，确定要离开吗？';
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // 页面变为不可见时保存数据
+        const hasUnsavedData = searchSteps.length > 0 || 
+                              competitorData.length > 0 || 
+                              figureData.length > 0 || 
+                              hotKeysData.length > 0 || 
+                              requirementData || 
+                              functionListData.length > 0;
+        
+        if (hasUnsavedData) {
+          try {
+            const currentResults = {
+              logicSteps: searchSteps,
+              competitors: competitorData,
+              figures: figureData,
+              hotKeysData,
+              requirementCard: requirementData,
+              functionList: functionListData
+            };
+            
+            const searchData = {
+              id: searchId,
+              query: query,
+              timestamp: Date.now(),
+              results: currentResults
+            };
+            
+            localStorage.setItem(`search_${searchData.id}`, JSON.stringify(searchData));
+            console.log('Data saved on visibility change');
+          } catch (error) {
+            console.error('Failed to save data on visibility change:', error);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
+      // 组件卸载时最后一次保存
+      const hasUnsavedData = searchSteps.length > 0 || 
+                            competitorData.length > 0 || 
+                            figureData.length > 0 || 
+                            hotKeysData.length > 0 || 
+                            requirementData || 
+                            functionListData.length > 0;
+      
+      if (hasUnsavedData) {
+        try {
+          const currentResults = {
+            logicSteps: searchSteps,
+            competitors: competitorData,
+            figures: figureData,
+            hotKeysData,
+            requirementCard: requirementData,
+            functionList: functionListData
+          };
+          
+          const searchData = {
+            id: searchId,
+            query: query,
+            timestamp: Date.now(),
+            results: currentResults
+          };
+          
+          localStorage.setItem(`search_${searchData.id}`, JSON.stringify(searchData));
+          console.log('Final data save on component unmount');
+        } catch (error) {
+          console.error('Failed to save data on unmount:', error);
+        }
+      }
+    };
+  }, [searchSteps, competitorData, figureData, hotKeysData, requirementData, functionListData, searchId, query]);
 
   // 浮动导航菜单项
   const dockItems = [
@@ -150,22 +286,33 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
 
   return (
     <div className="relative">
+      {/* 固定的返回按钮 */}
+      <Link 
+        href="/history" 
+        className={`fixed top-6 left-6 z-50 transition-all duration-300 ${
+          isScrolled 
+            ? 'bg-white/90 dark:bg-neutral-900/90 backdrop-blur-sm shadow-lg border border-neutral-200 dark:border-neutral-700' 
+            : 'bg-transparent'
+        } text-cyan-500 hover:text-cyan-400 flex items-center px-4 py-2 rounded-full hover:bg-cyan-50 dark:hover:bg-cyan-900/20`}
+      >
+        <IconArrowLeft className="h-5 w-5 mr-2" />
+        <span className={`transition-opacity duration-300 ${
+          isScrolled ? 'opacity-100' : 'opacity-0 sm:opacity-100'
+        }`}>
+          Back to History
+        </span>
+      </Link>
+
       <FloatingDock
         items={dockItems}
         desktopClassName="fixed bottom-8 right-8 z-50 shadow-lg"
         mobileClassName="fixed bottom-8 right-8 z-50 shadow-lg"
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20">
         <div className="space-y-8">
         {/* 页面头部 */}
         <div className="mb-8">
-          <Link href="/history" className="text-cyan-500 hover:text-cyan-400 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            Back to History
-          </Link>
           <h1 className="text-3xl font-bold mt-4 mb-2">Competitor Analysis</h1>
           <p className="text-neutral-400">Results for: {query}</p>
           {loading && (
