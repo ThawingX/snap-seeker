@@ -39,7 +39,7 @@ export interface GoogleAuthResponse {
 
 // Login request interface
 export interface LoginRequest {
-  idToken: string;
+  google_id_token: string;
   invitationCode?: string;
 }
 
@@ -210,7 +210,7 @@ export const authenticateWithServer = async (
     const API_BASE_URL = 'https://api.snapsnap.site';
     
     const requestBody: LoginRequest = {
-      idToken: googleIdToken,
+      google_id_token: googleIdToken,
       invitationCode: invitationCode || undefined,
     };
 
