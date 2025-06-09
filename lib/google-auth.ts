@@ -118,14 +118,16 @@ export const signInWithGoogle = (): Promise<GoogleAuthResponse> => {
     window.google.accounts.id.prompt((notification: any) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
         // 如果弹窗没有显示，尝试使用按钮方式
-        window.google.accounts.id.renderButton(
-          document.createElement('div'),
-          {
-            theme: 'outline',
-            size: 'large',
-            type: 'standard',
-          }
-        );
+        if (window.google?.accounts?.id) {
+          window.google.accounts.id.renderButton(
+            document.createElement('div'),
+            {
+              theme: 'outline',
+              size: 'large',
+              type: 'standard',
+            }
+          );
+        }
       }
     });
   });
