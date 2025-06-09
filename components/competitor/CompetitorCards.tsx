@@ -140,6 +140,8 @@ export const CompetitorCards: React.FC<CompetitorCardsProps> = ({
   loading,
   competitorsRef
 }) => {
+  // 防护措施：确保competitorData是数组
+  const safeCompetitorData = competitorData || [];
   return (
     <motion.div
       ref={competitorsRef}
@@ -154,13 +156,13 @@ export const CompetitorCards: React.FC<CompetitorCardsProps> = ({
         Main Competitors
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {competitorData.length > 0 ? (
+        {safeCompetitorData.length > 0 ? (
           <>
-            {competitorData.filter(competitor => competitor != null).map((competitor) => (
+            {safeCompetitorData.filter(competitor => competitor != null).map((competitor) => (
               <CompetitorCard key={competitor.id} competitor={competitor} />
             ))}
-            {loading && competitorData.length < 3 &&
-              Array(3 - competitorData.length).fill(0).map((_, index) => (
+            {loading && safeCompetitorData.length < 3 &&
+              Array(3 - safeCompetitorData.length).fill(0).map((_, index) => (
                 <CompetitorCardSkeleton key={`skeleton-${index}`} />
               ))
             }

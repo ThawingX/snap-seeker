@@ -249,7 +249,7 @@ export default function SignupForm() {
             htmlFor="terms"
             className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
           >
-            I agree to the <a href="#" className="text-cyan-500 hover:text-cyan-400">Terms of Service</a> and <a href="#" className="text-cyan-500 hover:text-cyan-400">Privacy Policy</a> *
+            I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-cyan-500 hover:text-cyan-400">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-cyan-500 hover:text-cyan-400">Privacy Policy</a> *
           </label>
         </div>
 

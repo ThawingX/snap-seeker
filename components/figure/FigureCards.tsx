@@ -124,6 +124,9 @@ export const FigureCards: React.FC<FigureCardsProps> = ({
   loading,
   figuresRef
 }) => {
+  // 防护措施：确保figureData是数组
+  const safeFigureData = figureData || [];
+  
   const [modalImage, setModalImage] = useState<{
     src: string;
     title: string;
@@ -158,51 +161,49 @@ export const FigureCards: React.FC<FigureCardsProps> = ({
           </span>
         </h2>
         <div className="space-y-6">
-          {figureData.length > 0 ? (
-            <>
-              {/* Figure 1 和 Figure 2 在同一行 */}
-              {figureData.filter(figure => figure != null && figure.figureIndex <= 2).length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {figureData
-                    .filter(figure => figure != null && figure.figureIndex <= 2)
-                    .map((figure, index) => (
-                      <FigureCard
-                        key={`figure-${figure.figureIndex}`}
-                        figure={figure}
-                        onImageClick={handleImageClick}
-                      />
-                    ))
-                  }
-                  {/* 如果只有一个图片且正在加载，显示骨架屏 */}
-                  {loading && figureData.filter(figure => figure != null && figure.figureIndex <= 2).length === 1 && (
-                    <FigureCardSkeleton />
-                  )}
-                </div>
-              )}
-
-              {/* Figure 3 及以后的图片单独占一行 */}
-              {figureData.filter(figure => figure != null && figure.figureIndex >= 3).map((figure, index) => (
-                <div key={`figure-row-${figure.figureIndex}`} className="grid grid-cols-1">
+          {safeFigureData.length > 0 ? (
+          <>
+            {/* Figure 1 和 Figure 2 的网格布局 */}
+            {safeFigureData.filter(figure => figure != null && figure.figureIndex <= 2).length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {safeFigureData.filter(figure => figure != null && figure.figureIndex <= 2).map((figure, index) => (
                   <FigureCard
+                    key={figure.figureIndex}
                     figure={figure}
                     onImageClick={handleImageClick}
                   />
-                </div>
-              ))}
+                ))}
+                
+                {/* 如果只有一个图片且正在加载，显示骨架屏 */}
+                {loading && safeFigureData.filter(figure => figure != null && figure.figureIndex <= 2).length === 1 && (
+                  <FigureCardSkeleton />
+                )}
+              </div>
+            )}
 
-              {/* 加载状态的骨架屏 */}
-              {loading && figureData.length === 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FigureCardSkeleton />
-                  <FigureCardSkeleton />
-                </div>
-              )}
-              {loading && figureData.length === 2 && (
-                <div className="grid grid-cols-1">
-                  <FigureCardSkeleton />
-                </div>
-              )}
-            </>
+            {/* Figure 3 及以后的图片单独占一行 */}
+            {safeFigureData.filter(figure => figure != null && figure.figureIndex >= 3).map((figure, index) => (
+              <div key={`figure-row-${figure.figureIndex}`} className="grid grid-cols-1">
+                <FigureCard
+                  figure={figure}
+                  onImageClick={handleImageClick}
+                />
+              </div>
+            ))}
+
+            {/* 加载状态的骨架屏 */}
+            {loading && safeFigureData.length === 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FigureCardSkeleton />
+                <FigureCardSkeleton />
+              </div>
+            )}
+            {loading && safeFigureData.length === 2 && (
+              <div className="grid grid-cols-1">
+                <FigureCardSkeleton />
+              </div>
+            )}
+          </>
           ) : (
             loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

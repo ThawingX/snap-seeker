@@ -23,8 +23,11 @@ export interface FunctionListData {
  * 展示四个优先级区域的功能清单，按面积递减排列
  */
 const FunctionListContent = ({ functionData }: { functionData: FunctionListData[] }) => {
+  // 防护措施：确保functionData是数组
+  const safeData = functionData || [];
+  
   // 按优先级排序数据
-  const sortedData = functionData.sort((a, b) => {
+  const sortedData = safeData.sort((a, b) => {
     const priority = { "must-have": 0, "could-have": 1, "may-have": 2, "others": 3 };
     return priority[a.type] - priority[b.type];
   });

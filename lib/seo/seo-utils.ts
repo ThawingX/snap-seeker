@@ -18,8 +18,15 @@ export function generateSeoDescription(
  * Helper to get keywords as string from category
  */
 export function getKeywordsAsString(categories: SeoKeywordCategory[], language: 'zh' | 'en' = 'en'): string {
+  // Add safety checks for undefined categories and keywords
+  if (!categories || !Array.isArray(categories)) {
+    return '';
+  }
+  
   return categories
-    .flatMap(category => category.keywords.map(kw => kw[language]))
+    .filter(category => category && category.keywords && Array.isArray(category.keywords))
+    .flatMap(category => category.keywords.map(kw => kw && kw[language] ? kw[language] : ''))
+    .filter(keyword => keyword && keyword.trim() !== '')
     .join(', ');
 }
 
@@ -207,4 +214,4 @@ export function generateArticleStructuredData(
       '@id': `${seoConfig.siteUrl}${path}`,
     },
   };
-} 
+}

@@ -105,10 +105,10 @@ export default function SeoFooter() {
         <div className="flex gap-4">
           <Link href="/about" className="text-neutral-500 text-sm hover:text-white">About Us</Link>
           <Link href="/features" className="text-neutral-500 text-sm hover:text-white">Features</Link>
-          <Link href="/" className="text-neutral-500 text-sm hover:text-white">Privacy Policy</Link>
-          <Link href="/" className="text-neutral-500 text-sm hover:text-white">Terms</Link>
+          <Link href="/privacy" className="text-neutral-500 text-sm hover:text-white">Privacy Policy</Link>
+          <Link href="/terms" className="text-neutral-500 text-sm hover:text-white">Terms</Link>
         </div>
       </div>
     </div>
   );
-} 
+}
