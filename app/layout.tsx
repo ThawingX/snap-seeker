@@ -5,7 +5,7 @@ import { generateMetadata } from "@/lib/seo/seo-utils";
 import seoConfig from "@/lib/seo/seo-config";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ToastProvider } from "@/components/ui/toast";
-import { GoogleTagManager } from "@/components/GoogleTagManager";
+import { GoogleTagManager, GoogleTagManagerNoScript } from "@/components/GoogleTagManager";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -38,9 +38,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <GoogleTagManager />
-      <VercelAnalytics />
+      <head>
+        <GoogleTagManager />
+        <VercelAnalytics />
+      </head>
       <body className={`${inter.className} min-h-screen bg-black text-white antialiased`}>
+        <GoogleTagManagerNoScript />
         <ToastProvider>
           <AuthProvider>
             {children}
