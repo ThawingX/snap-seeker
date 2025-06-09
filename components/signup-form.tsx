@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/form-utils";
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { initializeGoogleAuth, signInWithGoogle, isGoogleAuthAvailable, getGoogleAuthUnavailableReason } from "@/lib/google-auth";
+import type { LoginResponse } from "@/lib/google-auth";
 
 /**
  * 注册表单组件
@@ -19,7 +21,8 @@ import { useAuth } from "@/contexts/AuthContext";
  */
 export default function SignupForm() {
   const { showToast } = useToast();
-  const { register, loading } = useAuth();
+  const { register, loginGoogle, loading } = useAuth();
+  const [isGoogleAuthReady, setIsGoogleAuthReady] = useState(false);
   
   // 表单状态
   const [formData, setFormData] = useState({
@@ -31,6 +34,20 @@ export default function SignupForm() {
     invitationCode: '',
     agreeToTerms: false
   });
+
+  // 初始化Google认证
+  useEffect(() => {
+    const initGoogleAuth = async () => {
+      try {
+        await initializeGoogleAuth();
+        setIsGoogleAuthReady(true);
+      } catch (error) {
+        console.error('Failed to initialize Google Auth:', error);
+      }
+    };
+
+    initGoogleAuth();
+  }, []);
 
   /**
    * 处理输入变化
@@ -104,14 +121,32 @@ export default function SignupForm() {
    */
   const handleGoogleSignup = async () => {
     try {
-      // 这里需要集成Google Sign-In SDK
-      // 暂时显示提示信息
+      if (!isGoogleAuthReady || !isGoogleAuthAvailable()) {
+        const reason = getGoogleAuthUnavailableReason();
+        showToast({
+          message: reason,
+          type: "error",
+          duration: 8000
+        });
+        return;
+      }
+
+      // 使用Google Sign-In，传入邀请码
+      const result: LoginResponse = await signInWithGoogle(formData.invitationCode || null);
+      
+      // 调用AuthContext的loginGoogle方法（注册和登录使用同一个接口）
+      await loginGoogle({
+        google_id_token: result.token,
+        invitation_code: formData.invitationCode || null
+      });
+
       showToast({
-        message: "Google signup integration is in progress. Please use email signup for now.",
-        type: "info",
-        duration: 5000
+        message: `Welcome, ${result.user.name}! Your account has been created.`,
+        type: "success",
+        duration: 3000
       });
     } catch (error) {
+      console.error('Google signup error:', error);
       showToast({
         message: error instanceof Error ? error.message : "Google signup failed",
         type: "error",
