@@ -124,7 +124,7 @@ export default function SignupForm() {
       if (!isGoogleAuthReady || !isGoogleAuthAvailable()) {
         const reason = getGoogleAuthUnavailableReason();
         showToast({
-          message: reason,
+          message: reason || "Google authentication is not available",
           type: "error",
           duration: 8000
         });

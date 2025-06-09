@@ -51,7 +51,6 @@ export const GoogleAuthExample: React.FC<GoogleAuthExampleProps> = ({
         renderGoogleSignInButton(buttonRef.current, invitationCode, {
           theme: 'outline',
           size: 'large',
-          type: 'standard',
           text: 'signin_with',
         });
       } catch (err) {

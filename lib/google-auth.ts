@@ -11,7 +11,7 @@ declare global {
       accounts: {
         id: {
           initialize: (config: any) => void;
-          prompt: () => void;
+          prompt: (callback?: (notification: { isNotDisplayed: () => boolean; isSkippedMoment: () => boolean; isDismissedMoment: () => boolean; }) => void) => void;
           renderButton: (element: HTMLElement, config: any) => void;
           disableAutoSelect: () => void;
         };
@@ -154,7 +154,7 @@ export const signInWithGoogle = (invitationCode: string | null = null): Promise<
     });
 
     // 显示Google登录弹窗
-    window.google.accounts.id.prompt((notification: any) => {
+    window.google.accounts.id.prompt((notification) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
         // 如果弹窗没有显示，可能是因为用户之前取消过
         // 这种情况下我们可以尝试使用按钮方式登录
@@ -211,7 +211,7 @@ export const authenticateWithServer = async (
     
     const requestBody: LoginRequest = {
       idToken: googleIdToken,
-      invitationCode: invitationCode,
+      invitationCode: invitationCode || undefined,
     };
 
     const response = await fetch(`${API_BASE_URL}/auth/login/google`, {

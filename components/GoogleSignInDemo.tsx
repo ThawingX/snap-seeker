@@ -84,7 +84,7 @@ export default function GoogleSignInDemo({
     // 渲染Google登录按钮
     const buttonContainer = document.getElementById('google-signin-button');
     if (buttonContainer) {
-      renderGoogleSignInButton(buttonContainer, {
+      renderGoogleSignInButton(buttonContainer, null, {
         theme: 'outline',
         size: 'large',
         text: 'signin_with',
