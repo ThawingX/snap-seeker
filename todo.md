@@ -49,9 +49,12 @@ Thu June 5 2025:
 - [x] 图表点击放大
 - [x] figure1 figure2 改名
 - [x] 需求卡片
-- [] 功能清单 markdown
-- [] 导出
-- [] google tag manager
-- [] 移动端适配
-- [] seo添加
+- [x] 功能清单 markdown
+- [x] 导出
 - [x] trae.rules
+
+Mon June 9 2025:
+- [] google tag manager
+- [] 移动端适配-等待接口联调完毕后添加
+- [] seo添加
+- [x] login 功能

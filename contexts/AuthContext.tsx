@@ -1,13 +1,36 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import AuthModal from "@/components/auth/AuthModal";
+import { 
+  isAuthenticated as checkAuthStatus, 
+  removeToken, 
+  storeToken,
+  loginWithPassword,
+  loginWithGoogle,
+  registerUser,
+  type LoginRequest,
+  type GoogleLoginRequest,
+  type RegisterRequest
+} from "@/lib/auth-api";
+
+// 定义用户信息类型
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+}
 
 // 定义上下文类型
 interface AuthContextType {
   isAuthenticated: boolean;
+  user: User | null;
   showAuthModal: (mode?: "login" | "signup") => void;
   hideAuthModal: () => void;
+  login: (data: LoginRequest) => Promise<void>;
+  loginGoogle: (data: GoogleLoginRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
+  loading: boolean;
 }
 
 // 创建上下文
@@ -26,10 +49,23 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // 认证状态
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   
   // 模态框状态
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"login" | "signup">("login");
+
+  // 初始化时检查认证状态
+  useEffect(() => {
+    const checkAuth = () => {
+      const authenticated = checkAuthStatus();
+      setIsAuthenticated(authenticated);
+      setLoading(false);
+    };
+    
+    checkAuth();
+  }, []);
 
   // 显示认证模态框
   const showAuthModal = (mode: "login" | "signup" = "login") => {
@@ -42,18 +78,78 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthModalOpen(false);
   };
 
+  // 邮箱密码登录
+  const login = async (data: LoginRequest) => {
+    setLoading(true);
+    try {
+      const response = await loginWithPassword(data);
+      storeToken(response.access_token);
+      setIsAuthenticated(true);
+      if (response.user) {
+        setUser(response.user);
+      }
+      hideAuthModal();
+    } catch (error) {
+      throw error; // 让调用者处理错误
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Google登录
+  const loginGoogle = async (data: GoogleLoginRequest) => {
+    setLoading(true);
+    try {
+      const response = await loginWithGoogle(data);
+      storeToken(response.access_token);
+      setIsAuthenticated(true);
+      if (response.user) {
+        setUser(response.user);
+      }
+      hideAuthModal();
+    } catch (error) {
+      throw error; // 让调用者处理错误
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 注册
+  const register = async (data: RegisterRequest) => {
+    setLoading(true);
+    try {
+      const response = await registerUser(data);
+      storeToken(response.access_token);
+      setIsAuthenticated(true);
+      if (response.user) {
+        setUser(response.user);
+      }
+      hideAuthModal();
+    } catch (error) {
+      throw error; // 让调用者处理错误
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // 退出登录
   const logout = () => {
+    removeToken();
     setIsAuthenticated(false);
-    // 这里可以添加其他注销逻辑
+    setUser(null);
   };
 
   // 提供上下文值
   const value = {
     isAuthenticated,
+    user,
     showAuthModal,
     hideAuthModal,
+    login,
+    loginGoogle,
+    register,
     logout,
+    loading,
   };
 
   return (
@@ -66,4 +162,4 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       />
     </AuthContext.Provider>
   );
-}; 
+};

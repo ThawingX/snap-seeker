@@ -1,9 +1,8 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
-  IconBrandGithub,
   IconBrandGoogle,
 } from "@tabler/icons-react";
 import { 
@@ -13,6 +12,7 @@ import {
   SocialButton 
 } from "@/components/ui/form-utils";
 import { useToast } from "@/components/ui/toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * 登录表单组件
@@ -20,29 +20,96 @@ import { useToast } from "@/components/ui/toast";
  */
 export default function LoginForm() {
   const { showToast } = useToast();
+  const { login, loginGoogle, loading } = useAuth();
+  
+  // 表单状态
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    rememberMe: false
+  });
+
+  /**
+   * 处理输入变化
+   */
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
 
   /**
    * 处理表单提交
    * @param e 表单提交事件
    */
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    showToast({
-      message: "Login functionality is not implemented yet. Please check back later.",
-      type: "info",
-      duration: 5000
-    });
+    
+    if (!formData.email || !formData.password) {
+      showToast({
+        message: "Please fill in all required fields",
+        type: "error",
+        duration: 3000
+      });
+      return;
+    }
+
+    try {
+      await login({
+        username: formData.email, // API expects username field
+        password: formData.password
+      });
+      
+      showToast({
+        message: "Login successful!",
+        type: "success",
+        duration: 3000
+      });
+    } catch (error) {
+      showToast({
+        message: error instanceof Error ? error.message : "Login failed",
+        type: "error",
+        duration: 5000
+      });
+    }
+  };
+
+  /**
+   * 处理Google登录
+   */
+  const handleGoogleLogin = async () => {
+    try {
+      // 这里需要集成Google Sign-In SDK
+      // 暂时显示提示信息
+      showToast({
+        message: "Google login integration is in progress. Please use email login for now.",
+        type: "info",
+        duration: 5000
+      });
+    } catch (error) {
+      showToast({
+        message: error instanceof Error ? error.message : "Google login failed",
+        type: "error",
+        duration: 5000
+      });
+    }
   };
 
   /**
    * 处理社交登录
    */
   const handleSocialLogin = (provider: string) => {
-    showToast({
-      message: `${provider} login is not implemented yet. Please check back later.`,
-      type: "info",
-      duration: 5000
-    });
+    if (provider === 'Google') {
+      handleGoogleLogin();
+    } else {
+      showToast({
+        message: `${provider} login is not implemented yet. Please check back later.`,
+        type: "info",
+        duration: 5000
+      });
+    }
   };
 
   return (
@@ -58,13 +125,31 @@ export default function LoginForm() {
         {/* 邮箱输入区域 */}
         <LabelInputContainer className="mb-4">
           <Label htmlFor="email">Email Address</Label>
-          <Input id="email" placeholder="your.email@example.com" type="email" />
+          <Input 
+            id="email" 
+            name="email"
+            placeholder="your.email@example.com" 
+            type="email" 
+            value={formData.email}
+            onChange={handleInputChange}
+            disabled={loading}
+            required
+          />
         </LabelInputContainer>
         
         {/* 密码输入区域 */}
         <LabelInputContainer className="mb-8">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" placeholder="••••••••" type="password" />
+          <Input 
+            id="password" 
+            name="password"
+            placeholder="••••••••" 
+            type="password" 
+            value={formData.password}
+            onChange={handleInputChange}
+            disabled={loading}
+            required
+          />
         </LabelInputContainer>
 
         {/* 记住我和忘记密码 */}
@@ -73,6 +158,10 @@ export default function LoginForm() {
             <input
               type="checkbox"
               id="remember"
+              name="rememberMe"
+              checked={formData.rememberMe}
+              onChange={handleInputChange}
+              disabled={loading}
               className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
             />
             <label
@@ -100,8 +189,8 @@ export default function LoginForm() {
         </div>
 
         {/* 登录按钮 */}
-        <PrimaryButton type="submit">
-          Log in &rarr;
+        <PrimaryButton type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Log in"} &rarr;
         </PrimaryButton>
 
         {/* 分隔线 */}
@@ -109,13 +198,6 @@ export default function LoginForm() {
 
         {/* 第三方登录选项 */}
         <div className="flex flex-col space-y-4">
-          <SocialButton onClick={() => handleSocialLogin("GitHub")}>
-            <IconBrandGithub className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
-              Login with GitHub
-            </span>
-          </SocialButton>
-          
           <SocialButton onClick={() => handleSocialLogin("Google")}>
             <IconBrandGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
             <span className="text-sm text-neutral-700 dark:text-neutral-300">
@@ -126,4 +208,4 @@ export default function LoginForm() {
       </form>
     </div>
   );
-} 
+}

@@ -43,7 +43,7 @@ export const Toast = ({
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className={`fixed top-4 right-4 z-50 flex items-center px-4 py-3 rounded-lg shadow-lg ${bgColors[type]} text-white max-w-md`}
+          className={`fixed top-4 right-4 z-[10000] flex items-center px-4 py-3 rounded-lg shadow-lg ${bgColors[type]} text-white max-w-md`}
         >
           <span className="flex-grow">{message}</span>
           <button
@@ -91,4 +91,4 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
       )}
     </ToastContext.Provider>
   );
-}; 
+};

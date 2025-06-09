@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import LoginForm from "@/components/login-form";
+import SignupForm from "@/components/signup-form";
 import { X } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
@@ -40,18 +41,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
     e.stopPropagation();
   };
 
-  // 处理注册表单提交
-  const handleSignupSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    trackEvent(ANALYTICS_EVENTS.CREATE_ACCOUNT_CLICK, {
-      signup_method: 'form'
-    });
-    showToast({
-      message: "Sign up is not allow yet.Please contact with developer!",
-      type: "info",
-      duration: 5000
-    });
-  };
+
 
   return (
     <AnimatePresence>
@@ -120,55 +110,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
             {mode === "login" ? (
               <LoginForm />
             ) : (
-              <div className="shadow-input mx-auto w-full max-w-md rounded-none rounded-b-xl bg-white p-4 md:p-8 dark:bg-black">
-                <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
-                  Create Your Account
-                </h2>
-                <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
-                  Join SnapSeeker today to discover more insights
-                </p>
-
-                <form className="my-8" onSubmit={handleSignupSubmit}>
-                  {/* 示例注册表单内容 */}
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                      Full Name
-                    </label>
-                    <input 
-                      type="text" 
-                      className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 dark:bg-neutral-900"
-                      placeholder="Your name" 
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                      Email Address
-                    </label>
-                    <input 
-                      type="email" 
-                      className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 dark:bg-neutral-900"
-                      placeholder="your.email@example.com" 
-                    />
-                  </div>
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
-                      Password
-                    </label>
-                    <input 
-                      type="password" 
-                      className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 dark:bg-neutral-900"
-                      placeholder="•••••••••" 
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
-                  >
-                    Create Account
-                  </button>
-                </form>
-              </div>
+              <SignupForm />
             )}
           </motion.div>
         </motion.div>
