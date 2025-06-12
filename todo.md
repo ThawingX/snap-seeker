@@ -55,8 +55,18 @@ Thu June 5 2025:
 
 Mon June 9 2025:
 - [x] google tag manager
-- [] 移动端适配-等待接口联调完毕后添加
-- [] seo添加
 - [x] login 功能
 - [x] 隐私政策
 - [x] google login
+  
+Wed June 11 2025：
+- [] 移动端适配-等待接口联调完毕后添加
+- [] 历史列表
+- [] 历史详情
+- [] credits
+- [] 登录修复
+- [] 不要浅色模式，固定深色
+- [] 不注册无法看完整结果，只能看到竞品分析
+- [] 删除firstname lastname
+- [] 删除忘记密码操作
+- [] seo添加
