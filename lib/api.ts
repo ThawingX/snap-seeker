@@ -49,6 +49,7 @@ export const API_ENDPOINTS = {
     REGISTER: `${ENV.API_BASE_URL}/auth/register/`,
     LOGIN: `${ENV.API_BASE_URL}/auth/login/token`,
     GOOGLE_LOGIN: `${ENV.API_BASE_URL}/auth/login/google`,
+    LOGOUT: `${ENV.API_BASE_URL}/auth/logout`,
   },
 
   // Chat endpoints

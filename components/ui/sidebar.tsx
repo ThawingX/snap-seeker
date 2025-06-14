@@ -206,10 +206,8 @@ export const SidebarCredits = ({ className }: { className?: string }) => {
         <span className="text-sm font-bold text-foreground ml-1">
           {loading ? (
             <span className="animate-pulse">Loading...</span>
-          ) : error ? (
-            <span className="text-destructive">Error</span>
           ) : (
-            credits?.toLocaleString() || '0'
+            (credits?.toLocaleString() || '0')
           )}
         </span>
       </motion.div>

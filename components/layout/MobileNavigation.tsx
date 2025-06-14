@@ -13,7 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const MobileNavigation = () => {
   const pathname = usePathname();
-  const { showAuthModal } = useAuth();
+  const { showAuthModal, isAuthenticated, logout } = useAuth();
   
   const navItems = [
     {
@@ -32,12 +32,16 @@ const MobileNavigation = () => {
       icon: <IconHistory size={24} />,
     },
     {
-      label: "Account",
+      label: isAuthenticated ? "Logout" : "Account",
       href: "#",
       icon: <IconUser size={24} />,
       onClick: (e: React.MouseEvent) => {
         e.preventDefault();
-        showAuthModal("login");
+        if (isAuthenticated) {
+          logout();
+        } else {
+          showAuthModal("login");
+        }
       }
     },
   ];

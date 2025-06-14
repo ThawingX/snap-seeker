@@ -8,6 +8,7 @@ import {
   loginWithPassword,
   loginWithGoogle,
   registerUser,
+  logoutUser,
   type LoginRequest,
   type GoogleLoginRequest,
   type RegisterRequest
@@ -143,10 +144,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // 退出登录
-  const logout = () => {
-    removeToken();
-    setIsAuthenticated(false);
-    setUser(null);
+  const logout = async () => {
+    try {
+      await logoutUser();
+      // API调用成功后更新状态
+      setIsAuthenticated(false);
+      setUser(null);
+    } catch (error) {
+      // 即使API调用失败，也清除本地状态
+      console.error('Logout API failed:', error);
+      removeToken();
+      setIsAuthenticated(false);
+      setUser(null);
+    }
   };
 
   // 提供上下文值

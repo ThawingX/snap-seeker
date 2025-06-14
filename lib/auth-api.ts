@@ -140,6 +140,21 @@ export const loginWithGoogle = async (data: GoogleLoginRequest): Promise<AuthRes
 };
 
 /**
+ * Logout user
+ */
+export const logoutUser = async (): Promise<void> => {
+  const response = await api.post(API_ENDPOINTS.AUTH.LOGOUT);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || errorData.message || 'Logout failed');
+  }
+
+  // Clear token after successful logout
+  tokenManager.removeToken();
+};
+
+/**
  * Check if user is authenticated (deprecated - use tokenManager.isAuthenticated instead)
  * @deprecated Use tokenManager.isAuthenticated() from './api'
  */
