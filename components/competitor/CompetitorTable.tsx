@@ -57,6 +57,8 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
   tableRef,
   onPrint
 }) => {
+  // 防护措施：确保competitorData是数组
+  const safeCompetitorData = competitorData || [];
   return (
     <motion.div
       ref={tableRef}
@@ -82,7 +84,7 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
           </button>
         )}
       </div>
-      {competitorData.length > 0 ? (
+      {safeCompetitorData.length > 0 ? (
         <>
           <div className="bg-muted rounded-xl overflow-hidden shadow-lg">
             <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
@@ -100,7 +102,7 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {competitorData.filter(competitor => competitor != null).map((competitor) => (
+                  {safeCompetitorData.filter(competitor => competitor != null).map((competitor, index) => (
                     <tr key={competitor.id} className="border-b border-neutral-200 dark:border-neutral-800 hover:bg-neutral-100/50 dark:hover:bg-neutral-800/50 transition-colors">
                       <td className="p-4 font-medium text-cyan-600 dark:text-cyan-400">{competitor.name}</td>
                       <td className="p-4 italic text-sm text-neutral-600 dark:text-neutral-300">{competitor.slogan}</td>
@@ -118,21 +120,21 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
                       <td className="p-4 text-neutral-700 dark:text-neutral-300">{competitor.traffic}</td>
                       <td className="p-4 text-neutral-700 dark:text-neutral-300">
                         <ul className="list-disc list-inside">
-                          {competitor.targetUser.filter(user => user != null).map((user, idx) => (
+                          {(competitor.targetUser || []).filter(user => user != null).map((user, idx) => (
                             <li key={idx} className="text-sm py-1">{user}</li>
                           ))}
                         </ul>
                       </td>
                       <td className="p-4 text-neutral-700 dark:text-neutral-300">
                         <ul className="list-disc list-inside">
-                          {competitor.plainPoints.filter(point => point != null).map((point, idx) => (
+                          {(competitor.plainPoints || []).filter(point => point != null).map((point, idx) => (
                             <li key={idx} className="text-sm py-1">{point}</li>
                           ))}
                         </ul>
                       </td>
                       <td className="p-4 text-neutral-700 dark:text-neutral-300">
                         <ul className="list-disc list-inside">
-                          {competitor.keyFeatures.filter(feature => feature != null).map((feature, idx) => (
+                          {(competitor.keyFeatures || []).filter(feature => feature != null).map((feature, idx) => (
                             <li key={idx} className="text-sm py-1">{feature}</li>
                           ))}
                         </ul>

@@ -60,9 +60,16 @@ export const TrendingSearches: React.FC<TrendingSearchesProps> = ({
   trendingSearchesRef,
   onPrint
 }) => {
-  const hasAnyData = hotKeysData.mostRelevant.length > 0 || 
-                     hotKeysData.allInSeeker.length > 0 || 
-                     hotKeysData.allFields.length > 0;
+  // 防护措施：确保hotKeysData存在且包含所需属性
+  const safeHotKeysData = hotKeysData || {
+    mostRelevant: [],
+    allInSeeker: [],
+    allFields: []
+  };
+  
+  const hasAnyData = (safeHotKeysData.mostRelevant || []).length > 0 || 
+                     (safeHotKeysData.allInSeeker || []).length > 0 || 
+                     (safeHotKeysData.allFields || []).length > 0;
 
   return (
     <motion.div
@@ -97,7 +104,7 @@ export const TrendingSearches: React.FC<TrendingSearchesProps> = ({
           ))
         ) : (
           <>
-            {hotKeysData.mostRelevant.length > 0 && (
+            {(safeHotKeysData.mostRelevant || []).length > 0 && (
               <DemandRankingCard
                 ranking={{
                   title: (
@@ -106,11 +113,11 @@ export const TrendingSearches: React.FC<TrendingSearchesProps> = ({
                       Most Relevant
                     </div>
                   ),
-                  tags: hotKeysData.mostRelevant
+                  tags: safeHotKeysData.mostRelevant || []
                 }}
               />
             )}
-            {hotKeysData.allInSeeker.length > 0 && (
+            {(safeHotKeysData.allInSeeker || []).length > 0 && (
               <DemandRankingCard
                 ranking={{
                   title: (
@@ -119,11 +126,11 @@ export const TrendingSearches: React.FC<TrendingSearchesProps> = ({
                       All in Seeker
                     </div>
                   ),
-                  tags: hotKeysData.allInSeeker
+                  tags: safeHotKeysData.allInSeeker || []
                 }}
               />
             )}
-            {hotKeysData.allFields.length > 0 && (
+            {(safeHotKeysData.allFields || []).length > 0 && (
               <DemandRankingCard
                 ranking={{
                   title: (
@@ -132,7 +139,7 @@ export const TrendingSearches: React.FC<TrendingSearchesProps> = ({
                       All Fields
                     </div>
                   ),
-                  tags: hotKeysData.allFields
+                  tags: safeHotKeysData.allFields || []
                 }}
               />
             )}

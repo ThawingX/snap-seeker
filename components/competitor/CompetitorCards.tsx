@@ -29,7 +29,7 @@ const CompetitorCard = ({ competitor }: { competitor: CompetitorData }) => (
     <div className="mb-4">
       <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Target User</p>
       <div className="flex flex-wrap gap-2">
-        {competitor.targetUser.filter(user => user != null).map((user, index) => (
+        {(competitor.targetUser || []).filter(user => user != null).map((user, index) => (
           <span key={index} className="bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-300 px-2 py-1 rounded text-xs">
             {user}
           </span>
@@ -40,7 +40,7 @@ const CompetitorCard = ({ competitor }: { competitor: CompetitorData }) => (
     <div className="mb-4">
       <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Plain Points</p>
       <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300 space-y-1">
-        {competitor.plainPoints.filter(point => point != null).map((point, index) => (
+        {(competitor.plainPoints || []).filter(point => point != null).map((point, index) => (
           <li key={index}>{point}</li>
         ))}
       </ul>
@@ -49,7 +49,7 @@ const CompetitorCard = ({ competitor }: { competitor: CompetitorData }) => (
     <div className="mb-4">
       <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Key Features</p>
       <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300 space-y-1">
-        {competitor.keyFeatures.filter(feature => feature != null).map((feature, index) => (
+        {(competitor.keyFeatures || []).filter(feature => feature != null).map((feature, index) => (
           <li key={index}>{feature}</li>
         ))}
       </ul>
@@ -58,7 +58,7 @@ const CompetitorCard = ({ competitor }: { competitor: CompetitorData }) => (
     <div className="mb-4">
       <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Potential Weaknesses</p>
       <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300 space-y-1">
-        {competitor.potentialWeaknesses.filter(weakness => weakness != null).map((weakness, index) => (
+        {(competitor.potentialWeaknesses || []).filter(weakness => weakness != null).map((weakness, index) => (
           <li key={index}>{weakness}</li>
         ))}
       </ul>
@@ -172,8 +172,8 @@ export const CompetitorCards: React.FC<CompetitorCardsProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {safeCompetitorData.length > 0 ? (
           <>
-            {safeCompetitorData.filter(competitor => competitor != null).map((competitor) => (
-              <CompetitorCard key={competitor.id} competitor={competitor} />
+            {safeCompetitorData.filter(competitor => competitor != null).map((competitor, index) => (
+              <CompetitorCard key={competitor.id || `competitor-${index}`} competitor={competitor} />
             ))}
             {loading && safeCompetitorData.length < 3 &&
               Array(3 - safeCompetitorData.length).fill(0).map((_, index) => (
