@@ -5,6 +5,9 @@ import {
   IconHome,
   IconHistory,
   IconCoins,
+  IconBulb,
+  IconChartBar,
+  IconTarget,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,6 +28,27 @@ export const Navigation = () => {
       href: "/history",
       icon: (
         <IconHistory className="h-5 w-5 shrink-0 text-muted-foreground" />
+      ),
+    },
+    {
+      label: "Competitor Prompt Analysis",
+      href: "/competitor-analysis",
+      icon: (
+        <IconBulb className="h-5 w-5 shrink-0 text-muted-foreground" />
+      ),
+    },
+    {
+      label: "PMF Analysis",
+      href: "/pmf-analysis",
+      icon: (
+        <IconChartBar className="h-5 w-5 shrink-0 text-muted-foreground" />
+      ),
+    },
+    {
+      label: "Product Marketing Context",
+      href: "/product-marketing",
+      icon: (
+        <IconTarget className="h-5 w-5 shrink-0 text-muted-foreground" />
       ),
     },
   ];
