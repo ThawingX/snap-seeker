@@ -184,9 +184,8 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
             setHistoryError(errorMessage);
             setHistoryLoading(false); // 停止加载状态
             showToast({
-              title: "记录未找到",
-              description: "该搜索记录不存在或已被删除，请返回历史记录页面查看其他记录。",
-              variant: "destructive"
+              message: "记录未找到：该搜索记录不存在或已被删除，请返回历史记录页面查看其他记录。",
+              type: "error"
             });
             return; // 直接返回，不再重试
           }
@@ -216,9 +215,8 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         const errorMessage = err instanceof Error ? err.message : '加载数据失败';
         setHistoryError(errorMessage);
         showToast({
-          title: "加载错误",
-          description: "无法加载搜索结果，请检查网络连接或稍后重试。",
-          variant: "destructive"
+          message: "加载错误：无法加载搜索结果，请检查网络连接或稍后重试。",
+          type: "error"
         });
       } finally {
         setHistoryLoading(false);
@@ -287,9 +285,8 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     } catch (error) {
       console.error('导出PRD文件失败:', error);
       showToast({
-        title: "Export Error",
-        description: "Failed to export PRD file. Please try again.",
-        variant: "destructive"
+        message: "Export Error: Failed to export PRD file. Please try again.",
+        type: "error"
       });
     } finally {
       setIsExporting(false);

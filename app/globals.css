@@ -3,7 +3,6 @@
 @theme inline {
   /* Configure your theme variables here */
   --font-display: "Inter", "sans-serif";
-  --color-primary-500: oklch(0.84 0.18 117.33);
   --spacing: 0.25rem;
 }
 
@@ -50,19 +49,19 @@
     --card-foreground: 0 0% 90%;
     --popover: 0 0% 6%;
     --popover-foreground: 0 0% 88%;
-    --primary: 195 100% 50%; /* Deep Sky Blue #00BFFF */
-    --primary-foreground: 0 0% 5%;
+    --primary: 177 70% 41%; /* Light Sea Green #20B2AA */
+    --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 88%;
     --muted: 0 0% 12%;
     --muted-foreground: 0 0% 70%;
-    --accent: 195 20% 15%;
+    --accent: 177 20% 15%;
     --accent-foreground: 0 0% 88%;
     --destructive: 0 55% 45%;
     --destructive-foreground: 0 0% 88%;
     --border: 0 0% 18%;
     --input: 0 0% 15%;
-    --ring: 195 100% 50%;
+    --ring: 177 70% 41%;
     --chart-1: 220 60% 60%;
     --chart-2: 160 50% 55%;
     --chart-3: 30 70% 65%;
