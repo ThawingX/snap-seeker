@@ -148,11 +148,11 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="shadow-input mx-auto w-full max-w-md rounded-none rounded-b-xl bg-white p-4 md:p-8 dark:bg-black">
-      <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
+    <div className="glass-card mx-auto w-full max-w-md rounded-none rounded-b-xl p-4 md:p-8 transition-glass">
+      <h2 className="text-xl font-bold text-foreground">
         Welcome Back
       </h2>
-      <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
+      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
         Login to your SnapSeeker account to continue
       </p>
 
@@ -197,11 +197,11 @@ export default function LoginForm() {
               checked={formData.rememberMe}
               onChange={handleInputChange}
               disabled={loading}
-              className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
+              className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
             />
             <label
               htmlFor="remember"
-              className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
+              className="ml-2 block text-sm text-foreground"
             >
               Remember me
             </label>
@@ -214,13 +214,13 @@ export default function LoginForm() {
         </PrimaryButton>
 
         {/* 分隔线 */}
-        <div className="my-8 h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
+        <div className="my-8 h-[1px] w-full bg-gradient-to-r from-transparent via-border to-transparent" />
 
         {/* 第三方登录选项 */}
         <div className="flex flex-col space-y-4">
           <SocialButton onClick={() => handleSocialLogin("Google")}>
-            <IconBrandGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+            <IconBrandGoogle className="h-4 w-4 text-foreground" />
+            <span className="text-sm text-foreground">
               Login with Google
             </span>
           </SocialButton>

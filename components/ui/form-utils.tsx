@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils";
 export const BottomGradient = () => {
   return (
     <>
-      <span className="group-hover/btn:opacity-100 block transition duration-500 opacity-0 absolute h-px w-full -bottom-px inset-x-0 bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
-      <span className="absolute inset-x-0 -bottom-px block h-px w-full bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
-      <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-0 blur-sm transition duration-500 group-hover/btn:opacity-100" />
+      <span className="group-hover/btn:opacity-100 block transition duration-500 opacity-0 absolute h-px w-full -bottom-px inset-x-0 bg-gradient-to-r from-transparent via-primary to-transparent" />
+      <span className="absolute inset-x-0 -bottom-px block h-px w-full bg-gradient-to-r from-transparent via-primary to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
+      <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 bg-gradient-to-r from-transparent via-primary/60 to-transparent opacity-0 blur-sm transition duration-500 group-hover/btn:opacity-100" />
     </>
   );
 };
@@ -36,7 +36,7 @@ export const LabelInputContainer = ({
 
 /**
  * 主要按钮组件
- * 统一的主要操作按钮，包含渐变背景和悬停效果
+ * 统一的主要操作按钮，包含毛玻璃效果和渐变背景
  */
 export const PrimaryButton = ({
   children,
@@ -47,7 +47,34 @@ export const PrimaryButton = ({
   return (
     <button
       className={cn(
-        "group/btn relative block h-10 w-full rounded-md bg-gradient-to-br from-cyan-500 to-cyan-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:from-cyan-600 dark:to-cyan-700",
+        "group/btn relative block h-10 w-full rounded-lg transition-all duration-300 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed",
+        "bg-primary hover:bg-primary/90 text-primary-foreground border border-primary/20 hover:border-primary/40",
+        className
+      )}
+      type={type}
+      {...props}
+    >
+      {children}
+      <BottomGradient />
+    </button>
+  );
+};
+
+/**
+ * Sign Up 专用按钮组件
+ * 具有区别于背景的特殊颜色和毛玻璃效果
+ */
+export const SignUpButton = ({
+  children,
+  type = "button",
+  className,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) => {
+  return (
+    <button
+      className={cn(
+        "group/btn relative block h-12 w-full rounded-lg transition-all duration-300 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed",
+        "bg-primary hover:bg-primary/90 text-primary-foreground border border-primary/20 hover:border-primary/40",
         className
       )}
       type={type}
@@ -61,7 +88,7 @@ export const PrimaryButton = ({
 
 /**
  * 社交登录按钮组件
- * 用于第三方登录选项，统一样式和交互
+ * 用于第三方登录选项，统一样式和交互，采用毛玻璃效果
  */
 export const SocialButton = ({
   children,
@@ -71,7 +98,7 @@ export const SocialButton = ({
   return (
     <button
       className={cn(
-        "group/btn shadow-input relative flex h-10 w-full items-center justify-center space-x-2 rounded-md bg-gray-50 px-4 font-medium text-black dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_#262626]",
+        "group/btn relative flex h-10 w-full items-center justify-center space-x-2 rounded-lg glass-card transition-glass px-4 font-medium text-secondary-foreground hover:shadow-lg border-2 border-border/50 hover:border-primary/50",
         className
       )}
       type="button"
@@ -81,4 +108,4 @@ export const SocialButton = ({
       <BottomGradient />
     </button>
   );
-}; 
+};

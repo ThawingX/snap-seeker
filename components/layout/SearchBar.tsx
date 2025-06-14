@@ -92,14 +92,14 @@ export const SearchBar = forwardRef<SearchBarRef>((props, ref) => {
 
   return (
     <div className="w-full max-w-3xl mb-12">
-      <div className="relative w-full bg-neutral-900 rounded-3xl border border-neutral-700 overflow-hidden">
+      <div className="relative w-full glass-card rounded-3xl border border-border/50 overflow-hidden shadow-lg transition-glass">
         <textarea
           ref={textareaRef}
           value={input}
           onChange={handleInputChange}
           placeholder="What's on your ideas and plans?"
           rows={1}
-          className="w-full px-8 py-6 text-base focus:outline-none bg-transparent text-white resize-none transition-all custom-scrollbar"
+          className="w-full px-8 py-6 text-base focus:outline-none bg-transparent text-foreground resize-none transition-all custom-scrollbar placeholder:text-muted-foreground"
           style={{ 
             minHeight: "100px",
             overflowY: showScrollbar ? 'scroll' : 'hidden',
@@ -108,13 +108,13 @@ export const SearchBar = forwardRef<SearchBarRef>((props, ref) => {
           }}
         />
         
-        <div className="flex items-center justify-between px-6 py-3 border-t border-neutral-800">
+        <div className="flex items-center justify-between px-6 py-3 border-t border-border/50">
           <div className="flex items-center space-x-2">
             <div className="flex items-center">
               <div className="relative inline-flex items-center cursor-not-allowed opacity-70">
-                <div className="w-10 h-5 bg-neutral-800 rounded-full shadow-inner"></div>
-                <div className="absolute left-0.5 top-0.5 bg-neutral-600 w-4 h-4 rounded-full"></div>
-                <span className="ml-3 text-xs font-medium text-neutral-400">PRO</span>
+                <div className="w-10 h-5 bg-secondary border border-border rounded-full shadow-inner"></div>
+                <div className="absolute left-0.5 top-0.5 bg-secondary-foreground w-4 h-4 rounded-full shadow-sm"></div>
+                <span className="ml-3 text-xs font-medium text-secondary-foreground">PRO</span>
               </div>
             </div>
           </div>
@@ -123,7 +123,7 @@ export const SearchBar = forwardRef<SearchBarRef>((props, ref) => {
             <button 
               onClick={handleSubmit}
               disabled={isLoading || !input.trim()}
-              className={`flex items-center justify-center h-12 w-12 rounded-full ${isLoading ? 'bg-cyan-700' : 'bg-cyan-500 hover:bg-cyan-600'} text-white cursor-pointer transition-colors`}
+              className={`flex items-center justify-center h-12 w-12 rounded-full ${isLoading ? 'bg-primary/80' : 'bg-primary hover:bg-primary/90'} text-primary-foreground cursor-pointer transition-all duration-300 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed border border-primary/20 hover:border-primary/40 shadow-md`}
             >
               {isLoading ? (
                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -148,18 +148,18 @@ export const SearchBar = forwardRef<SearchBarRef>((props, ref) => {
         }
         
         .custom-scrollbar::-webkit-scrollbar-track {
-          background: #1a1a1a;
+          background: hsl(var(--muted));
           border-radius: 4px;
         }
         
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #444;
+          background-color: hsl(var(--muted-foreground) / 0.3);
           border-radius: 4px;
-          border: 2px solid #1a1a1a;
+          border: 2px solid hsl(var(--muted));
         }
         
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #555;
+          background-color: hsl(var(--muted-foreground) / 0.5);
         }
       `}</style>
     </div>

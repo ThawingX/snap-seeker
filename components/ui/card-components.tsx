@@ -20,7 +20,7 @@ export const Card = ({
     <motion.div
       layoutId={`card-container-${id}`}
       className={cn(
-        "group/card relative overflow-hidden rounded-xl border border-neutral-200 bg-white transition duration-200 dark:border-neutral-800 dark:bg-neutral-950",
+        "group/card relative overflow-hidden rounded-xl border border-border bg-card transition duration-200",
         className
       )}
       style={{
@@ -50,7 +50,7 @@ export const CardTitle = ({
   return (
     <h3
       className={cn(
-        "mb-2 text-base font-medium text-neutral-900 dark:text-neutral-100 overflow-hidden",
+        "mb-2 text-base font-medium text-card-foreground overflow-hidden",
         className
       )}
       style={{
@@ -84,7 +84,7 @@ export const CardDescription = ({
   return (
     <p
       className={cn(
-        "text-sm font-normal text-neutral-500 dark:text-neutral-400 overflow-hidden",
+        "text-sm font-normal text-muted-foreground overflow-hidden",
         className
       )}
       style={{
@@ -163,4 +163,4 @@ export const renderLogoFromCDN = (url: string, alt: string = "Logo", className: 
       </div>
     );
   }
-}; 
+};

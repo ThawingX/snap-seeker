@@ -70,7 +70,7 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
       </h2>
       {competitorData.length > 0 ? (
         <>
-          <div className="bg-neutral-900 rounded-xl overflow-hidden shadow-lg">
+          <div className="bg-muted rounded-xl overflow-hidden shadow-lg">
             <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
               <table className="w-full border-collapse min-w-[1200px]">
                 <thead>
@@ -134,7 +134,7 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
         </>
       ) : (
         loading ? (
-          <div className="bg-neutral-900 rounded-xl overflow-hidden shadow-lg">
+          <div className="bg-muted rounded-xl overflow-hidden shadow-lg">
             <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-neutral-700 scrollbar-track-neutral-800">
               <table className="w-full border-collapse min-w-[1200px]">
                 <thead>
@@ -158,7 +158,7 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
             </div>
           </div>
         ) : (
-          <div className="bg-neutral-900 rounded-xl p-8 text-center text-neutral-400">
+          <div className="bg-muted rounded-xl p-8 text-center text-muted-foreground">
             No competitor data available to display in table format.
           </div>
         )

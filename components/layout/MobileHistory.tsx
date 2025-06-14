@@ -55,14 +55,14 @@ export const MobileHistory = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-black text-white">
-      <div className="sticky top-0 left-0 right-0 z-30 bg-black px-4 py-3 border-b border-neutral-800">
+    <div className="flex flex-col h-full bg-background text-foreground">
+      <div className="sticky top-0 left-0 right-0 z-30 bg-background px-4 py-3 border-b border-border">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">History</h1>
           {historyItems.length > 0 && (
             <button 
               onClick={handleClearHistory}
-              className="text-red-500 hover:text-red-600 text-xs font-medium"
+              className="text-destructive hover:text-destructive/80 text-xs font-medium px-2 py-1 rounded border border-destructive/20 hover:border-destructive/40 hover:bg-destructive/10 transition-all duration-300"
             >
               Clear All
             </button>
@@ -81,7 +81,7 @@ export const MobileHistory = () => {
               <p className="text-sm text-red-500">{error}</p>
             </div>
           ) : historyItems.length === 0 ? (
-            <div className="text-center py-8 bg-neutral-900 rounded-lg p-6">
+            <div className="text-center py-8 bg-muted rounded-lg p-6">
               <p className="text-sm text-neutral-400">No search history yet</p>
               <p className="text-xs text-neutral-500 mt-2">
                 Your search history will appear here

@@ -75,7 +75,7 @@ const CompetitorCard = ({ competitor }: { competitor: CompetitorData }) => (
  * 骨架加载样式 - 竞争对手卡片
  */
 const CompetitorCardSkeleton = () => (
-  <div className="bg-neutral-900 rounded-xl p-5 shadow-md mb-6 animate-pulse">
+  <div className="bg-muted rounded-xl p-5 shadow-md mb-6 animate-pulse">
     <div className="mb-4">
       <div className="h-6 bg-neutral-800 rounded-md w-2/3 mb-2"></div>
       <div className="h-4 bg-neutral-800 rounded-md w-1/2"></div>

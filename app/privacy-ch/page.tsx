@@ -23,7 +23,7 @@ export const metadata: Metadata = generateMetadata(
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <PrivacyPolicy />
     </div>
   );

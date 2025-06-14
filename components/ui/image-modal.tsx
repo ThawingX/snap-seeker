@@ -154,12 +154,12 @@ export const ImageModal: React.FC<ImageModalProps> = ({
                 e.stopPropagation();
                 handleZoomOut();
               }}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary-foreground border border-primary/30 hover:border-primary/50 transition-all duration-300 backdrop-blur-sm"
               title="Zoom Out (-)"
             >
               <ZoomOut className="h-4 w-4" />
             </button>
-            <span className="text-white text-sm min-w-[60px] text-center">
+            <span className="text-primary-foreground text-sm min-w-[60px] text-center font-medium">
               {Math.round(scale * 100)}%
             </span>
             <button
@@ -167,7 +167,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
                 e.stopPropagation();
                 handleZoomIn();
               }}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary-foreground border border-primary/30 hover:border-primary/50 transition-all duration-300 backdrop-blur-sm"
               title="Zoom In (+)"
             >
               <ZoomIn className="h-4 w-4" />
@@ -177,7 +177,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
                 e.stopPropagation();
                 handleReset();
               }}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors text-sm"
+              className="p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary-foreground border border-primary/30 hover:border-primary/50 transition-all duration-300 backdrop-blur-sm text-sm font-medium"
               title="Reset (0)"
             >
               1:1
@@ -187,7 +187,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
                 e.stopPropagation();
                 handleDownload();
               }}
-              className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary-foreground border border-primary/30 hover:border-primary/50 transition-all duration-300 backdrop-blur-sm"
               title="Download"
             >
               <Download className="h-4 w-4" />
@@ -197,7 +197,7 @@ export const ImageModal: React.FC<ImageModalProps> = ({
           {/* 关闭按钮 */}
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 p-2 rounded-full bg-black/50 hover:bg-black/70 text-white z-10 transition-colors"
+            className="absolute right-4 top-4 p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary-foreground border border-primary/30 hover:border-primary/50 z-10 transition-all duration-300 backdrop-blur-sm"
             title="Close (Esc)"
           >
             <X className="h-6 w-6" />

@@ -51,7 +51,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-md p-4"
           onClick={onClose}
         >
           <motion.div
@@ -59,23 +59,23 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="relative max-w-md w-full rounded-xl overflow-hidden shadow-xl"
+            className="relative max-w-md w-full rounded-xl overflow-hidden glass shadow-2xl"
             onClick={handleModalClick}
           >
             {/* 关闭按钮 */}
             <button 
               onClick={onClose}
-              className="absolute right-4 top-4 p-1 rounded-full bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 z-10"
+              className="absolute right-4 top-4 p-1 rounded-full bg-background/20 hover:bg-background/40 border border-border/30 hover:border-border/60 transition-all duration-300 backdrop-blur-sm z-10"
             >
-              <X className="h-5 w-5 text-neutral-500" />
+              <X className="h-5 w-5 text-foreground/70 hover:text-foreground" />
             </button>
 
             {/* 模态框头部 */}
-            <div className="bg-gradient-to-br from-cyan-400 to-teal-500 p-8 text-white">
+            <div className="bg-gradient-to-br from-violet-500/80 via-purple-500/80 to-blue-500/80 backdrop-blur-sm p-8 text-white">
               <h1 className="text-2xl font-bold">
                 {mode === "login" ? "Welcome Back" : "Create Account"}
               </h1>
-              <p className="mt-2 text-sm opacity-80">
+              <p className="mt-2 text-sm opacity-90">
                 {mode === "login" 
                   ? "Log in to your account to continue" 
                   : "Sign up for a free account to get started"}
@@ -85,20 +85,20 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
             {/* 切换登录/注册模式的标签 */}
             <div className="flex">
               <button
-                className={`w-1/2 py-3 text-center font-medium ${
+                className={`w-1/2 py-3 text-center font-medium transition-glass ${
                   mode === "login"
-                  ? "bg-white dark:bg-black text-neutral-900 dark:text-white"
-                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500"
+                  ? "glass text-foreground border-b-2 border-primary"
+                  : "glass-card text-foreground/60 hover:text-foreground"
                 }`}
                 onClick={() => setMode("login")}
               >
                 Login
               </button>
               <button
-                className={`w-1/2 py-3 text-center font-medium ${
+                className={`w-1/2 py-3 text-center font-medium transition-glass ${
                   mode === "signup"
-                  ? "bg-white dark:bg-black text-neutral-900 dark:text-white"
-                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-500"
+                  ? "glass text-foreground border-b-2 border-primary"
+                  : "glass-card text-foreground/60 hover:text-foreground"
                 }`}
                 onClick={() => setMode("signup")}
               >

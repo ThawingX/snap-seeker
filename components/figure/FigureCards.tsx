@@ -66,7 +66,7 @@ const FigureCard = ({
           <img
             src={`data:image/png;base64,${figure.content}`}
             alt={figureTitle}
-            className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-auto object-contain transition-transform duration-300"
             onClick={() => onImageClick(`data:image/png;base64,${figure.content}`, figureTitle)}
             onError={(e) => {
               console.error('Image load error:', e);
@@ -101,7 +101,7 @@ const FigureCard = ({
  * 骨架加载样式 - 图片卡片
  */
 const FigureCardSkeleton = () => (
-  <div className="bg-neutral-900 rounded-xl p-5 shadow-md mb-6 animate-pulse">
+  <div className="bg-muted rounded-xl p-5 shadow-md mb-6 animate-pulse">
     <div className="mb-4">
       <div className="h-6 bg-neutral-800 rounded-md w-1/3 mb-2"></div>
     </div>

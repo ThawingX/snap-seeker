@@ -7,7 +7,7 @@ export const Logo = () => {
   return (
     <Link
       href="#"
-      className="relative z-20 flex items-center justify-center w-full py-4 px-2 text-sm font-normal text-black"
+      className="relative z-20 flex items-center justify-center w-full py-4 px-2 text-sm font-normal text-foreground"
     >
       <div className="w-full max-w-[200px] h-12 shrink-0">
         <Image
@@ -29,7 +29,7 @@ export const LogoIcon = () => {
   return (
     <Link
       href="#"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
+      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-foreground"
     >
       <div className="h-8 w-8 shrink-0">
         <Image
@@ -44,4 +44,4 @@ export const LogoIcon = () => {
       </div>
     </Link>
   );
-}; 
+};

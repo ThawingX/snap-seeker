@@ -65,14 +65,14 @@ export const MobileSearchBar = () => {
 
   return (
     <div className="w-full">
-      <div className="relative w-full bg-neutral-900 rounded-2xl border border-neutral-700 overflow-hidden">
+      <div className="relative w-full glass-card rounded-2xl border border-border/50 overflow-hidden transition-glass">
         <textarea
           ref={textareaRef}
           value={input}
           onChange={handleInputChange}
           placeholder="What's on your ideas and plans?"
           rows={1}
-          className="w-full px-6 py-4 text-base focus:outline-none bg-transparent text-white resize-none transition-all custom-scrollbar"
+          className="w-full px-6 py-4 text-base focus:outline-none bg-transparent text-foreground resize-none transition-glass custom-scrollbar"
           style={{ 
             minHeight: "80px",
             overflowY: showScrollbar ? 'scroll' : 'hidden',
@@ -80,7 +80,7 @@ export const MobileSearchBar = () => {
           }}
         />
         
-        <div className="flex items-center justify-between px-4 py-2 border-t border-neutral-800">
+        <div className="flex items-center justify-between px-4 py-2 border-t border-border/50">
           <div className="flex items-center space-x-2">
             <div className="flex items-center">
               <div className="relative inline-flex items-center cursor-not-allowed opacity-70">
@@ -95,7 +95,7 @@ export const MobileSearchBar = () => {
             <button 
               onClick={handleSubmit}
               disabled={isLoading || !input.trim()}
-              className={`flex items-center justify-center h-10 w-10 rounded-full ${isLoading ? 'bg-cyan-700' : 'bg-cyan-500 hover:bg-cyan-600'} text-white`}
+              className={`flex items-center justify-center h-10 w-10 rounded-full ${isLoading ? 'bg-primary/80' : 'bg-primary hover:bg-primary/90'} text-primary-foreground transition-all duration-300 border border-primary/20 hover:border-primary/40 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {isLoading ? (
                 <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

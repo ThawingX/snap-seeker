@@ -8,6 +8,7 @@ import {
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 
+
 export const Navigation = () => {
   // Define sidebar navigation links
   const navigationLinks = [
@@ -15,14 +16,14 @@ export const Navigation = () => {
       label: "Home",
       href: "/",
       icon: (
-        <IconHome className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+        <IconHome className="h-5 w-5 shrink-0 text-muted-foreground" />
       ),
     },
     {
       label: "History",
       href: "/history",
       icon: (
-        <IconHistory className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+        <IconHistory className="h-5 w-5 shrink-0 text-muted-foreground" />
       ),
     },
   ];
@@ -44,17 +45,18 @@ export const AuthButtons = () => {
       <div className="flex justify-center mb-4">
         <button 
           onClick={() => showAuthModal("signup")}
-          className="text-base py-3 px-10 rounded-full bg-teal-500 text-white font-medium hover:bg-teal-600 transition-colors">
+          className="text-base py-3 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border border-primary/20 hover:border-primary/40">
             Sign Up
         </button>
       </div>
       <div className="flex justify-center">
         <button 
           onClick={() => showAuthModal("login")}
-          className="text-base py-3 px-10 rounded-full text-neutral-700 font-medium hover:bg-neutral-100 transition-colors dark:text-neutral-200 dark:hover:bg-neutral-800">
+          className="text-base py-3 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border border-primary/20 hover:border-primary/40">
             Log in
         </button>
       </div>
     </div>
   );
-}; 
+
+};

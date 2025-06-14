@@ -43,7 +43,7 @@ const MobileNavigation = () => {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-neutral-800 p-2">
+    <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-2">
       <div className="grid grid-cols-4 gap-1">
         {navItems.map((item) => (
           <Link
@@ -66,4 +66,4 @@ const MobileNavigation = () => {
   );
 };
 
-export default MobileNavigation; 
+export default MobileNavigation;

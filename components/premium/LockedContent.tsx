@@ -48,7 +48,7 @@ const LockedContentCard = ({ title, description }: { title: string; description:
  * 骨架加载样式 - 洞察部分
  */
 const InsightsSkeleton = () => (
-  <div className="bg-neutral-900 rounded-xl p-6 mb-6 animate-pulse">
+  <div className="bg-muted rounded-xl p-6 mb-6 animate-pulse">
     <div className="h-7 bg-neutral-800 rounded-md w-1/4 mb-6"></div>
     <div className="space-y-6">
       <div>
@@ -74,7 +74,7 @@ const InsightsSkeleton = () => (
  * 骨架加载样式 - 建议行动部分
  */
 const RecommendationsSkeleton = () => (
-  <div className="bg-neutral-900 rounded-xl p-6 animate-pulse">
+  <div className="bg-muted rounded-xl p-6 animate-pulse">
     <div className="h-7 bg-neutral-800 rounded-md w-2/5 mb-6"></div>
     <div className="space-y-3">
       {Array(5).fill(0).map((_, i) => (

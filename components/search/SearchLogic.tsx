@@ -69,7 +69,7 @@ export const SearchLogic: React.FC<SearchLogicProps> = ({
     <motion.div
       ref={searchLogicRef}
       id="search-logic"
-      className="bg-neutral-900 rounded-xl p-6 mb-10"
+      className="bg-muted rounded-xl p-6 mb-10"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}

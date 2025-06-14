@@ -57,14 +57,14 @@ export const History = () => {
   return (
     <div className="flex flex-1 flex-col h-full overflow-hidden">
       <div className="flex w-full flex-1 flex-col overflow-y-auto relative">
-        <div className="sticky top-0 left-0 right-0 z-30 bg-white dark:bg-neutral-900 shadow-sm px-4 md:px-10 py-4">
+        <div className="sticky top-0 left-0 right-0 z-30 bg-background shadow-sm px-4 md:px-10 py-4">
           <div className="flex flex-col max-w-7xl mx-auto w-full">
             <div className="flex justify-between items-center">
               <h1 className="text-3xl md:text-4xl font-bold">Search History</h1>
               {historyItems.length > 0 && (
                 <button 
                   onClick={handleClearHistory}
-                  className="text-red-500 hover:text-red-600 text-sm font-medium"
+                  className="text-destructive hover:text-destructive/80 text-sm font-medium px-3 py-1 rounded-md border border-destructive/20 hover:border-destructive/40 hover:bg-destructive/10 transition-all duration-300"
                 >
                   Clear History
                 </button>
@@ -83,9 +83,9 @@ export const History = () => {
               <p className="text-lg text-red-500">{error}</p>
             </div>
           ) : historyItems.length === 0 ? (
-            <div className="text-center py-12 bg-white dark:bg-neutral-800 rounded-lg shadow p-6">
-              <p className="text-lg text-neutral-500 dark:text-neutral-400">No search history yet</p>
-              <p className="text-sm text-neutral-400 dark:text-neutral-500 mt-2">
+            <div className="text-center py-12 bg-card rounded-lg shadow p-6">
+              <p className="text-lg text-muted-foreground">No search history yet</p>
+              <p className="text-sm text-muted-foreground/80 mt-2">
                 Your recent searches will appear here
               </p>
             </div>

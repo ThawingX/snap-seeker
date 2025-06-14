@@ -65,10 +65,10 @@ Sat June 14 2025：
 - [] 历史详情
 - [] credits
 - [] 登录修复
-- [] 不要浅色模式，固定深色
+- [x] 新增浅色模式
 - [] 不注册无法看完整结果，只能看到竞品分析
-- [] 删除firstname lastname
-- [] 删除忘记密码操作
+- [x] 删除firstname lastname
+- [x] 删除忘记密码操作
 - [] seo添加
 - [] 埋点
-- [] landing
+- [x] landing

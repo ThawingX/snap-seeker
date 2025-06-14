@@ -51,7 +51,7 @@ export const Toast = ({
               setIsVisible(false);
               onClose?.();
             }}
-            className="ml-4 p-1 rounded-full hover:bg-white/20"
+            className="ml-4 p-1 rounded-full hover:bg-primary-foreground/20 transition-all duration-300 border border-transparent hover:border-primary-foreground/30"
           >
             <X size={16} />
           </button>

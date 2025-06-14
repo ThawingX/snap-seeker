@@ -114,7 +114,7 @@ export const Dashboard = () => {
         {/* 标题和搜索框层 - 在弹幕之上，垂直排列 */}
         <div ref={searchBarContainerRef} className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl px-6 flex flex-col items-center space-y-8" style={{ zIndex: 100 }}>
           {/* 标题 */}
-          <h1 className="text-4xl md:text-4xl font-bold text-center text-black dark:text-white">
+          <h1 className="text-4xl md:text-5xl font-bold text-center text-foreground">
             Get Your <ColourfulText text="MVP" /> Right. Find Your <ColourfulText text="PMF" /> Fast.
           </h1>
           
@@ -127,7 +127,7 @@ export const Dashboard = () => {
         {/* 提示文本 - 在弹幕之上 */}
         {!isLoading && hotTags.length > 0 && (
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2" style={{ zIndex: 200 }}>
-            <div className="flex items-center space-x-2 text-sm text-neutral-400 bg-black bg-opacity-40 px-4 py-2 rounded-full backdrop-blur-md border border-neutral-700">
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground bg-card/80 px-4 py-2 rounded-full backdrop-blur-md border border-border shadow-lg">
               <span className="text-lg">💡</span>
               <span>Click floating tags to add to search</span>
             </div>
@@ -137,8 +137,8 @@ export const Dashboard = () => {
         {/* 加载状态 - 右上角显示 */}
         {isLoading && (
           <div className="absolute top-4 right-4" style={{ zIndex: 300 }}>
-            <div className="flex items-center space-x-3 text-neutral-400 bg-black bg-opacity-50 px-6 py-3 rounded-full backdrop-blur-sm">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-400"></div>
+            <div className="flex items-center space-x-3 text-muted-foreground bg-card/80 px-6 py-3 rounded-full backdrop-blur-md border border-border shadow-lg">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
               <span className="text-sm">正在加载热门标签...</span>
             </div>
           </div>

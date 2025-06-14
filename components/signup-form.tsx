@@ -8,7 +8,8 @@ import {
 import { 
   LabelInputContainer, 
   PrimaryButton, 
-  SocialButton 
+  SocialButton,
+  SignUpButton 
 } from "@/components/ui/form-utils";
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -169,11 +170,11 @@ export default function SignupForm() {
   };
   
   return (
-    <div className="shadow-input mx-auto w-full max-w-md rounded-none rounded-b-xl bg-white p-4 md:p-8 dark:bg-black">
-      <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
+    <div className="glass-card mx-auto w-full max-w-md rounded-none rounded-b-xl p-4 md:p-8 transition-glass">
+      <h2 className="text-xl font-bold text-foreground">
         Create an Account
       </h2>
-      <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
+      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
         Sign up to get started with SnapSeeker
       </p>
 
@@ -247,30 +248,30 @@ export default function SignupForm() {
             checked={formData.agreeToTerms}
             onChange={handleInputChange}
             disabled={loading}
-            className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
+            className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
             required
           />
           <label
             htmlFor="terms"
-            className="ml-2 block text-sm text-gray-900 dark:text-gray-300"
+            className="ml-2 block text-sm text-foreground"
           >
-            I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-cyan-500 hover:text-cyan-400">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-cyan-500 hover:text-cyan-400">Privacy Policy</a> *
+            I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">Privacy Policy</a> *
           </label>
         </div>
 
         {/* 注册按钮 */}
-        <PrimaryButton type="submit" disabled={loading}>
+        <SignUpButton type="submit" disabled={loading}>
           {loading ? "Creating account..." : "Sign up"} &rarr;
-        </PrimaryButton>
+        </SignUpButton>
 
         {/* 分隔线 */}
-        <div className="my-8 h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
+        <div className="my-8 h-[1px] w-full bg-gradient-to-r from-transparent via-border to-transparent" />
 
         {/* 第三方注册选项 */}
         <div className="flex flex-col space-y-4">
           <SocialButton onClick={() => handleSocialLogin("Google")}>
-            <IconBrandGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
-            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+            <IconBrandGoogle className="h-4 w-4 text-foreground" />
+            <span className="text-sm text-foreground">
               Continue with Google
             </span>
           </SocialButton>

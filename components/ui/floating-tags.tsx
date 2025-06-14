@@ -334,7 +334,7 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
       {floatingTags.map(tag => (
         <div
           key={tag.id}
-          className="absolute pointer-events-auto cursor-pointer transform transition-all duration-300 hover:scale-110 hover:rotate-1"
+          className="absolute pointer-events-auto cursor-pointer transform transition-all duration-300 hover:rotate-1"
           style={{
             left: `${tag.x}px`,
             top: `${tag.y}px`,

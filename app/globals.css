@@ -6,3 +6,127 @@
   --color-primary-500: oklch(0.84 0.18 117.33);
   --spacing: 0.25rem;
 }
+
+@layer base {
+  :root {
+    /* Light theme colors - Softer, lower contrast with glass morphism */
+    --background: 0 0% 97%;
+    --foreground: 240 8% 15%;
+    --card: 0 0% 95%;
+    --card-foreground: 240 8% 20%;
+    --popover: 0 0% 96%;
+    --popover-foreground: 240 8% 18%;
+    --primary: 177 70% 41%; /* Light Sea Green #20B2AA */
+    --primary-foreground: 0 0% 98%;
+    --secondary: 210 30% 92%;
+    --secondary-foreground: 222 60% 15%;
+    --muted: 210 30% 93%;
+    --muted-foreground: 215 12% 55%;
+    --accent: 177 30% 85%;
+    --accent-foreground: 177 60% 15%;
+    --destructive: 0 70% 65%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 25% 88%;
+    --input: 214 25% 90%;
+    --ring: 177 70% 41%;
+    --radius: 0.75rem;
+    --chart-1: 12 65% 65%;
+    --chart-2: 173 50% 45%;
+    --chart-3: 197 30% 35%;
+    --chart-4: 43 65% 70%;
+    --chart-5: 27 75% 70%;
+    
+    /* Glass morphism variables */
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --glass-shadow: rgba(31, 38, 135, 0.37);
+  }
+
+  .dark {
+    /* Dark theme colors - Pure black theme with glass morphism */
+    --background: 0 0% 5%;
+    --foreground: 0 0% 92%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 90%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 88%;
+    --primary: 195 100% 50%; /* Deep Sky Blue #00BFFF */
+    --primary-foreground: 0 0% 5%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 88%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 195 20% 15%;
+    --accent-foreground: 0 0% 88%;
+    --destructive: 0 55% 45%;
+    --destructive-foreground: 0 0% 88%;
+    --border: 0 0% 18%;
+    --input: 0 0% 15%;
+    --ring: 195 100% 50%;
+    --chart-1: 220 60% 60%;
+    --chart-2: 160 50% 55%;
+    --chart-3: 30 70% 65%;
+    --chart-4: 280 55% 70%;
+    --chart-5: 340 65% 65%;
+    
+    /* Glass morphism variables for dark mode */
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: rgba(0, 0, 0, 0.5);
+  }
+}
+
+@layer base {
+  body {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    color: hsl(var(--foreground));
+    transition: all 0.3s ease;
+  }
+}
+
+@layer utilities {
+  /* Glass morphism utilities */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px var(--glass-shadow);
+  }
+  
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 16px var(--glass-shadow);
+  }
+  
+  .glass-button {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 2px 8px var(--glass-shadow);
+  }
+  
+  /* Smooth transitions */
+  .transition-glass {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .transition-glass:hover {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 12px 40px var(--glass-shadow);
+  }
+  
+  /* Gradient backgrounds */
+  .bg-gradient-soft {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 50%, hsl(var(--accent)) 100%);
+  }
+  
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+  }
+}

@@ -10,11 +10,11 @@ import Image from "next/image";
 
 export const MobileDashboard = () => {
   return (
-    <div className="flex flex-col h-full bg-black text-white">
+    <div className="flex flex-col h-full bg-background text-foreground">
       <div className="flex items-center justify-between px-5 py-4">
         <div className="flex items-center">
-          <div className="relative bg-black rounded-md overflow-hidden transition-all duration-300 ease-in-out">
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-neutral-900 to-black opacity-50"></div>
+          <div className="relative bg-background rounded-md overflow-hidden transition-all duration-300 ease-in-out">
+            <div className="absolute inset-0 bg-gradient-to-r from-background via-muted to-background opacity-50"></div>
             <Image
               src="/images/header-logo.jpg"
               alt="SnapSeeker Logo"
@@ -61,4 +61,4 @@ export const MobileDashboard = () => {
       </div>
     </div>
   );
-}; 
+};

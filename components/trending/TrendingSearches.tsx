@@ -8,16 +8,16 @@ import { DemandRanking, HotKeysData } from "@/types/competitor";
  * 需求热度标签卡片组件
  */
 const DemandRankingCard = ({ ranking }: { ranking: DemandRanking }) => (
-  <div className="bg-white dark:bg-neutral-900 rounded-xl p-5 shadow-md">
-    <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-4">{ranking.title}</h3>
+  <div className="bg-card rounded-xl p-5 shadow-md">
+    <h3 className="text-xl font-bold text-card-foreground mb-4">{ranking.title}</h3>
     <div className="space-y-3">
       {ranking.tags.filter(tag => tag != null).map((tag, index) => (
         <div key={index} className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="text-neutral-500 dark:text-neutral-400 w-6">{`#${index + 1}`}</span>
-            <span className="text-neutral-800 dark:text-neutral-200">{tag.tag}</span>
+            <span className="text-muted-foreground w-6">{`#${index + 1}`}</span>
+            <span className="text-card-foreground">{tag.tag}</span>
           </div>
-          <span className="text-sm text-neutral-500 dark:text-neutral-400">
+          <span className="text-sm text-muted-foreground">
             {tag.searchCount.toLocaleString()} searches
           </span>
         </div>
@@ -30,15 +30,15 @@ const DemandRankingCard = ({ ranking }: { ranking: DemandRanking }) => (
  * 骨架加载样式 - 热门搜索卡片
  */
 const TrendingSearchSkeleton = () => (
-  <div className="bg-neutral-900 rounded-xl p-5 shadow-md animate-pulse">
-    <div className="h-6 bg-neutral-800 rounded-md w-2/3 mb-4"></div>
+  <div className="bg-muted rounded-xl p-5 shadow-md animate-pulse">
+    <div className="h-6 bg-muted-foreground/20 rounded-md w-2/3 mb-4"></div>
     {Array(5).fill(0).map((_, i) => (
       <div key={i} className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
-          <div className="h-4 bg-neutral-800 rounded-md w-6"></div>
-          <div className="h-4 bg-neutral-800 rounded-md w-24"></div>
+          <div className="h-4 bg-muted-foreground/20 rounded-md w-6"></div>
+          <div className="h-4 bg-muted-foreground/20 rounded-md w-24"></div>
         </div>
-        <div className="h-4 bg-neutral-800 rounded-md w-20"></div>
+        <div className="h-4 bg-muted-foreground/20 rounded-md w-20"></div>
       </div>
     ))}
   </div>
