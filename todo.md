@@ -80,4 +80,4 @@ Sat June 14 2025：
 - [x] 隐藏clear history
 - [x] 点击搜索后，如果没有登录需要跳转登录页面，登录完成后需要保证源数据可以使用
 - [x] 每个模块新增导print按钮
-- [] 登录表单 remember me 按钮
+- [x] 登录表单 remember me 按钮

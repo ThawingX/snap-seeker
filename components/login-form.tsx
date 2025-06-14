@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { initializeGoogleAuth, signInWithGoogle, isGoogleAuthAvailable, getGoogleAuthUnavailableReason } from "@/lib/google-auth";
 import type { LoginResponse } from "@/lib/google-auth";
+import { rememberMeManager } from "@/lib/api";
 
 /**
  * 登录表单组件
@@ -32,7 +33,7 @@ export default function LoginForm() {
     rememberMe: false
   });
 
-  // 初始化Google认证
+  // 初始化Google认证和恢复remember me状态
   useEffect(() => {
     const initGoogleAuth = async () => {
       try {
@@ -43,7 +44,21 @@ export default function LoginForm() {
       }
     };
 
+    // 恢复保存的账号密码
+    const restoreSavedCredentials = () => {
+      const savedCredentials = rememberMeManager.getSavedCredentials();
+      if (savedCredentials) {
+        setFormData(prev => ({
+          ...prev,
+          email: savedCredentials.email,
+          password: savedCredentials.password,
+          rememberMe: true
+        }));
+      }
+    };
+
     initGoogleAuth();
+    restoreSavedCredentials();
   }, []);
 
   /**
@@ -78,6 +93,15 @@ export default function LoginForm() {
         username: formData.email, // API expects username field
         password: formData.password
       });
+      
+      // 处理 remember me 功能
+      if (formData.rememberMe) {
+        // 保存账号密码到 localStorage
+        rememberMeManager.saveCredentials(formData.email, formData.password);
+      } else {
+        // 清除保存的账号密码
+        rememberMeManager.clearCredentials();
+      }
       
       showToast({
         message: "Login successful!",

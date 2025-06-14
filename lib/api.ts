@@ -7,6 +7,8 @@ import { ENV } from './env';
 
 // Token storage key
 const TOKEN_STORAGE_KEY = 'snap_seeker_token';
+// Remember me credentials storage key
+const REMEMBER_CREDENTIALS_KEY = 'snap_seeker_remember_credentials';
 
 /**
  * Token management utilities
@@ -37,6 +39,62 @@ export const tokenManager = {
   // Check if user is authenticated
   isAuthenticated: (): boolean => {
     return !!tokenManager.getToken();
+  },
+};
+
+/**
+ * Remember me credentials management
+ */
+export const rememberMeManager = {
+  // Save credentials to localStorage
+  saveCredentials: (email: string, password: string): void => {
+    if (typeof window !== 'undefined') {
+      const credentials = {
+        email,
+        password,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(REMEMBER_CREDENTIALS_KEY, JSON.stringify(credentials));
+    }
+  },
+
+  // Get saved credentials from localStorage
+  getSavedCredentials: (): { email: string; password: string } | null => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(REMEMBER_CREDENTIALS_KEY);
+        if (saved) {
+          const credentials = JSON.parse(saved);
+          // Check if credentials are not too old (30 days)
+          const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+          if (Date.now() - credentials.timestamp < thirtyDaysInMs) {
+            return {
+              email: credentials.email || '',
+              password: credentials.password || ''
+            };
+          } else {
+            // Remove expired credentials
+            localStorage.removeItem(REMEMBER_CREDENTIALS_KEY);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to parse saved credentials:', error);
+        localStorage.removeItem(REMEMBER_CREDENTIALS_KEY);
+      }
+    }
+    return null;
+  },
+
+  // Clear saved credentials
+  clearCredentials: (): void => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(REMEMBER_CREDENTIALS_KEY);
+    }
+  },
+
+  // Check if credentials are saved
+  hasCredentials: (): boolean => {
+    return !!rememberMeManager.getSavedCredentials();
   },
 };
 
