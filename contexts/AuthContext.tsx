@@ -109,10 +109,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           
           // 生成临时ID并执行搜索
           const tempId = crypto.randomUUID();
-          localStorage.setItem(tempId, JSON.stringify({ query }));
           
-          // 跳转到搜索结果页面
-          router.push(`/results?id=${tempId}`);
+          // 跳转到搜索结果页面，通过URL参数传递查询和ID
+          router.push(`/results?id=${tempId}&query=${encodeURIComponent(query)}`);
         } else {
           // 数据过期，清除
           sessionStorage.removeItem('pendingSearch');

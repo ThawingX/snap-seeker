@@ -66,49 +66,7 @@ const createInitialResultsState = (): SearchResultData => ({
   functionList: []
 });
 
-/**
- * 从localStorage加载完整的搜索数据
- * @param searchId 搜索ID
- * @returns 完整的搜索数据或null
- */
-const loadCompleteSearchData = (searchId: string): CompleteSearchData | null => {
-  try {
-    const cachedData = localStorage.getItem(searchId);
-    if (cachedData) {
-      const parsed = JSON.parse(cachedData);
-      // 检查数据结构完整性 - 允许数组为空
-      if (parsed.query && parsed.results && 
-          Array.isArray(parsed.results.logicSteps) && 
-          Array.isArray(parsed.results.competitors) &&
-          Array.isArray(parsed.results.figures) &&
-          parsed.results.hotKeysData) {
-        return parsed;
-      }
-    }
-  } catch (err) {
-    console.error('Error parsing cached search data:', err);
-  }
-  return null;
-};
-
-/**
- * 保存完整的搜索数据到localStorage
- * @param searchId 搜索ID
- * @param query 搜索查询
- * @param results 搜索结果数据
- */
-const saveCompleteSearchData = (searchId: string, query: string, results: SearchResultData) => {
-  try {
-    const completeData: CompleteSearchData = {
-      query,
-      results,
-      timestamp: new Date().toISOString()
-    };
-    localStorage.setItem(searchId, JSON.stringify(completeData));
-  } catch (err) {
-    console.error('Error saving complete search data:', err);
-  }
-};
+// localStorage相关函数已移除，不再在本地存储搜索结果数据
 
 /**
  * 创建SSE处理上下文
@@ -220,7 +178,7 @@ const setupTimeoutMonitor = (
       };
       // 使用context中的validSearchId，这个值可能已经被后端返回的id更新了
       const finalSearchId = context.hasValidId ? context.validSearchId : validSearchId;
-      saveCompleteSearchData(finalSearchId, query, latestResults);
+      // localStorage保存已移除，不再在本地存储搜索结果数据
       // 历史记录现在通过API管理，不再需要客户端添加
       if (intervalIdRef.current !== null) {
         clearInterval(intervalIdRef.current);
@@ -305,12 +263,8 @@ const processSSELine = (
           functionList: context.currentFunctionList
         };
         
-        // 异步保存，不阻塞数据处理，使用动态的searchId
-        setTimeout(() => {
-          const finalSearchId = context.hasValidId ? context.validSearchId : searchId;
-          saveCompleteSearchData(finalSearchId, query, currentResults);
-          console.log(`Data persisted after processing: ${jsonData.step}`);
-        }, 0);
+        // localStorage保存已移除，不再在本地存储搜索结果数据
+        console.log(`Data processed: ${jsonData.step}`);
       }
       
       return processed;
@@ -373,7 +327,7 @@ const createStreamProcessor = (
             functionList: context.currentFunctionList
           };
           const finalSearchId = context.hasValidId ? context.validSearchId : validSearchId;
-          saveCompleteSearchData(finalSearchId, query, latestResults);
+          // localStorage保存已移除，不再在本地存储搜索结果数据
           // 历史记录现在通过API管理，不再需要客户端添加
           setLoading(false);
           clearTimeoutMonitor(intervalIdRef);
@@ -401,7 +355,7 @@ const createStreamProcessor = (
               functionList: context.currentFunctionList
             };
             const finalSearchId = context.hasValidId ? context.validSearchId : validSearchId;
-            saveCompleteSearchData(finalSearchId, query, latestResults);
+            // localStorage保存已移除，不再在本地存储搜索结果数据
             // 历史记录现在通过API管理，不再需要客户端添加
             setLoading(false);
             clearTimeoutMonitor(intervalIdRef);
@@ -420,7 +374,7 @@ const createStreamProcessor = (
         functionList: context.currentFunctionList
       };
       const finalSearchId = context.hasValidId ? context.validSearchId : validSearchId;
-      saveCompleteSearchData(finalSearchId, query, latestResults);
+      // localStorage保存已移除，不再在本地存储搜索结果数据
       // 历史记录现在通过API管理，不再需要客户端添加
       setLoading(false);
       clearTimeoutMonitor(intervalIdRef);
@@ -478,21 +432,8 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
   useEffect(() => {
     if (!searchId || !query) return;
 
-    // 尝试加载完整的搜索数据
-    const cachedData = loadCompleteSearchData(searchId);
-    if (cachedData && cachedData.results) {
-      const { results } = cachedData;
-      setLogicSteps(results.logicSteps);
-      setCompetitors(results.competitors);
-      setFigures(results.figures);
-      setHotKeysData(results.hotKeysData);
-      setRequirementCard(results.requirementCard);
-      setFunctionList(results.functionList);
-      setLoading(false);
-      return; // 确保这里返回，不继续执行下面的代码
-    }
-
-    // 只有在没有缓存数据时才执行网络请求和状态重置
+    // localStorage加载已移除，不再从本地加载搜索结果数据
+    // 直接进行新的搜索请求
     const abortController = new AbortController();
 
     const fetchData = async () => {
@@ -590,7 +531,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
           requirementCard,
           functionList
         };
-        saveCompleteSearchData(searchId, query, currentResults);
+        // localStorage保存已移除，不再在本地存储搜索结果数据
         
         console.error('Error in SSE connection:', err);
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -601,8 +542,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
     fetchData();
 
     return () => {
-      // 使用 ref 中的最新数据而不是闭包中的状态
-      saveCompleteSearchData(searchId, query, latestDataRef.current);
+      // localStorage保存已移除，不再在本地存储搜索结果数据
       
       abortController.abort();
       clearTimeoutMonitor(intervalIdRef);

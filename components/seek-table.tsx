@@ -143,29 +143,10 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   // 使用SSE数据hook获取实时数据（新搜索时使用）
   const sseData = useSSEData({ query, searchId });
 
-  // 检查是否为历史查询
+  // 检查是否为历史查询 - 现在通过API检查而不是localStorage
   useEffect(() => {
-    if (searchId && typeof window !== 'undefined') {
-      const storedData = localStorage.getItem(searchId);
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData);
-          // 检查是否有完整的搜索结果数据
-          if (parsedData.results && 
-              Array.isArray(parsedData.results.logicSteps) && 
-              Array.isArray(parsedData.results.competitors)) {
-            setIsHistoryQuery(true);
-          } else {
-            setIsHistoryQuery(false);
-          }
-        } catch (error) {
-          console.error('Error parsing stored data:', error);
-          setIsHistoryQuery(false);
-        }
-      } else {
-        setIsHistoryQuery(false);
-      }
-    }
+    // 默认设置为非历史查询，让API调用来确定
+    setIsHistoryQuery(false);
   }, [searchId]);
   
   // 从后端API获取历史数据（仅当确认为历史查询时）

@@ -60,12 +60,8 @@ export const MobileSearchBar = () => {
       // 生成一个临时ID用于页面跳转
       const tempId = crypto.randomUUID();
       
-      // 保存查询内容到localStorage，但不添加到历史记录
-      // 实际的ID处理和历史记录添加将在seek-table.tsx中完成
-      localStorage.setItem(tempId, JSON.stringify({ query: input }));
-      
-      // 立即跳转到results页面，带临时id参数
-      router.push(`/results?id=${tempId}`);
+      // 直接跳转到results页面，通过URL参数传递查询和ID
+      router.push(`/results?id=${tempId}&query=${encodeURIComponent(input)}`);
     } catch (error) {
       console.error('Error during search submission:', error);
       // 使用toast组件显示错误信息
