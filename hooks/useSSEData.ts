@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ENV } from '@/lib/env';
 import { normalizeSSEData } from '@/lib/utils';
-import { addSearchToHistory } from "@/lib/searchHistory";
+// addSearchToHistory 已移除，历史记录现在通过API管理
 import { useToast } from "@/components/ui/toast";
 import { SSEDataProcessor, SSEProcessingContext } from '@/lib/sse-data-strategies';
 import { CompetitorData, HotKeysData, SearchStep } from '@/types/competitor';
@@ -172,7 +172,6 @@ const createSSEContext = (
     validSearchId: searchId, // 初始值使用传入的searchId
     hasValidId: false, // 初始为false，等待后端返回真实的id
     showToast,
-    addSearchToHistory,
     query,
     updateURL: (newSearchId: string) => {
       // 更新浏览器URL，使用replace避免在历史记录中创建新条目
@@ -222,8 +221,7 @@ const setupTimeoutMonitor = (
       // 使用context中的validSearchId，这个值可能已经被后端返回的id更新了
       const finalSearchId = context.hasValidId ? context.validSearchId : validSearchId;
       saveCompleteSearchData(finalSearchId, query, latestResults);
-      // 数据保存完成后添加到历史记录
-      context.addSearchToHistory(query, finalSearchId);
+      // 历史记录现在通过API管理，不再需要客户端添加
       if (intervalIdRef.current !== null) {
         clearInterval(intervalIdRef.current);
         intervalIdRef.current = null;
@@ -376,8 +374,7 @@ const createStreamProcessor = (
           };
           const finalSearchId = context.hasValidId ? context.validSearchId : validSearchId;
           saveCompleteSearchData(finalSearchId, query, latestResults);
-          // 数据保存完成后添加到历史记录
-          context.addSearchToHistory(query, finalSearchId);
+          // 历史记录现在通过API管理，不再需要客户端添加
           setLoading(false);
           clearTimeoutMonitor(intervalIdRef);
           return;
@@ -405,8 +402,7 @@ const createStreamProcessor = (
             };
             const finalSearchId = context.hasValidId ? context.validSearchId : validSearchId;
             saveCompleteSearchData(finalSearchId, query, latestResults);
-            // 数据保存完成后添加到历史记录
-            context.addSearchToHistory(query, finalSearchId);
+            // 历史记录现在通过API管理，不再需要客户端添加
             setLoading(false);
             clearTimeoutMonitor(intervalIdRef);
             return;
@@ -425,8 +421,7 @@ const createStreamProcessor = (
       };
       const finalSearchId = context.hasValidId ? context.validSearchId : validSearchId;
       saveCompleteSearchData(finalSearchId, query, latestResults);
-      // 数据保存完成后添加到历史记录
-      context.addSearchToHistory(query, finalSearchId);
+      // 历史记录现在通过API管理，不再需要客户端添加
       setLoading(false);
       clearTimeoutMonitor(intervalIdRef);
       

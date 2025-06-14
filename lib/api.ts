@@ -61,6 +61,7 @@ export const API_ENDPOINTS = {
   // Other endpoints
   HOT_KEYS: `${ENV.API_BASE_URL}/api/hot_keys`,
   CREDITS: `${ENV.API_BASE_URL}/api/credits`,
+  HISTORY: `${ENV.API_BASE_URL}/api/history`,
 };
 
 /**

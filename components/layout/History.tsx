@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { HistoryCard, HistoryCardProps } from "@/components/history-card";
-import { getSearchHistory, clearSearchHistory, SearchHistoryItem } from "@/lib/searchHistory";
+import { clearSearchHistory, SearchHistoryItem } from "@/lib/searchHistory";
+import { api, API_ENDPOINTS } from "@/lib/api";
 
 // Sample API response type
 interface HistoryItem {
@@ -19,18 +20,25 @@ export const History = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // 从localStorage中获取搜索历史
+    // 从API获取搜索历史
     const fetchHistoryItems = async () => {
       try {
         setLoading(true);
-        // 模拟加载延迟
-        await new Promise(resolve => setTimeout(resolve, 200));
         
-        // 获取本地存储的历史记录
-        const storedHistory = getSearchHistory();
-        setHistoryItems(storedHistory);
+        // 从API获取历史记录
+        const response = await api.get(API_ENDPOINTS.HISTORY);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch history from server');
+        }
+        
+        const data = await response.json();
+        // 假设API返回的数据格式与localStorage一致
+        const historyData = Array.isArray(data) ? data : data.data || [];
+        setHistoryItems(historyData);
         setLoading(false);
       } catch (err) {
+        console.error('Failed to fetch history:', err);
         setError("Failed to load history items");
         setLoading(false);
       }
@@ -40,9 +48,24 @@ export const History = () => {
   }, []);
 
   // 清除所有历史记录
-  const handleClearHistory = () => {
-    clearSearchHistory();
-    setHistoryItems([]);
+  const handleClearHistory = async () => {
+    try {
+      // 通过API清除历史记录
+      const response = await api.delete(API_ENDPOINTS.HISTORY);
+      
+      if (!response.ok) {
+        throw new Error('Failed to clear history');
+      }
+      
+      // 清除成功后更新本地状态
+      setHistoryItems([]);
+      
+      // 同时清除本地缓存的搜索数据
+      clearSearchHistory();
+    } catch (err) {
+      console.error('Failed to clear history:', err);
+      setError('Failed to clear history');
+    }
   };
 
   const formatDate = (dateString: string) => {

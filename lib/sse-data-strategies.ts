@@ -40,7 +40,6 @@ export interface SSEProcessingContext {
   validSearchId: string;
   hasValidId: boolean;
   showToast: (options: { message: string; type?: "info" | "success" | "warning" | "error"; duration?: number }) => void;
-  addSearchToHistory: (query: string, searchId: string) => void;
   updateURL: (newSearchId: string) => void;
   setFinalSearchId: (id: string) => void;
   query: string;
