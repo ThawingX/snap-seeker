@@ -12,9 +12,13 @@ import { FigureCards } from "./figure/FigureCards";
 import { RequirementCard } from "./requirement/RequirementCard";
 import { FunctionList } from "./function/FunctionList";
 import { PMFAnalysis, MVPStrategy } from "./premium/LockedContent";
-import { useSSEData } from "@/hooks/useSSEData";
-import { ENV } from "@/lib/env";
 import { API_ENDPOINTS, api, tokenManager } from "@/lib/api";
+import { CompetitorData, HotKeysData, SearchStep } from '@/types/competitor';
+import { FigureData } from '@/components/figure/FigureCards';
+import { RequirementCardData } from '@/components/requirement/RequirementCard';
+import { FunctionListData } from '@/components/function/FunctionList';
+import { useToast } from "@/components/ui/toast";
+import { useSSEData } from "@/hooks/useSSEData";
 
 
 
@@ -47,6 +51,9 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   
   // 导出状态管理
   const [isExporting, setIsExporting] = useState(false);
+  
+  // 检查是否为历史查询（localStorage中是否有完整的搜索结果数据）
+  const [isHistoryQuery, setIsHistoryQuery] = useState(false);
 
   // 打印功能处理函数
   const handlePrintModule = (moduleId: string, moduleName: string) => {
@@ -118,18 +125,111 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     };
   };
 
-  // 使用 SSE 数据获取 Hook
-  const {
-    loading,
-    logicSteps: searchSteps,
-    competitors: competitorData,
-    figures: figureData,
-    hotKeysData,
-    requirementCard: requirementData,
-    functionList: functionListData,
-    error,
-    finalSearchId
-  } = useSSEData({ query, searchId });
+  // 数据状态管理 - 历史查询时使用的状态
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historySearchSteps, setHistorySearchSteps] = useState<SearchStep[]>([]);
+  const [historyCompetitorData, setHistoryCompetitorData] = useState<CompetitorData[]>([]);
+  const [historyFigureData, setHistoryFigureData] = useState<FigureData[]>([]);
+  const [historyHotKeysData, setHistoryHotKeysData] = useState<HotKeysData>({
+    mostRelevant: [],
+    allInSeeker: [],
+    allFields: []
+  });
+  const [historyRequirementData, setHistoryRequirementData] = useState<RequirementCardData | null>(null);
+  const [historyFunctionListData, setHistoryFunctionListData] = useState<FunctionListData[]>([]);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const { showToast } = useToast();
+  
+  // 使用SSE数据hook获取实时数据（新搜索时使用）
+  const sseData = useSSEData({ query, searchId });
+
+  // 检查是否为历史查询
+  useEffect(() => {
+    if (searchId && typeof window !== 'undefined') {
+      const storedData = localStorage.getItem(searchId);
+      if (storedData) {
+        try {
+          const parsedData = JSON.parse(storedData);
+          // 检查是否有完整的搜索结果数据
+          if (parsedData.results && 
+              Array.isArray(parsedData.results.logicSteps) && 
+              Array.isArray(parsedData.results.competitors)) {
+            setIsHistoryQuery(true);
+          } else {
+            setIsHistoryQuery(false);
+          }
+        } catch (error) {
+          console.error('Error parsing stored data:', error);
+          setIsHistoryQuery(false);
+        }
+      } else {
+        setIsHistoryQuery(false);
+      }
+    }
+  }, [searchId]);
+  
+  // 从后端API获取历史数据（仅当确认为历史查询时）
+  useEffect(() => {
+    const fetchHistoryData = async () => {
+      try {
+        setHistoryLoading(true);
+        setHistoryError(null);
+        
+        const response = await api.get(`${API_ENDPOINTS.HISTORY}/${searchId}`);
+        
+        if (!response.ok) {
+          // 特殊处理404错误
+          if (response.status === 404) {
+            const errorMessage = '搜索记录不存在或已被删除';
+            setHistoryError(errorMessage);
+            setHistoryLoading(false); // 停止加载状态
+            showToast({
+              title: "记录未找到",
+              description: "该搜索记录不存在或已被删除，请返回历史记录页面查看其他记录。",
+              variant: "destructive"
+            });
+            return; // 直接返回，不再重试
+          }
+          
+          // 其他HTTP错误
+          throw new Error(`请求失败: HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // 设置数据状态
+        if (data.results) {
+          setHistorySearchSteps(data.results.logicSteps || []);
+          setHistoryCompetitorData(data.results.competitors || []);
+          setHistoryFigureData(data.results.figures || []);
+          setHistoryHotKeysData(data.results.hotKeysData || {
+            mostRelevant: [],
+            allInSeeker: [],
+            allFields: []
+          });
+          setHistoryRequirementData(data.results.requirementCard || null);
+          setHistoryFunctionListData(data.results.functionList || []);
+        }
+        
+      } catch (err) {
+        console.error('Error fetching history data:', err);
+        const errorMessage = err instanceof Error ? err.message : '加载数据失败';
+        setHistoryError(errorMessage);
+        showToast({
+          title: "加载错误",
+          description: "无法加载搜索结果，请检查网络连接或稍后重试。",
+          variant: "destructive"
+        });
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+
+    // 只有当确认为历史查询时才调用历史数据接口
+    if (isHistoryQuery && searchId) {
+      fetchHistoryData();
+    }
+  }, [isHistoryQuery, searchId]);
 
   // 监听滚动事件
   useEffect(() => {
@@ -140,135 +240,18 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+  
+  // 根据查询类型选择使用的数据
+  const loading = isHistoryQuery ? historyLoading : sseData.loading;
+  const searchSteps = isHistoryQuery ? historySearchSteps : sseData.logicSteps;
+  const competitorData = isHistoryQuery ? historyCompetitorData : sseData.competitors;
+  const figureData = isHistoryQuery ? historyFigureData : sseData.figures;
+  const hotKeysData = isHistoryQuery ? historyHotKeysData : sseData.hotKeysData;
+  const requirementData = isHistoryQuery ? historyRequirementData : sseData.requirementCard;
+  const functionListData = isHistoryQuery ? historyFunctionListData : sseData.functionList;
+  const error = isHistoryQuery ? historyError : sseData.error;
 
-  // 页面卸载时确保数据持久化
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // 检查是否有未保存的数据
-      const hasUnsavedData = searchSteps.length > 0 || 
-                            competitorData.length > 0 || 
-                            figureData.length > 0 || 
-                            (hotKeysData && (hotKeysData.mostRelevant.length > 0 || hotKeysData.allInSeeker.length > 0 || hotKeysData.allFields.length > 0)) || 
-                            requirementData || 
-                            functionListData.length > 0;
-      
-      if (hasUnsavedData) {
-        // 尝试最后一次保存
-        try {
-          const currentResults = {
-            logicSteps: searchSteps,
-            competitors: competitorData,
-            figures: figureData,
-            hotKeysData,
-            requirementCard: requirementData,
-            functionList: functionListData
-          };
-          
-          // 使用同步方式保存到localStorage
-          // 使用finalSearchId（后端返回的真实ID）而不是searchId（临时ID）
-          const saveId = finalSearchId || searchId;
-          const searchData = {
-            id: saveId,
-            query: query,
-            timestamp: Date.now(),
-            results: currentResults
-          };
-          
-          localStorage.setItem(`search_${searchData.id}`, JSON.stringify(searchData));
-          console.log('Emergency data save completed before page unload');
-        } catch (error) {
-          console.error('Failed to save data before unload:', error);
-        }
-        
-        // 提示用户有未保存的数据
-        e.preventDefault();
-        e.returnValue = '您有未保存的搜索数据，确定要离开吗？';
-        return '您有未保存的搜索数据，确定要离开吗？';
-      }
-    };
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        // 页面变为不可见时保存数据
-        const hasUnsavedData = searchSteps.length > 0 || 
-                              competitorData.length > 0 || 
-                              figureData.length > 0 || 
-                              (hotKeysData && (hotKeysData.mostRelevant.length > 0 || hotKeysData.allInSeeker.length > 0 || hotKeysData.allFields.length > 0)) || 
-                              requirementData || 
-                              functionListData.length > 0;
-        
-        if (hasUnsavedData) {
-          try {
-            const currentResults = {
-              logicSteps: searchSteps,
-              competitors: competitorData,
-              figures: figureData,
-              hotKeysData,
-              requirementCard: requirementData,
-              functionList: functionListData
-            };
-            
-            // 使用finalSearchId（后端返回的真实ID）而不是searchId（临时ID）
-            const saveId = finalSearchId || searchId;
-            const searchData = {
-              id: saveId,
-              query: query,
-              timestamp: Date.now(),
-              results: currentResults
-            };
-            
-            localStorage.setItem(`search_${searchData.id}`, JSON.stringify(searchData));
-            console.log('Data saved on visibility change');
-          } catch (error) {
-            console.error('Failed to save data on visibility change:', error);
-          }
-        }
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      
-      // 组件卸载时最后一次保存
-      const hasUnsavedData = searchSteps.length > 0 || 
-                            competitorData.length > 0 || 
-                            figureData.length > 0 || 
-                            (hotKeysData && (hotKeysData.mostRelevant.length > 0 || hotKeysData.allInSeeker.length > 0 || hotKeysData.allFields.length > 0)) || 
-                            requirementData || 
-                            functionListData.length > 0;
-      
-      if (hasUnsavedData) {
-        try {
-          const currentResults = {
-            logicSteps: searchSteps,
-            competitors: competitorData,
-            figures: figureData,
-            hotKeysData,
-            requirementCard: requirementData,
-            functionList: functionListData
-          };
-          
-          // 使用finalSearchId（后端返回的真实ID）而不是searchId（临时ID）
-          const saveId = finalSearchId || searchId;
-          const searchData = {
-            id: saveId,
-            query: query,
-            timestamp: Date.now(),
-            results: currentResults
-          };
-          
-          localStorage.setItem(`search_${searchData.id}`, JSON.stringify(searchData));
-          console.log('Final data save on component unmount');
-        } catch (error) {
-          console.error('Failed to save data on unmount:', error);
-        }
-      }
-    };
-  }, [searchSteps, competitorData, figureData, hotKeysData, requirementData, functionListData, searchId, query, finalSearchId]);
 
   // 导出MVP.md文件的处理函数
   const handleExportMVP = async () => {
@@ -276,9 +259,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     
     setIsExporting(true);
     try {
-      // 使用finalSearchId（后端返回的真实ID）而不是searchId（临时ID）
-      const exportId = finalSearchId || searchId;
-      const response = await api.get(API_ENDPOINTS.CHAT.DOWNLOAD(exportId), {
+      const response = await api.get(API_ENDPOINTS.CHAT.DOWNLOAD(searchId), {
          headers: {
            'Content-Type': 'application/json',
          },
@@ -295,7 +276,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       // 创建下载链接
       const a = document.createElement('a');
       a.href = url;
-      a.download = `prd-${query.replace(/\s+/g, '-')}-${exportId}.md`;
+      a.download = `prd-${query.replace(/\s+/g, '-')}-${searchId}.md`;
       document.body.appendChild(a);
       a.click();
       
@@ -305,7 +286,11 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       
     } catch (error) {
       console.error('导出PRD文件失败:', error);
-      // 这里可以添加错误提示
+      showToast({
+        title: "Export Error",
+        description: "Failed to export PRD file. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsExporting(false);
     }
@@ -487,78 +472,118 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
             </div>
           )}
           {error && (
-            <div className="mt-2 text-red-500">
-              Error: {error}
+            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <div className="flex items-start">
+                <svg className="h-5 w-5 text-red-400 mt-0.5 mr-3 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                    {error.includes('404') || error.includes('不存在') ? '记录未找到' : '加载错误'}
+                  </h3>
+                  <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+                    {error}
+                  </p>
+                  {(error.includes('404') || error.includes('不存在')) && (
+                    <div className="mt-3">
+                      <Link 
+                        href="/history" 
+                        className="inline-flex items-center px-3 py-2 text-sm font-medium text-red-800 dark:text-red-200 bg-red-100 dark:bg-red-800/30 border border-red-300 dark:border-red-700 rounded-md hover:bg-red-200 dark:hover:bg-red-800/50 transition-colors"
+                      >
+                        <svg className="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        返回历史记录
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
 
-        {/* 搜索逻辑思考链部分 */}
-        <SearchLogic 
-          searchSteps={searchSteps} 
-          loading={loading} 
-          query={query} 
-          searchLogicRef={searchLogicRef}
-          onPrint={() => handlePrintModule('search-logic', 'Search Processing Logic')}
-        />
+        {/* 只有在没有404错误时才显示内容组件 */}
+        {!error || (!error.includes('404') && !error.includes('不存在')) ? (
+          <>
+            {/* 搜索逻辑思考链部分 */}
+            <SearchLogic 
+              searchSteps={searchSteps} 
+              loading={loading} 
+              query={query} 
+              searchLogicRef={searchLogicRef}
+              onPrint={() => handlePrintModule('search-logic', 'Search Processing Logic')}
+            />
 
-        {/* 主要竞争对手卡片部分 */}
-        <CompetitorCards 
-          competitorData={competitorData} 
-          loading={loading} 
-          competitorsRef={competitorsRef}
-          onPrint={() => handlePrintModule('competitors', 'Main Competitors')}
-        />
+            {/* 主要竞争对手卡片部分 */}
+            <CompetitorCards 
+              competitorData={competitorData} 
+              loading={loading} 
+              competitorsRef={competitorsRef}
+              onPrint={() => handlePrintModule('competitors', 'Main Competitors')}
+            />
 
-        {/* 需求热度标签排行榜部分 */}
-        <TrendingSearches 
-          hotKeysData={hotKeysData} 
-          loading={loading} 
-          trendingSearchesRef={trendingSearchesRef}
-          onPrint={() => handlePrintModule('trending-searches', 'Trending Searches (Monthly)')}
-        />
+            {/* 需求热度标签排行榜部分 */}
+            <TrendingSearches 
+              hotKeysData={hotKeysData} 
+              loading={loading} 
+              trendingSearchesRef={trendingSearchesRef}
+              onPrint={() => handlePrintModule('trending-searches', 'Trending Searches (Monthly)')}
+            />
 
-        {/* 竞争对手数据表格部分 */}
-        <CompetitorTable 
-          competitorData={competitorData} 
-          loading={loading} 
-          tableRef={tableRef}
-          onPrint={() => handlePrintModule('table', 'Competitor Table')}
-        />
+            {/* 竞争对手数据表格部分 */}
+            <CompetitorTable 
+              competitorData={competitorData} 
+              loading={loading} 
+              tableRef={tableRef}
+              onPrint={() => handlePrintModule('table', 'Competitor Table')}
+            />
 
-        {/* 分析图片部分 */}
-        <FigureCards 
-          figureData={figureData} 
-          loading={loading} 
-          figuresRef={figuresRef}
-          onPrint={() => handlePrintModule('figures', 'Analysis Figures')}
-        />
+            {/* 分析图片部分 */}
+            <FigureCards 
+              figureData={figureData} 
+              loading={loading} 
+              figuresRef={figuresRef}
+              onPrint={() => handlePrintModule('figures', 'Analysis Figures')}
+            />
 
-        {/* 产品需求卡片部分 */}
-        <RequirementCard 
-          requirementData={requirementData} 
-          loading={loading} 
-          requirementRef={requirementRef}
-          onPrint={() => handlePrintModule('requirement-card', 'Finalized Requirement Card')}
-        />
+            {/* 产品需求卡片部分 */}
+            <RequirementCard 
+              requirementData={requirementData} 
+              loading={loading} 
+              requirementRef={requirementRef}
+              onPrint={() => handlePrintModule('requirement-card', 'Finalized Requirement Card')}
+            />
 
-        {/* 功能清单部分 */}
-        <FunctionList 
-          functionData={functionListData} 
-          loading={loading} 
-          functionListRef={functionListRef}
-          onPrint={() => handlePrintModule('function-list', 'Function List')}
-        />
+            {/* 功能清单部分 */}
+            <FunctionList 
+              functionData={functionListData} 
+              loading={loading} 
+              functionListRef={functionListRef}
+              onPrint={() => handlePrintModule('function-list', 'Function List')}
+            />
 
-        {/* MVP 策略推荐部分 - 已隐藏 */}
-        {/* <MVPStrategy loading={loading} insightsRef={insightsRef} /> */}
+            {/* MVP 策略推荐部分 - 已隐藏 */}
+            {/* <MVPStrategy loading={loading} insightsRef={insightsRef} /> */}
 
-        {/* PMF 分析部分 */}
-        <PMFAnalysis 
-          loading={loading} 
-          recommendationsRef={recommendationsRef}
-          onPrint={() => handlePrintModule('recommendations', 'Product-Market Fit (PMF) Analysis')}
-        />
+            {/* PMF 分析部分 */}
+            <PMFAnalysis 
+              loading={loading} 
+              recommendationsRef={recommendationsRef}
+              onPrint={() => handlePrintModule('recommendations', 'Product-Market Fit (PMF) Analysis')}
+            />
+          </>
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-neutral-500 dark:text-neutral-400">
+              <svg className="mx-auto h-12 w-12 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="text-lg font-medium">无法显示搜索结果</p>
+              <p className="text-sm mt-1">请返回历史记录页面查看其他搜索记录</p>
+            </div>
+          </div>
+        )}
         </div>
       </div>
     </div>
