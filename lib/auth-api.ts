@@ -161,14 +161,3 @@ export const logoutUser = async (): Promise<void> => {
 export const isAuthenticated = (): boolean => {
   return tokenManager.isAuthenticated();
 };
-
-/**
- * Make authenticated API request (deprecated - use api methods instead)
- * @deprecated Use api.get/post/put/delete methods which automatically handle authentication
- */
-export const authenticatedFetch = async (
-  url: string,
-  options: RequestInit = {}
-): Promise<Response> => {
-  return api.get(url, options);
-};

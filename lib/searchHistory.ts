@@ -42,7 +42,13 @@ export const addSearchToHistory = (query: string, id?: string): void => {
       description: generateDescription(query),
       timestamp: new Date().toISOString(),
       category: generateCategory(query),
-      logoUrl: getRandomLogoUrl(),
+      logoUrl: [
+        "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/notion.svg",
+        "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/github.svg",
+        "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/google.svg",
+        "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/buymeacoffee.svg",
+        "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/tensorflow.svg"
+      ][Math.floor(Math.random() * 5)],
     };
 
     if (existingIndex !== -1) {
@@ -112,17 +118,4 @@ const generateCategory = (query: string): string => {
 
   // 简单随机选择一个分类
   return categories[Math.floor(Math.random() * categories.length)];
-};
-
-// 获取随机Logo URL（简单实现）
-const getRandomLogoUrl = (): string => {
-  const logos = [
-    "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/notion.svg",
-    "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/github.svg",
-    "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/google.svg",
-    "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/buymeacoffee.svg",
-    "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/tensorflow.svg"
-  ];
-
-  return logos[Math.floor(Math.random() * logos.length)];
 };

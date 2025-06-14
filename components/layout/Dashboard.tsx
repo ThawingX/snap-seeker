@@ -70,14 +70,7 @@ export const Dashboard = () => {
     }
   };
 
-  // 处理消息显示
-  const handleShowMessage = (message: string) => {
-    showToast({
-      message,
-      type: "info",
-      duration: 2500
-    });
-  };
+
 
   return (
     <div className="flex flex-1 flex-col">
@@ -100,7 +93,7 @@ export const Dashboard = () => {
               onTagSelected={handleTagSelected}
               maxTags={35}
               searchBarRef={searchBarContainerRef}
-              onShowMessage={handleShowMessage}
+              onShowMessage={(message: string) => showToast({ message, type: "info", duration: 2500 })}
             />
           </div>
         )}
