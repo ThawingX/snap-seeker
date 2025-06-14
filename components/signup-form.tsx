@@ -26,8 +26,6 @@ export default function SignupForm() {
   
   // 表单状态
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -180,34 +178,6 @@ export default function SignupForm() {
       </p>
 
       <form className="my-8" onSubmit={handleSubmit}>
-        {/* 姓名输入区域 */}
-        <div className="mb-4 flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
-          <LabelInputContainer>
-            <Label htmlFor="firstname">First name</Label>
-            <Input 
-              id="firstname" 
-              name="firstName"
-              placeholder="Tyler" 
-              type="text" 
-              value={formData.firstName}
-              onChange={handleInputChange}
-              disabled={loading}
-            />
-          </LabelInputContainer>
-          <LabelInputContainer>
-            <Label htmlFor="lastname">Last name</Label>
-            <Input 
-              id="lastname" 
-              name="lastName"
-              placeholder="Durden" 
-              type="text" 
-              value={formData.lastName}
-              onChange={handleInputChange}
-              disabled={loading}
-            />
-          </LabelInputContainer>
-        </div>
-        
         {/* 邮箱输入区域 */}
         <LabelInputContainer className="mb-4">
           <Label htmlFor="email">Email Address *</Label>
