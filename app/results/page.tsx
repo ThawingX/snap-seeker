@@ -37,7 +37,7 @@ function ResultsContent() {
       {query ? (
         <SeekTable query={query} searchId={searchId} />
       ) : (
-        <div className="flex items-center justify-center h-32 text-neutral-400">
+        <div className="flex items-center justify-center h-32 text-neutral-600 dark:text-neutral-400">
           <span>Loading...</span>
         </div>
       )}
@@ -47,9 +47,9 @@ function ResultsContent() {
 
 export default function ResultsPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center bg-neutral-950 py-8">
+    <main className="flex min-h-screen flex-col items-center bg-neutral-50 dark:bg-neutral-950 py-8">
       <Suspense fallback={
-        <div className="flex items-center justify-center h-32 text-neutral-400">
+        <div className="flex items-center justify-center h-32 text-neutral-600 dark:text-neutral-400">
           <span>Loading results...</span>
         </div>
       }>

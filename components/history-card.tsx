@@ -87,8 +87,8 @@ export function HistoryCard({
   return (
     <Link href={`/results?id=${id}`} className="block">
       <motion.div
-        className="group/card relative overflow-hidden rounded-xl border border-neutral-200 bg-white p-5 transition duration-200 dark:border-neutral-800 dark:bg-neutral-950 
-                 hover:border-neutral-300 hover:shadow-md dark:hover:border-neutral-700 transform hover:-translate-y-1"
+        className="group/card relative overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 p-5 transition duration-200 dark:border-neutral-800 dark:bg-neutral-900 
+                 hover:border-neutral-300 hover:shadow-md dark:hover:border-neutral-700 transform hover:-translate-y-1 text-neutral-900 dark:text-neutral-100"
         style={{
           transformStyle: "preserve-3d",
         }}
@@ -111,20 +111,20 @@ export function HistoryCard({
           </div>
           
           <div className="mt-auto pt-4 border-t border-neutral-200 dark:border-neutral-700">
-            <div className="text-xs text-neutral-500 mb-3">
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
               {date}
             </div>
             <div ref={tagsContainerRef} className="flex flex-nowrap overflow-hidden h-[28px]">
               {visibleCategories.filter(cat => cat != null).map((cat, index) => (
                 <span 
                   key={index}
-                  className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded text-xs text-neutral-600 dark:text-neutral-300 whitespace-nowrap mr-2"
+                  className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded text-xs text-neutral-700 dark:text-neutral-300 whitespace-nowrap mr-2"
                 >
                   {cat}
                 </span>
               ))}
               {hasMore && (
-                <span className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded text-xs text-neutral-600 dark:text-neutral-300 whitespace-nowrap">
+                <span className="bg-neutral-100 dark:bg-neutral-700 px-2 py-1 rounded text-xs text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
                   +{categories.length - visibleCategories.length}
                 </span>
               )}
@@ -177,8 +177,9 @@ const Skeleton = ({ logoUrl, logoAlt }: { logoUrl?: string; logoAlt?: string }) 
     return (
       <motion.div
         className={cn(
-          `h-16 w-16 rounded-full flex items-center justify-center bg-white dark:bg-neutral-800 
-          shadow-[0px_0px_8px_0px_rgba(248,248,248,0.25)_inset,0px_32px_24px_-16px_rgba(0,0,0,0.40)]`,
+          `h-16 w-16 rounded-full flex items-center justify-center bg-neutral-50 dark:bg-neutral-800 
+          shadow-[0px_0px_8px_0px_rgba(0,0,0,0.1)_inset,0px_4px_12px_-4px_rgba(0,0,0,0.1)] 
+          dark:shadow-[0px_0px_8px_0px_rgba(248,248,248,0.25)_inset,0px_32px_24px_-16px_rgba(0,0,0,0.40)]`,
           className
         )}
         animate={pulseAnimation}

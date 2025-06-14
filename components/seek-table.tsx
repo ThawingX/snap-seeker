@@ -363,11 +363,11 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
             <button
               onClick={handleExportMVP}
               disabled={isExporting}
-              className={`transition-all duration-300 ${
+              className={`transition-all cursor-pointer duration-300 ${
                 isScrolled 
-                  ? 'bg-primary/90 backdrop-blur-sm shadow-lg border border-primary/40' 
-                  : 'bg-primary/80 backdrop-blur-sm shadow-md border border-primary/30'
-              } text-primary-foreground hover:bg-primary/95 flex items-center px-4 py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl`}
+                  ? 'bg-green-500/90 backdrop-blur-sm shadow-lg border border-green-400/40' 
+                  : 'bg-green-500/80 backdrop-blur-sm shadow-md border border-green-400/30'
+              } text-white hover:bg-green-600/95 flex items-center px-4 py-2 rounded-full disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl`}
             >
               {isExporting ? (
                 <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -405,10 +405,10 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         <div className="space-y-8">
         {/* 页面头部 */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mt-4 mb-2">Competitor Analysis</h1>
-          <p className="text-neutral-400">Results for: {query}</p>
+          <h1 className="text-3xl font-bold mt-4 mb-2 text-neutral-900 dark:text-white">Competitor Analysis</h1>
+          <p className="text-neutral-600 dark:text-neutral-400">Results for: {query}</p>
           {loading && (
-            <div className="flex items-center mt-2 text-neutral-400">
+            <div className="flex items-center mt-2 text-neutral-600 dark:text-neutral-400">
               <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-cyan-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

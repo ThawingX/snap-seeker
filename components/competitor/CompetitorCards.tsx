@@ -151,7 +151,7 @@ export const CompetitorCards: React.FC<CompetitorCardsProps> = ({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <h2 className="text-2xl font-semibold mb-6 dark:text-white flex items-center">
+      <h2 className="text-2xl font-semibold mb-6 text-neutral-900 dark:text-white flex items-center">
         <IconChartBar className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
         Main Competitors
       </h2>
