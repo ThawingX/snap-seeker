@@ -66,9 +66,12 @@ Sat June 14 2025：
 - [] credits
 - [] 登录修复
 - [x] 新增浅色模式
+- [x] 整体样式修改
 - [] 不注册无法看完整结果，只能看到竞品分析
 - [x] 删除firstname lastname
 - [x] 删除忘记密码操作
 - [] seo添加
 - [] 埋点
 - [x] landing
+- [x] logo整改
+- [x] dev环境区分，统一管理接口

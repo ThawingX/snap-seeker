@@ -206,39 +206,29 @@ export const authenticateWithServer = async (
   invitationCode: string | null = null
 ): Promise<LoginResponse> => {
   try {
-    // 使用正确的API基础URL
-    const API_BASE_URL = 'https://api.snapsnap.site';
+    // 使用统一的API管理系统
+    const { API_ENDPOINTS, publicApi, tokenManager } = await import('./api');
     
     const requestBody: LoginRequest = {
       google_id_token: googleIdToken,
-      invitationCode: invitationCode || undefined,
+      invitation_code: invitationCode,
     };
 
-    const response = await fetch(`${API_BASE_URL}/auth/login/google`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
+    const response = await publicApi.post(API_ENDPOINTS.AUTH.GOOGLE_LOGIN, requestBody);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || 
-        errorData.error || 
-        `Authentication failed: ${response.status} ${response.statusText}`
-      );
+      throw new Error(errorData.detail || errorData.message || 'Authentication failed');
     }
 
-    const data: LoginResponse = await response.json();
+    const result = await response.json();
     
-    // 验证响应数据
-    if (!data.token) {
-      throw new Error('Invalid response: missing token');
+    // Save token after successful login
+    if (result.access_token) {
+      tokenManager.setToken(result.access_token);
     }
 
-    return data;
+    return result;
   } catch (error) {
     if (error instanceof Error) {
       throw error;

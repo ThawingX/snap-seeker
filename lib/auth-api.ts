@@ -3,13 +3,7 @@
  * Handles all authentication-related API calls
  */
 
-import { ENV } from './env';
-
-// API base URL for authentication
-const AUTH_API_BASE = ENV.API_BASE_URL || 'https://api.snapsnap.site';
-
-// Token storage key
-const TOKEN_STORAGE_KEY = 'snap_seeker_token';
+import { API_ENDPOINTS, api, publicApi, tokenManager } from './api';
 
 /**
  * Interface for login request
@@ -59,29 +53,27 @@ export const storeToken = (token: string): void => {
 };
 
 /**
- * Get token from localStorage
+ * Get token from localStorage (deprecated - use tokenManager.getToken instead)
+ * @deprecated Use tokenManager.getToken() from './api'
  */
 export const getToken = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem(TOKEN_STORAGE_KEY);
-  }
-  return null;
+  return tokenManager.getToken();
 };
 
 /**
- * Remove token from localStorage
+ * Remove token from localStorage (deprecated - use tokenManager.removeToken instead)
+ * @deprecated Use tokenManager.removeToken() from './api'
  */
 export const removeToken = (): void => {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-  }
+  tokenManager.removeToken();
 };
 
 /**
- * Get authorization headers
+ * Get authorization headers (deprecated - use api methods with automatic auth instead)
+ * @deprecated Use api.get/post/put/delete methods which automatically add auth headers
  */
 export const getAuthHeaders = (): Record<string, string> => {
-  const token = getToken();
+  const token = tokenManager.getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
@@ -89,13 +81,7 @@ export const getAuthHeaders = (): Record<string, string> => {
  * Register new user
  */
 export const registerUser = async (data: RegisterRequest): Promise<AuthResponse> => {
-  const response = await fetch(`${AUTH_API_BASE}/auth/register/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
+  const response = await publicApi.post(API_ENDPOINTS.AUTH.REGISTER, data);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -113,7 +99,8 @@ export const loginWithPassword = async (data: LoginRequest): Promise<AuthRespons
   formData.append('username', data.username);
   formData.append('password', data.password);
 
-  const response = await fetch(`${AUTH_API_BASE}/auth/login/token`, {
+  // For FormData, we need to use fetch directly without JSON headers
+  const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
     method: 'POST',
     body: formData,
   });
@@ -123,50 +110,52 @@ export const loginWithPassword = async (data: LoginRequest): Promise<AuthRespons
     throw new Error(errorData.detail || errorData.message || 'Login failed');
   }
 
-  return response.json();
+  const result = await response.json();
+  
+  // Save token after successful login
+  if (result.access_token) {
+    tokenManager.setToken(result.access_token);
+  }
+
+  return result;
 };
 
 /**
  * Login with Google
  */
 export const loginWithGoogle = async (data: GoogleLoginRequest): Promise<AuthResponse> => {
-  const response = await fetch(`${AUTH_API_BASE}/auth/login/google`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
+  const response = await publicApi.post(API_ENDPOINTS.AUTH.GOOGLE_LOGIN, data);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.detail || errorData.message || 'Google login failed');
   }
 
-  return response.json();
+  const result = await response.json();
+  
+  // Save token after successful login
+  if (result.access_token) {
+    tokenManager.setToken(result.access_token);
+  }
+
+  return result;
 };
 
 /**
- * Check if user is authenticated
+ * Check if user is authenticated (deprecated - use tokenManager.isAuthenticated instead)
+ * @deprecated Use tokenManager.isAuthenticated() from './api'
  */
 export const isAuthenticated = (): boolean => {
-  return !!getToken();
+  return tokenManager.isAuthenticated();
 };
 
 /**
- * Make authenticated API request
+ * Make authenticated API request (deprecated - use api methods instead)
+ * @deprecated Use api.get/post/put/delete methods which automatically handle authentication
  */
 export const authenticatedFetch = async (
   url: string,
   options: RequestInit = {}
 ): Promise<Response> => {
-  const headers = {
-    ...options.headers,
-    ...getAuthHeaders(),
-  };
-
-  return fetch(url, {
-    ...options,
-    headers,
-  });
+  return api.get(url, options);
 };

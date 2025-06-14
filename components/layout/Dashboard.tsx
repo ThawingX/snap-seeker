@@ -5,19 +5,13 @@ import { SearchBar, SearchBarRef } from "./SearchBar";
 import ColourfulText from "../ui/colourful-text";
 import { FloatingTags } from "../ui/floating-tags";
 import { useToast } from "../ui/toast";
+import { API_ENDPOINTS, publicApi } from "../../lib/api";
 
 // 从后端获取热门标签的函数
 const fetchHotTags = async (): Promise<string[]> => {
   try {
-    let response;
-
-    // 生产环境 - 使用直接API
-    response = await fetch('https://api.snapsnap.site/api/hot_keys', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    // 使用统一的API管理系统（公共端点，无需认证）
+    const response = await publicApi.get(API_ENDPOINTS.HOT_KEYS);
 
 
     if (!response.ok) {

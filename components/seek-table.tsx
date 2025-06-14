@@ -14,6 +14,7 @@ import { FunctionList } from "./function/FunctionList";
 import { PMFAnalysis, MVPStrategy } from "./premium/LockedContent";
 import { useSSEData } from "@/hooks/useSSEData";
 import { ENV } from "@/lib/env";
+import { API_ENDPOINTS, api, tokenManager } from "@/lib/api";
 
 
 
@@ -207,8 +208,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
     try {
       // 使用finalSearchId（后端返回的真实ID）而不是searchId（临时ID）
       const exportId = finalSearchId || searchId;
-      const response = await fetch(`${ENV.TARGET_CHAT_API_URL}/${exportId}/download`, {
-         method: 'GET',
+      const response = await api.get(API_ENDPOINTS.CHAT.DOWNLOAD(exportId), {
          headers: {
            'Content-Type': 'application/json',
          },
