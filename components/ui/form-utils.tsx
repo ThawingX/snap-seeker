@@ -17,6 +17,34 @@ export const BottomGradient = () => {
 };
 
 /**
+ * 登录按钮专用渐变效果
+ * 蓝色主题的底部渐变效果
+ */
+export const LoginButtonGradient = () => {
+  return (
+    <>
+      <span className="group-hover/btn:opacity-100 block transition duration-500 opacity-0 absolute h-px w-full -bottom-px inset-x-0 bg-gradient-to-r from-transparent via-blue-400 to-transparent" />
+      <span className="absolute inset-x-0 -bottom-px block h-px w-full bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
+      <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 bg-gradient-to-r from-transparent via-blue-300/60 to-transparent opacity-0 blur-sm transition duration-500 group-hover/btn:opacity-100" />
+    </>
+  );
+};
+
+/**
+ * 注册按钮专用渐变效果
+ * 绿色主题的底部渐变效果
+ */
+export const SignUpButtonGradient = () => {
+  return (
+    <>
+      <span className="group-hover/btn:opacity-100 block transition duration-500 opacity-0 absolute h-px w-full -bottom-px inset-x-0 bg-gradient-to-r from-transparent via-green-400 to-transparent" />
+      <span className="absolute inset-x-0 -bottom-px block h-px w-full bg-gradient-to-r from-transparent via-green-400 to-transparent opacity-0 transition duration-500 group-hover/btn:opacity-100" />
+      <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 bg-gradient-to-r from-transparent via-green-300/60 to-transparent opacity-0 blur-sm transition duration-500 group-hover/btn:opacity-100" />
+    </>
+  );
+};
+
+/**
  * 标签和输入框容器组件
  * 用于统一表单字段的布局和样式
  */
@@ -35,8 +63,8 @@ export const LabelInputContainer = ({
 };
 
 /**
- * 主要按钮组件
- * 统一的主要操作按钮，包含毛玻璃效果和渐变背景
+ * 主要按钮组件 - 登录专用
+ * 蓝色主题的登录按钮，与注册按钮形成明显区分
  */
 export const PrimaryButton = ({
   children,
@@ -47,22 +75,23 @@ export const PrimaryButton = ({
   return (
     <button
       className={cn(
-        "group/btn relative block h-10 w-full rounded-lg transition-all duration-300 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed",
-        "bg-primary hover:bg-primary/90 text-primary-foreground border border-primary/20 hover:border-primary/40",
+        "group/btn relative block h-12 w-full rounded-lg transition-all duration-300 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed",
+        "bg-blue-600 hover:bg-blue-700 text-white border border-blue-500/30 hover:border-blue-400/50",
+        "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
         className
       )}
       type={type}
       {...props}
     >
       {children}
-      <BottomGradient />
+      <LoginButtonGradient />
     </button>
   );
 };
 
 /**
  * Sign Up 专用按钮组件
- * 具有区别于背景的特殊颜色和毛玻璃效果
+ * 绿色主题的注册按钮，与登录按钮形成明显区分
  */
 export const SignUpButton = ({
   children,
@@ -74,14 +103,15 @@ export const SignUpButton = ({
     <button
       className={cn(
         "group/btn relative block h-12 w-full rounded-lg transition-all duration-300 font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed",
-        "bg-primary hover:bg-primary/90 text-primary-foreground border border-primary/20 hover:border-primary/40",
+        "bg-green-600 hover:bg-green-700 text-white border border-green-500/30 hover:border-green-400/50",
+        "focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2",
         className
       )}
       type={type}
       {...props}
     >
       {children}
-      <BottomGradient />
+      <SignUpButtonGradient />
     </button>
   );
 };

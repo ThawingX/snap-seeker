@@ -83,22 +83,22 @@ export default function AuthModal({ isOpen, onClose, initialMode = "login" }: Au
             </div>
 
             {/* 切换登录/注册模式的标签 */}
-            <div className="flex">
+            <div className="flex rounded-lg bg-muted/30 p-1 mb-4">
               <button
-                className={`w-1/2 py-3 text-center font-medium transition-glass ${
+                className={`w-1/2 py-3 px-4 text-center font-semibold rounded-md transition-all duration-300 ${
                   mode === "login"
-                  ? "glass text-foreground border-b-2 border-primary"
-                  : "glass-card text-foreground/60 hover:text-foreground"
+                  ? "bg-blue-600 text-white shadow-lg hover:bg-blue-700 border border-blue-500/30"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}
                 onClick={() => setMode("login")}
               >
                 Login
               </button>
               <button
-                className={`w-1/2 py-3 text-center font-medium transition-glass ${
+                className={`w-1/2 py-3 px-4 text-center font-semibold rounded-md transition-all duration-300 ${
                   mode === "signup"
-                  ? "glass text-foreground border-b-2 border-primary"
-                  : "glass-card text-foreground/60 hover:text-foreground"
+                  ? "bg-green-600 text-white shadow-lg hover:bg-green-700 border border-green-500/30"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 }`}
                 onClick={() => setMode("signup")}
               >

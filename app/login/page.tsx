@@ -20,27 +20,29 @@ function LoginContent() {
   return (
     <>
       {/* Form toggle */}
-      <div className="bg-card rounded-t-xl p-3 flex justify-center space-x-4 border-b border-border">
-        <button 
-          onClick={() => setIsLogin(true)}
-          className={`py-2 px-4 rounded-md transition-all ${
-            isLogin 
-              ? 'bg-primary text-primary-foreground font-medium shadow-sm' 
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          Login
-        </button>
-        <button 
-          onClick={() => setIsLogin(false)}
-          className={`py-2 px-4 rounded-md transition-all ${
-            !isLogin 
-              ? 'bg-primary text-primary-foreground font-medium shadow-sm' 
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          Sign Up
-        </button>
+      <div className="bg-card rounded-t-xl p-4 border-b border-border">
+        <div className="flex rounded-lg bg-muted/30 p-1 max-w-xs mx-auto">
+          <button 
+            onClick={() => setIsLogin(true)}
+            className={`w-1/2 py-3 px-4 text-center font-semibold rounded-md transition-all duration-300 ${
+              isLogin 
+                ? 'bg-blue-600 text-white shadow-lg hover:bg-blue-700 border border-blue-500/30' 
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+            }`}
+          >
+            Login
+          </button>
+          <button 
+            onClick={() => setIsLogin(false)}
+            className={`w-1/2 py-3 px-4 text-center font-semibold rounded-md transition-all duration-300 ${
+              !isLogin 
+                ? 'bg-green-600 text-white shadow-lg hover:bg-green-700 border border-green-500/30' 
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+            }`}
+          >
+            Sign Up
+          </button>
+        </div>
       </div>
       
       {/* Form display */}
