@@ -6,6 +6,25 @@ const config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    'bg-primary',
+    'bg-primary/90',
+    'bg-primary/80',
+    'bg-primary/60',
+    'bg-primary/40',
+    'bg-primary/20',
+    'text-primary',
+    'text-primary-foreground',
+    'border-primary',
+    'border-primary/30',
+    'border-primary/40',
+    'border-primary/50',
+    'hover:bg-primary',
+    'hover:bg-primary/90',
+    'hover:bg-primary/30',
+    'via-primary',
+    'via-primary/60'
+  ],
   darkMode: "class",
   theme: {
     container: {
@@ -71,4 +90,4 @@ const config = {
   plugins: [],
 } satisfies Config;
 
-export default config; 
+export default config;

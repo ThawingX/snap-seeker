@@ -4,6 +4,10 @@
   /* Configure your theme variables here */
   --font-display: "Inter", "sans-serif";
   --spacing: 0.25rem;
+  
+  /* Define primary color for Tailwind v4 */
+  --color-primary: hsl(177 70% 41%);
+  --color-primary-foreground: hsl(0 0% 98%);
 }
 
 @layer base {
