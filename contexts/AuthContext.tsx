@@ -12,6 +12,7 @@ import {
   type GoogleLoginRequest,
   type RegisterRequest
 } from "@/lib/auth-api";
+import { setGlobalAuthErrorHandler } from "@/lib/api";
 
 // 定义用户信息类型
 interface User {
@@ -65,6 +66,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
     
     checkAuth();
+    
+    // 设置全局认证错误处理器
+    setGlobalAuthErrorHandler(() => {
+      // 清除认证状态
+      setIsAuthenticated(false);
+      setUser(null);
+      // 显示登录模态框
+      showAuthModal("login");
+    });
   }, []);
 
   // 显示认证模态框

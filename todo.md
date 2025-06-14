@@ -63,7 +63,7 @@ Sat June 14 2025：
 - [] 移动端适配-等待接口联调完毕后添加
 - [] 历史列表
 - [] 历史详情
-- [] credits
+- [x] credits
 - [] 登录修复
 - [x] 新增浅色模式
 - [x] 整体样式修改
@@ -75,3 +75,5 @@ Sat June 14 2025：
 - [x] landing
 - [x] logo整改
 - [x] dev环境区分，统一管理接口
+- [ ] 注册表单中login  signup区分不明显
+- [ ] 隐藏clear history

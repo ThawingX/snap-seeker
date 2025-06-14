@@ -10,6 +10,7 @@ import { CompetitorData, HotKeysData, SearchStep } from '@/types/competitor';
 import { FigureData } from '@/components/figure/FigureCards';
 import { RequirementCardData } from '@/components/requirement/RequirementCard';
 import { FunctionListData } from '@/components/function/FunctionList';
+import { tokenManager, setGlobalAuthErrorHandler } from '@/lib/api';
 
 interface UseSSEDataProps {
   query: string;
@@ -513,16 +514,32 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
         setError(null);
 
         // 发起请求
+        const token = tokenManager.getToken();
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream',
+        };
+        
+        // 添加Authorization header如果token存在
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
         const response = await fetch(ENV.TARGET_CHAT_API_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'text/event-stream',
-          },
+          headers,
           body: JSON.stringify({ query, searchId }),
           signal: abortController.signal
         });
         console.log('SSE Response:', response);
+        
+        // Handle 401 Unauthorized responses
+        if (response.status === 401) {
+          // Clear the invalid token
+          tokenManager.removeToken();
+          throw new Error('Authentication failed');
+        }
+        
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

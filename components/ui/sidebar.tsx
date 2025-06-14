@@ -1,10 +1,11 @@
 "use client";
 import { cn } from "@/lib/utils";
 import Link, { LinkProps } from "next/link";
-import React, { useState, createContext, useContext } from "react";
+import React, { useState, createContext, useContext, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { IconMenu2, IconX } from "@tabler/icons-react";
+import { IconMenu2, IconX, IconCoins } from "@tabler/icons-react";
 import { useRouter, usePathname } from "next/navigation";
+import { api, API_ENDPOINTS } from '@/lib/api';
 
 interface Links {
   label: string;
@@ -153,6 +154,66 @@ export const MobileSidebar = ({
         </AnimatePresence>
       </div>
     </>
+  );
+};
+
+export const SidebarCredits = ({ className }: { className?: string }) => {
+  const { open, animate } = useSidebar();
+  const [credits, setCredits] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCredits = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get(API_ENDPOINTS.CREDITS);
+        if (!response.ok) {
+          throw new Error('Failed to fetch credits');
+        }
+        const data = await response.json();
+        setCredits(data.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCredits();
+  }, []);
+
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 p-4 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 transition-all duration-300",
+        "hover:from-primary/15 hover:to-primary/10 hover:border-primary/30",
+        className
+      )}
+    >
+      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 mr-3">
+        <IconCoins className="w-4 h-4 text-primary" />
+      </div>
+      
+      <motion.div
+        animate={{
+          display: animate ? (open ? "block" : "none") : "block",
+          opacity: animate ? (open ? 1 : 0) : 1,
+        }}
+        className="flex items-center gap-1"
+      >
+        <span className="text-sm font-medium text-muted-foreground">Credits :</span>
+        <span className="text-sm font-bold text-foreground ml-1">
+          {loading ? (
+            <span className="animate-pulse">Loading...</span>
+          ) : error ? (
+            <span className="text-destructive">Error</span>
+          ) : (
+            credits?.toLocaleString() || '0'
+          )}
+        </span>
+      </motion.div>
+    </div>
   );
 };
 

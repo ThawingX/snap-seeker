@@ -59,6 +59,17 @@ export const API_ENDPOINTS = {
 
   // Other endpoints
   HOT_KEYS: `${ENV.API_BASE_URL}/api/hot_keys`,
+  CREDITS: `${ENV.API_BASE_URL}/api/credits`,
+};
+
+/**
+ * Global auth error handler
+ * This function will be set by the AuthContext to handle 401 errors
+ */
+let globalAuthErrorHandler: (() => void) | null = null;
+
+export const setGlobalAuthErrorHandler = (handler: () => void) => {
+  globalAuthErrorHandler = handler;
 };
 
 /**
@@ -70,6 +81,14 @@ export const apiRequest = async (
   requireAuth: boolean = true
 ): Promise<Response> => {
   const token = tokenManager.getToken();
+  
+  // If auth is required but no token exists, trigger auth error handler
+  if (requireAuth && !token) {
+    if (globalAuthErrorHandler) {
+      globalAuthErrorHandler();
+    }
+    throw new Error('Authentication required');
+  }
   
   const defaultHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -85,10 +104,25 @@ export const apiRequest = async (
     ...options.headers,
   };
 
-  return fetch(url, {
+  const response = await fetch(url, {
     ...options,
     headers,
   });
+
+  // Handle 401 Unauthorized responses
+  if (response.status === 401) {
+    // Clear the invalid token
+    tokenManager.removeToken();
+    
+    // Trigger global auth error handler (show login modal)
+    if (globalAuthErrorHandler) {
+      globalAuthErrorHandler();
+    }
+    
+    throw new Error('Authentication failed');
+  }
+
+  return response;
 };
 
 /**

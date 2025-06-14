@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { SidebarLink } from "@/components/ui/sidebar";
+import { SidebarLink, SidebarCredits } from "@/components/ui/sidebar";
 import {
   IconHome,
   IconHistory,
@@ -42,6 +42,9 @@ export const AuthButtons = () => {
 
   return (
     <div className="pb-4">
+      <div className="mb-4">
+        <SidebarCredits />
+      </div>
       <div className="flex justify-center mb-4">
         <button 
           onClick={() => showAuthModal("signup")}
