@@ -1,5 +1,6 @@
 "use client";
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AuthModal from "@/components/auth/AuthModal";
 import { 
   isAuthenticated as checkAuthStatus, 
@@ -49,6 +50,8 @@ export const useAuth = () => {
 
 // 身份验证提供者组件
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const router = useRouter();
+  
   // 认证状态
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -89,6 +92,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthModalOpen(false);
   };
 
+  // 处理登录成功后的待处理搜索
+  const handlePendingSearch = () => {
+    try {
+      const pendingSearchData = sessionStorage.getItem('pendingSearch');
+      if (pendingSearchData) {
+        const { query, timestamp } = JSON.parse(pendingSearchData);
+        
+        // 检查数据是否过期（30分钟）
+        const now = Date.now();
+        const maxAge = 30 * 60 * 1000; // 30分钟
+        
+        if (now - timestamp < maxAge && query) {
+          // 清除待处理的搜索数据
+          sessionStorage.removeItem('pendingSearch');
+          
+          // 生成临时ID并执行搜索
+          const tempId = crypto.randomUUID();
+          localStorage.setItem(tempId, JSON.stringify({ query }));
+          
+          // 跳转到搜索结果页面
+          router.push(`/results?id=${tempId}`);
+        } else {
+          // 数据过期，清除
+          sessionStorage.removeItem('pendingSearch');
+        }
+      }
+    } catch (error) {
+      console.error('Error handling pending search:', error);
+      sessionStorage.removeItem('pendingSearch');
+    }
+  };
+
   // 邮箱密码登录
   const login = async (data: LoginRequest) => {
     setLoading(true);
@@ -100,6 +135,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(response.user);
       }
       hideAuthModal();
+      
+      // 处理待处理的搜索
+      handlePendingSearch();
     } catch (error) {
       throw error; // 让调用者处理错误
     } finally {
@@ -118,6 +156,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(response.user);
       }
       hideAuthModal();
+      
+      // 处理待处理的搜索
+      handlePendingSearch();
     } catch (error) {
       throw error; // 让调用者处理错误
     } finally {
@@ -136,6 +177,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(response.user);
       }
       hideAuthModal();
+      
+      // 处理待处理的搜索
+      handlePendingSearch();
     } catch (error) {
       throw error; // 让调用者处理错误
     } finally {

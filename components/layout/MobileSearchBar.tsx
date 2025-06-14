@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const MobileSearchBar = () => {
   const [input, setInput] = useState("");
@@ -10,6 +11,7 @@ export const MobileSearchBar = () => {
   const [showScrollbar, setShowScrollbar] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
+  const { isAuthenticated, showAuthModal } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInput(e.target.value);
@@ -38,6 +40,19 @@ export const MobileSearchBar = () => {
 
   const handleSubmit = async () => {
     if (!input.trim() || isLoading) return;
+    
+    // 检查用户是否已登录
+    if (!isAuthenticated) {
+      // 保存当前搜索数据到sessionStorage，用于登录后恢复
+      sessionStorage.setItem('pendingSearch', JSON.stringify({
+        query: input,
+        timestamp: Date.now()
+      }));
+      
+      // 显示登录模态框
+      showAuthModal('login');
+      return;
+    }
     
     setIsLoading(true);
     
