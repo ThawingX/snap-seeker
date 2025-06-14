@@ -206,21 +206,6 @@ export default function LoginForm() {
               Remember me
             </label>
           </div>
-          <div className="text-sm">
-            <a 
-              href="#" 
-              onClick={(e) => {
-                e.preventDefault();
-                showToast({
-                  message: "Password reset functionality is not implemented yet.",
-                  type: "info"
-                });
-              }}
-              className="text-cyan-500 hover:text-cyan-400"
-            >
-              Forgot your password?
-            </a>
-          </div>
         </div>
 
         {/* 登录按钮 */}
