@@ -13,6 +13,7 @@ export const SearchBar = forwardRef<SearchBarRef>((props, ref) => {
   const [isLoading, setIsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showScrollbar, setShowScrollbar] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
   const { isAuthenticated, showAuthModal } = useAuth();
@@ -126,10 +127,26 @@ export const SearchBar = forwardRef<SearchBarRef>((props, ref) => {
         <div className="flex items-center justify-between px-6 py-3 border-t border-border/50">
           <div className="flex items-center space-x-2">
             <div className="flex items-center">
-              <div className="relative inline-flex items-center cursor-not-allowed opacity-70">
+              <div 
+                className="relative inline-flex items-center cursor-not-allowed opacity-70"
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+              >
                 <div className="w-10 h-5 bg-gray-300 dark:bg-gray-600 border border-gray-400 dark:border-gray-500 rounded-full shadow-inner"></div>
                 <div className="absolute left-0.5 top-0.5 bg-white dark:bg-gray-300 w-4 h-4 rounded-full shadow-sm"></div>
                 <span className="ml-3 text-xs font-medium text-gray-600 dark:text-gray-300">PRO</span>
+                
+                {/* Tooltip */}
+                  {showTooltip && (
+                    <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-2 px-3 py-2 bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-lg shadow-lg whitespace-nowrap z-50 border border-gray-700">
+                      <div className="text-left">
+                        <div className="font-medium mb-1">Premium Extension Required</div>
+                        <div className="text-gray-300">Unlock PMF capabilities</div>
+                      </div>
+                      {/* Tooltip arrow */}
+                      <div className="absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900 dark:border-r-gray-800"></div>
+                    </div>
+                  )}
               </div>
             </div>
           </div>
