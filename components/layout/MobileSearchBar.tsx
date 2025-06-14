@@ -61,7 +61,7 @@ export const MobileSearchBar = () => {
       const tempId = crypto.randomUUID();
       
       // 直接跳转到results页面，通过URL参数传递查询和ID
-      router.push(`/results?id=${tempId}&query=${encodeURIComponent(input)}`);
+      router.push(`/results?id=${tempId}&query=${encodeURIComponent(input)}&isNew=true`);
     } catch (error) {
       console.error('Error during search submission:', error);
       // 使用toast组件显示错误信息

@@ -52,8 +52,8 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   // 导出状态管理
   const [isExporting, setIsExporting] = useState(false);
   
-  // 检查是否为历史查询（localStorage中是否有完整的搜索结果数据）
-  const [isHistoryQuery, setIsHistoryQuery] = useState(false);
+  // 检查是否为新搜索（从首页搜索按钮进来的）
+  const [isNewSearch, setIsNewSearch] = useState(true);
 
   // 打印功能处理函数
   const handlePrintModule = (moduleId: string, moduleName: string) => {
@@ -143,10 +143,12 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   // 使用SSE数据hook获取实时数据（新搜索时使用）
   const sseData = useSSEData({ query, searchId });
 
-  // 检查是否为历史查询 - 现在通过API检查而不是localStorage
+  // 检查是否为新搜索 - 通过URL参数判断
   useEffect(() => {
-    // 默认设置为非历史查询，让API调用来确定
-    setIsHistoryQuery(false);
+    // 检查URL参数中是否有isNew标识
+    const urlParams = new URLSearchParams(window.location.search);
+    const isNew = urlParams.get('isNew') === 'true';
+    setIsNewSearch(isNew);
   }, [searchId]);
   
   // 从后端API获取历史数据（仅当确认为历史查询时）
@@ -204,11 +206,11 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       }
     };
 
-    // 只有当确认为历史查询时才调用历史数据接口
-    if (isHistoryQuery && searchId) {
+    // 只有当不是新搜索时才调用历史数据接口
+    if (!isNewSearch && searchId) {
       fetchHistoryData();
     }
-  }, [isHistoryQuery, searchId]);
+  }, [isNewSearch, searchId]);
 
   // 监听滚动事件
   useEffect(() => {
@@ -221,14 +223,14 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   }, []);
   
   // 根据查询类型选择使用的数据
-  const loading = isHistoryQuery ? historyLoading : sseData.loading;
-  const searchSteps = isHistoryQuery ? historySearchSteps : sseData.logicSteps;
-  const competitorData = isHistoryQuery ? historyCompetitorData : sseData.competitors;
-  const figureData = isHistoryQuery ? historyFigureData : sseData.figures;
-  const hotKeysData = isHistoryQuery ? historyHotKeysData : sseData.hotKeysData;
-  const requirementData = isHistoryQuery ? historyRequirementData : sseData.requirementCard;
-  const functionListData = isHistoryQuery ? historyFunctionListData : sseData.functionList;
-  const error = isHistoryQuery ? historyError : sseData.error;
+  const loading = isNewSearch ? sseData.loading : historyLoading;
+  const searchSteps = isNewSearch ? sseData.logicSteps : historySearchSteps;
+  const competitorData = isNewSearch ? sseData.competitors : historyCompetitorData;
+  const figureData = isNewSearch ? sseData.figures : historyFigureData;
+  const hotKeysData = isNewSearch ? sseData.hotKeysData : historyHotKeysData;
+  const requirementData = isNewSearch ? sseData.requirementCard : historyRequirementData;
+  const functionListData = isNewSearch ? sseData.functionList : historyFunctionListData;
+  const error = isNewSearch ? sseData.error : historyError;
 
 
 

@@ -85,7 +85,7 @@ export function HistoryCard({
   }, []);
   
   return (
-    <Link href={`/results?id=${id}`} className="block">
+    <Link href={`/results?id=${id}&query=${encodeURIComponent(title)}`} className="block">
       <motion.div
         className="group/card relative overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 p-5 transition duration-200 dark:border-neutral-800 dark:bg-neutral-900 
                  hover:border-neutral-300 hover:shadow-md dark:hover:border-neutral-700 transform hover:-translate-y-1 text-neutral-900 dark:text-neutral-100"

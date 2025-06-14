@@ -111,7 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           const tempId = crypto.randomUUID();
           
           // 跳转到搜索结果页面，通过URL参数传递查询和ID
-          router.push(`/results?id=${tempId}&query=${encodeURIComponent(query)}`);
+          router.push(`/results?id=${tempId}&query=${encodeURIComponent(query)}&isNew=true`);
         } else {
           // 数据过期，清除
           sessionStorage.removeItem('pendingSearch');
