@@ -40,7 +40,7 @@ export interface GoogleAuthResponse {
 // Login request interface
 export interface LoginRequest {
   google_id_token: string;
-  invitationCode?: string;
+  invitationCode?: string | null;
 }
 
 // Login response interface
@@ -211,7 +211,7 @@ export const authenticateWithServer = async (
     
     const requestBody: LoginRequest = {
       google_id_token: googleIdToken,
-      invitation_code: invitationCode,
+      invitationCode: invitationCode,
     };
 
     const response = await publicApi.post(API_ENDPOINTS.AUTH.GOOGLE_LOGIN, requestBody);

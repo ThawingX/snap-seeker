@@ -8,7 +8,6 @@ import { ToastProvider } from "@/components/ui/toast";
 import { GoogleTagManager, GoogleTagManagerNoScript } from "@/components/GoogleTagManager";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
-import type { Metadata, Viewport } from "next";
 
 const inter = Inter({ subsets: ["latin"] });
 

@@ -47,9 +47,7 @@ export interface AuthResponse {
  * Store token in localStorage
  */
 export const storeToken = (token: string): void => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(TOKEN_STORAGE_KEY, token);
-  }
+  tokenManager.setToken(token);
 };
 
 /**
