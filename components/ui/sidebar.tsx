@@ -186,13 +186,13 @@ export const SidebarCredits = ({ className }: { className?: string }) => {
   return (
     <div
       className={cn(
-        "flex items-center gap-3 p-4 rounded-lg bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 transition-all duration-300",
-        "hover:from-primary/15 hover:to-primary/10 hover:border-primary/30",
+        "flex items-center gap-3 p-4 rounded-lg bg-gray-500/10 backdrop-blur-sm transition-all duration-300",
+        "hover:bg-gray-500/15",
         className
       )}
     >
-      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 mr-3">
-        <IconCoins className="w-4 h-4 text-primary" />
+      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-400/20 mr-3">
+        <IconCoins className="w-4 h-4 text-gray-600" />
       </div>
       
       <motion.div

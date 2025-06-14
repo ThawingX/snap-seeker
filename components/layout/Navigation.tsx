@@ -48,14 +48,14 @@ export const AuthButtons = () => {
       <div className="flex justify-center mb-4">
         <button 
           onClick={() => showAuthModal("signup")}
-          className="text-base py-3 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border border-primary/20 hover:border-primary/40">
+          className="text-base py-3 px-8 rounded-full bg-green-600/80 hover:bg-green-600/90 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border border-green-500/30 hover:border-green-500/50 backdrop-blur-sm">
             Sign Up
         </button>
       </div>
       <div className="flex justify-center">
         <button 
           onClick={() => showAuthModal("login")}
-          className="text-base py-3 px-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border border-primary/20 hover:border-primary/40">
+          className="text-base py-3 px-8 rounded-full bg-blue-600/80 hover:bg-blue-600/90 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border border-blue-500/30 hover:border-blue-500/50 backdrop-blur-sm">
             Log in
         </button>
       </div>
