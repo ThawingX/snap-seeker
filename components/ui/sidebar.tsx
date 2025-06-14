@@ -3,9 +3,10 @@ import { cn } from "@/lib/utils";
 import Link, { LinkProps } from "next/link";
 import React, { useState, createContext, useContext, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { IconMenu2, IconX, IconCoins } from "@tabler/icons-react";
+import { IconMenu2, IconX, IconCoins, IconRefresh } from "@tabler/icons-react";
 import { useRouter, usePathname } from "next/navigation";
 import { api, API_ENDPOINTS } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Links {
   label: string;
@@ -159,29 +160,50 @@ export const MobileSidebar = ({
 
 export const SidebarCredits = ({ className }: { className?: string }) => {
   const { open, animate } = useSidebar();
+  const { isAuthenticated } = useAuth();
   const [credits, setCredits] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
-  useEffect(() => {
-    const fetchCredits = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get(API_ENDPOINTS.CREDITS);
-        if (!response.ok) {
-          throw new Error('Failed to fetch credits');
-        }
-        const data = await response.json();
-        setCredits(data.data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setLoading(false);
+  const fetchCredits = async () => {
+    if (!isAuthenticated) {
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await api.get(API_ENDPOINTS.CREDITS);
+      if (!response.ok) {
+        throw new Error('Failed to fetch credits');
       }
-    };
+      const data = await response.json();
+      setCredits(data.data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchCredits();
-  }, []);
+  // 只在登录后初始化一次Credits请求
+  useEffect(() => {
+    if (isAuthenticated && !hasInitialized) {
+      fetchCredits();
+      setHasInitialized(true);
+    } else if (!isAuthenticated) {
+      // 用户登出时重置状态
+      setCredits(null);
+      setHasInitialized(false);
+      setError(null);
+    }
+  }, [isAuthenticated, hasInitialized]);
+
+  // 如果未登录，不显示Credits组件
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <div
@@ -191,26 +213,47 @@ export const SidebarCredits = ({ className }: { className?: string }) => {
         className
       )}
     >
-      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-400/20 mr-3">
+      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-400/20">
         <IconCoins className="w-4 h-4 text-gray-600" />
       </div>
       
       <motion.div
         animate={{
-          display: animate ? (open ? "block" : "none") : "block",
+          display: animate ? (open ? "flex" : "none") : "flex",
           opacity: animate ? (open ? 1 : 0) : 1,
         }}
-        className="flex items-center gap-1"
+        className="flex items-center gap-1 flex-1 min-w-0"
       >
-        <span className="text-sm font-medium text-muted-foreground">Credits :</span>
-        <span className="text-sm font-bold text-foreground ml-1">
+        <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Credits :</span>
+        <span className="text-sm font-bold text-foreground">
           {loading ? (
             <span className="animate-pulse">Loading...</span>
+          ) : error ? (
+            <span className="text-red-500">Error</span>
           ) : (
             (credits?.toLocaleString() || '0')
           )}
         </span>
       </motion.div>
+      
+      {/* 刷新按钮 - 始终可见 */}
+      <button
+        onClick={fetchCredits}
+        disabled={loading}
+        className={cn(
+          "flex items-center justify-center w-6 h-6 rounded-full transition-all duration-200 flex-shrink-0",
+          "hover:bg-gray-400/30 active:scale-95",
+          loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+        )}
+        title="刷新Credits"
+      >
+        <IconRefresh 
+          className={cn(
+            "w-3 h-3 text-gray-600",
+            loading && "animate-spin"
+          )} 
+        />
+      </button>
     </div>
   );
 };
