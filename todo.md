@@ -59,7 +59,7 @@ Mon June 9 2025:
 - [x] 隐私政策
 - [x] google login
   
-Wed June 11 2025：
+Sat June 14 2025：
 - [] 移动端适配-等待接口联调完毕后添加
 - [] 历史列表
 - [] 历史详情
@@ -70,3 +70,5 @@ Wed June 11 2025：
 - [] 删除firstname lastname
 - [] 删除忘记密码操作
 - [] seo添加
+- [] 埋点
+- [] landing
