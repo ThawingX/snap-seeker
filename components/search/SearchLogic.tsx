@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
-import { IconBrain } from "@tabler/icons-react";
+import { IconBrain, IconPrinter } from "@tabler/icons-react";
 import { SearchStep } from "@/types/competitor";
 
 /**
@@ -54,6 +54,7 @@ interface SearchLogicProps {
   loading: boolean;
   query: string;
   searchLogicRef: React.RefObject<HTMLDivElement>;
+  onPrint?: () => void;
 }
 
 /**
@@ -63,7 +64,8 @@ export const SearchLogic: React.FC<SearchLogicProps> = ({
   searchSteps,
   loading,
   query,
-  searchLogicRef
+  searchLogicRef,
+  onPrint
 }) => {
   return (
     <motion.div
@@ -74,10 +76,22 @@ export const SearchLogic: React.FC<SearchLogicProps> = ({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <h2 className="text-2xl font-semibold mb-6 text-white flex items-center">
-        <IconBrain className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-        Search Processing Logic
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold text-white flex items-center">
+          <IconBrain className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+          Search Processing Logic
+        </h2>
+        {onPrint && (
+          <button
+            onClick={onPrint}
+            className="flex items-center px-3 py-2 text-sm bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg transition-colors duration-200 no-print"
+            title="Print this module"
+          >
+            <IconPrinter className="h-4 w-4 mr-1" />
+            Print
+          </button>
+        )}
+      </div>
       <div className="mb-4 border-l-2 border-cyan-500 pl-4">
         <p className="text-neutral-300 italic">
           "Analyzing competitors in the market to identify strengths, weaknesses, and opportunities for {query}..."

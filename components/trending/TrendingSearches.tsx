@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
-import { IconHash, IconDevices, IconCategory, IconTrendingUp } from "@tabler/icons-react";
+import { IconHash, IconDevices, IconCategory, IconTrendingUp, IconPrinter } from "@tabler/icons-react";
 import { DemandRanking, HotKeysData } from "@/types/competitor";
 
 /**
@@ -48,6 +48,7 @@ interface TrendingSearchesProps {
   hotKeysData: HotKeysData;
   loading: boolean;
   trendingSearchesRef: React.RefObject<HTMLDivElement>;
+  onPrint?: () => void;
 }
 
 /**
@@ -56,7 +57,8 @@ interface TrendingSearchesProps {
 export const TrendingSearches: React.FC<TrendingSearchesProps> = ({
   hotKeysData,
   loading,
-  trendingSearchesRef
+  trendingSearchesRef,
+  onPrint
 }) => {
   const hasAnyData = hotKeysData.mostRelevant.length > 0 || 
                      hotKeysData.allInSeeker.length > 0 || 
@@ -71,10 +73,22 @@ export const TrendingSearches: React.FC<TrendingSearchesProps> = ({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <h2 className="text-2xl font-semibold mb-6 dark:text-white flex items-center">
-        <IconHash className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-        Trending Searches ( Monthly )
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold dark:text-white flex items-center">
+          <IconHash className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+          Trending Searches ( Monthly )
+        </h2>
+        {onPrint && (
+          <button
+            onClick={onPrint}
+            className="flex items-center px-3 py-2 text-sm bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-700 dark:text-white rounded-lg transition-colors duration-200 no-print"
+            title="Print this module"
+          >
+            <IconPrinter className="h-4 w-4 mr-1" />
+            Print
+          </button>
+        )}
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {loading ? (
           // 骨架屏加载效果

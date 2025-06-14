@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { IconPhoto, IconTarget, IconChartBar, IconBulb } from "@tabler/icons-react";
+import { IconPhoto, IconTarget, IconChartBar, IconBulb, IconPrinter } from "@tabler/icons-react";
 import { ImageModal } from "../ui/image-modal";
 
 /**
@@ -114,6 +114,7 @@ interface FigureCardsProps {
   figureData: FigureData[];
   loading: boolean;
   figuresRef: React.RefObject<HTMLDivElement>;
+  onPrint?: () => void;
 }
 
 /**
@@ -122,7 +123,8 @@ interface FigureCardsProps {
 export const FigureCards: React.FC<FigureCardsProps> = ({
   figureData,
   loading,
-  figuresRef
+  figuresRef,
+  onPrint
 }) => {
   // 防护措施：确保figureData是数组
   const safeFigureData = figureData || [];
@@ -153,13 +155,25 @@ export const FigureCards: React.FC<FigureCardsProps> = ({
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        <h2 className="text-2xl font-semibold mb-6 dark:text-white flex items-center">
-          <IconPhoto className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-          Analysis Figures
-          <span className="ml-2 text-sm text-neutral-500 dark:text-neutral-400 font-normal">
-            (Click to enlarge)
-          </span>
-        </h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-semibold dark:text-white flex items-center">
+            <IconPhoto className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+            Analysis Figures
+            <span className="ml-2 text-sm text-neutral-500 dark:text-neutral-400 font-normal">
+              (Click to enlarge)
+            </span>
+          </h2>
+          {onPrint && (
+            <button
+              onClick={onPrint}
+              className="flex items-center px-3 py-2 text-sm bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-700 dark:text-white rounded-lg transition-colors duration-200 no-print"
+              title="Print this module"
+            >
+              <IconPrinter className="h-4 w-4 mr-1" />
+              Print
+            </button>
+          )}
+        </div>
         <div className="space-y-6">
           {safeFigureData.length > 0 ? (
           <>

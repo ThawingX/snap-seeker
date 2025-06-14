@@ -7,7 +7,8 @@ import {
   IconBook, 
   IconAlertTriangle, 
   IconCoin, 
-  IconStar 
+  IconStar,
+  IconPrinter 
 } from "@tabler/icons-react";
 
 /**
@@ -205,6 +206,7 @@ interface RequirementCardProps {
   requirementData: RequirementCardData | null;
   loading: boolean;
   requirementRef: React.RefObject<HTMLDivElement>;
+  onPrint?: () => void;
 }
 
 /**
@@ -213,7 +215,8 @@ interface RequirementCardProps {
 export const RequirementCard: React.FC<RequirementCardProps> = ({
   requirementData,
   loading,
-  requirementRef
+  requirementRef,
+  onPrint
 }) => {
   return (
     <motion.div
@@ -224,10 +227,22 @@ export const RequirementCard: React.FC<RequirementCardProps> = ({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <h2 className="text-2xl font-semibold mb-6 dark:text-white flex items-center">
-        <IconClipboardList className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-        Finalized Requirement Card
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold dark:text-white flex items-center">
+          <IconClipboardList className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+          Finalized Requirement Card
+        </h2>
+        {onPrint && (
+          <button
+            onClick={onPrint}
+            className="flex items-center px-3 py-2 text-sm bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-700 dark:text-white rounded-lg transition-colors duration-200 no-print"
+            title="Print this module"
+          >
+            <IconPrinter className="h-4 w-4 mr-1" />
+            Print
+          </button>
+        )}
+      </div>
       <div className="max-w-6xl mx-auto">
         {requirementData ? (
           <RequirementCardContent requirement={requirementData} />

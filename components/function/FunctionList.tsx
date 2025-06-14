@@ -6,7 +6,8 @@ import {
   IconStar,
   IconCircle,
   IconSquare,
-  IconDots
+  IconDots,
+  IconPrinter
 } from "@tabler/icons-react";
 
 /**
@@ -266,6 +267,7 @@ interface FunctionListProps {
   functionData: FunctionListData[];
   loading: boolean;
   functionListRef: React.RefObject<HTMLDivElement>;
+  onPrint?: () => void;
 }
 
 /**
@@ -274,7 +276,8 @@ interface FunctionListProps {
 export const FunctionList: React.FC<FunctionListProps> = ({
   functionData,
   loading,
-  functionListRef
+  functionListRef,
+  onPrint
 }) => {
   return (
     <motion.div
@@ -285,13 +288,25 @@ export const FunctionList: React.FC<FunctionListProps> = ({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <h2 className="text-2xl font-semibold mb-6 dark:text-white flex items-center">
-        <IconList className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-        Function List
-        <span className="ml-2 text-sm text-neutral-500 dark:text-neutral-400 font-normal">
-          (Prioritized by importance)
-        </span>
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold dark:text-white flex items-center">
+          <IconList className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+          Function List
+          <span className="ml-2 text-sm text-neutral-500 dark:text-neutral-400 font-normal">
+            (Prioritized by importance)
+          </span>
+        </h2>
+        {onPrint && (
+          <button
+            onClick={onPrint}
+            className="flex items-center px-3 py-2 text-sm bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-700 dark:text-white rounded-lg transition-colors duration-200 no-print"
+            title="Print this module"
+          >
+            <IconPrinter className="h-4 w-4 mr-1" />
+            Print
+          </button>
+        )}
+      </div>
       {functionData?.length > 0 ? (
         <FunctionListContent functionData={functionData} />
       ) : (

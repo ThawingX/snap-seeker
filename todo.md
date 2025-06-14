@@ -68,7 +68,6 @@ Sat June 14 2025：
 - [ ] google 登录
 - [x] 新增浅色模式
 - [x] 整体样式修改
-- [] 不注册无法看完整结果，只能看到竞品分析
 - [x] 删除firstname lastname
 - [x] 删除忘记密码操作
 - [] seo添加
@@ -80,3 +79,5 @@ Sat June 14 2025：
 - [x] logout
 - [x] 隐藏clear history
 - [x] 点击搜索后，如果没有登录需要跳转登录页面，登录完成后需要保证源数据可以使用
+- [x] 每个模块新增导print按钮
+- [] 登录表单 remember me 按钮

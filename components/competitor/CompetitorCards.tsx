@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
-import { IconChartBar } from "@tabler/icons-react";
+import { IconChartBar, IconPrinter } from "@tabler/icons-react";
 import { CompetitorData } from "@/types/competitor";
 
 /**
@@ -130,6 +130,7 @@ interface CompetitorCardsProps {
   competitorData: CompetitorData[];
   loading: boolean;
   competitorsRef: React.RefObject<HTMLDivElement>;
+  onPrint?: () => void;
 }
 
 /**
@@ -138,7 +139,8 @@ interface CompetitorCardsProps {
 export const CompetitorCards: React.FC<CompetitorCardsProps> = ({
   competitorData,
   loading,
-  competitorsRef
+  competitorsRef,
+  onPrint
 }) => {
   // 防护措施：确保competitorData是数组
   const safeCompetitorData = competitorData || [];
@@ -151,10 +153,22 @@ export const CompetitorCards: React.FC<CompetitorCardsProps> = ({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <h2 className="text-2xl font-semibold mb-6 text-neutral-900 dark:text-white flex items-center">
-        <IconChartBar className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-        Main Competitors
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold text-neutral-900 dark:text-white flex items-center">
+          <IconChartBar className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+          Main Competitors
+        </h2>
+        {onPrint && (
+          <button
+            onClick={onPrint}
+            className="flex items-center px-3 py-2 text-sm bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-700 dark:text-white rounded-lg transition-colors duration-200 no-print"
+            title="Print this module"
+          >
+            <IconPrinter className="h-4 w-4 mr-1" />
+            Print
+          </button>
+        )}
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {safeCompetitorData.length > 0 ? (
           <>

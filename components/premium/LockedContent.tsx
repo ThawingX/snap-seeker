@@ -2,7 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { IconLock, IconBulb, IconTarget } from "@tabler/icons-react";
+import { IconLock, IconBulb, IconTarget, IconChartLine, IconPrinter } from "@tabler/icons-react";
 import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
 
 /**
@@ -95,6 +95,7 @@ interface MVPStrategyProps {
 interface PMFAnalysisProps {
   loading: boolean;
   recommendationsRef: React.RefObject<HTMLDivElement>;
+  onPrint?: () => void;
 }
 
 /**
@@ -129,7 +130,7 @@ export const MVPStrategy: React.FC<MVPStrategyProps> = ({ loading, insightsRef }
 /**
  * PMF分析组件
  */
-export const PMFAnalysis: React.FC<PMFAnalysisProps> = ({ loading, recommendationsRef }) => {
+export const PMFAnalysis: React.FC<PMFAnalysisProps> = ({ loading, recommendationsRef, onPrint }) => {
   return (
     <motion.div
       ref={recommendationsRef}
@@ -139,10 +140,22 @@ export const PMFAnalysis: React.FC<PMFAnalysisProps> = ({ loading, recommendatio
       animate={{ opacity: 1 }}
       transition={{ delay: 0.5, duration: 0.5 }}
     >
-      <h2 className="text-2xl font-semibold mb-6 text-neutral-900 dark:text-white flex items-center">
-        <IconTarget className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
-        Product-Market Fit (PMF) Analysis
-      </h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-semibold text-neutral-900 dark:text-white flex items-center">
+          <IconTarget className="mr-2 h-5 w-5 text-neutral-500 dark:text-neutral-400" />
+          Product-Market Fit (PMF) Analysis
+        </h2>
+        {onPrint && (
+          <button
+            onClick={onPrint}
+            className="flex items-center px-3 py-2 text-sm bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-700 dark:text-white rounded-lg transition-colors duration-200 no-print"
+            title="Print this module"
+          >
+            <IconPrinter className="h-4 w-4 mr-1" />
+            Print
+          </button>
+        )}
+      </div>
       {loading ? (
         <RecommendationsSkeleton />
       ) : (

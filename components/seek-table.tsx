@@ -2,7 +2,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { FloatingDock } from "@/components/ui/floating-dock";
-import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash, IconPhoto, IconClipboardList, IconList, IconArrowLeft, IconDownload } from "@tabler/icons-react";
+import { IconTable, IconBrain, IconChartBar, IconBulb, IconTarget, IconHash, IconPhoto, IconClipboardList, IconList, IconArrowLeft, IconDownload, IconPrinter } from "@tabler/icons-react";
 
 import { SearchLogic } from "./search/SearchLogic";
 import { CompetitorCards } from "./competitor/CompetitorCards";
@@ -47,6 +47,76 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   
   // 导出状态管理
   const [isExporting, setIsExporting] = useState(false);
+
+  // 打印功能处理函数
+  const handlePrintModule = (moduleId: string, moduleName: string) => {
+    const moduleElement = document.getElementById(moduleId);
+    if (!moduleElement) {
+      console.error(`Module with id '${moduleId}' not found`);
+      return;
+    }
+
+    // 创建新窗口用于打印
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      console.error('Failed to open print window');
+      return;
+    }
+
+    // 获取当前页面的样式
+    const styles = Array.from(document.styleSheets)
+      .map(styleSheet => {
+        try {
+          return Array.from(styleSheet.cssRules)
+            .map(rule => rule.cssText)
+            .join('');
+        } catch (e) {
+          console.warn('Cannot access stylesheet:', e);
+          return '';
+        }
+      })
+      .join('');
+
+    // 构建打印页面HTML
+    const printHTML = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Print - ${moduleName}</title>
+          <meta charset="utf-8">
+          <style>
+            ${styles}
+            @media print {
+              body { margin: 0; padding: 20px; }
+              .no-print { display: none !important; }
+              .print-header { margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+              .print-title { font-size: 24px; font-weight: bold; color: #333; }
+              .print-subtitle { font-size: 14px; color: #666; margin-top: 5px; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-header">
+            <div class="print-title">${moduleName}</div>
+            <div class="print-subtitle">Generated from: ${query} | Date: ${new Date().toLocaleDateString()}</div>
+          </div>
+          ${moduleElement.outerHTML}
+        </body>
+      </html>
+    `;
+
+    // 写入打印窗口并打印
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
+    
+    // 等待内容加载完成后打印
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    };
+  };
 
   // 使用 SSE 数据获取 Hook
   const {
@@ -424,31 +494,71 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         </div>
 
         {/* 搜索逻辑思考链部分 */}
-        <SearchLogic searchSteps={searchSteps} loading={loading} query={query} searchLogicRef={searchLogicRef} />
+        <SearchLogic 
+          searchSteps={searchSteps} 
+          loading={loading} 
+          query={query} 
+          searchLogicRef={searchLogicRef}
+          onPrint={() => handlePrintModule('search-logic', 'Search Processing Logic')}
+        />
 
         {/* 主要竞争对手卡片部分 */}
-        <CompetitorCards competitorData={competitorData} loading={loading} competitorsRef={competitorsRef} />
+        <CompetitorCards 
+          competitorData={competitorData} 
+          loading={loading} 
+          competitorsRef={competitorsRef}
+          onPrint={() => handlePrintModule('competitors', 'Main Competitors')}
+        />
 
         {/* 需求热度标签排行榜部分 */}
-        <TrendingSearches hotKeysData={hotKeysData} loading={loading} trendingSearchesRef={trendingSearchesRef} />
+        <TrendingSearches 
+          hotKeysData={hotKeysData} 
+          loading={loading} 
+          trendingSearchesRef={trendingSearchesRef}
+          onPrint={() => handlePrintModule('trending-searches', 'Trending Searches (Monthly)')}
+        />
 
         {/* 竞争对手数据表格部分 */}
-        <CompetitorTable competitorData={competitorData} loading={loading} tableRef={tableRef} />
+        <CompetitorTable 
+          competitorData={competitorData} 
+          loading={loading} 
+          tableRef={tableRef}
+          onPrint={() => handlePrintModule('table', 'Competitor Table')}
+        />
 
         {/* 分析图片部分 */}
-        <FigureCards figureData={figureData} loading={loading} figuresRef={figuresRef} />
+        <FigureCards 
+          figureData={figureData} 
+          loading={loading} 
+          figuresRef={figuresRef}
+          onPrint={() => handlePrintModule('figures', 'Analysis Figures')}
+        />
 
         {/* 产品需求卡片部分 */}
-        <RequirementCard requirementData={requirementData} loading={loading} requirementRef={requirementRef} />
+        <RequirementCard 
+          requirementData={requirementData} 
+          loading={loading} 
+          requirementRef={requirementRef}
+          onPrint={() => handlePrintModule('requirement-card', 'Finalized Requirement Card')}
+        />
 
         {/* 功能清单部分 */}
-        <FunctionList functionData={functionListData} loading={loading} functionListRef={functionListRef} />
+        <FunctionList 
+          functionData={functionListData} 
+          loading={loading} 
+          functionListRef={functionListRef}
+          onPrint={() => handlePrintModule('function-list', 'Function List')}
+        />
 
         {/* MVP 策略推荐部分 - 已隐藏 */}
         {/* <MVPStrategy loading={loading} insightsRef={insightsRef} /> */}
 
         {/* PMF 分析部分 */}
-        <PMFAnalysis loading={loading} recommendationsRef={recommendationsRef} />
+        <PMFAnalysis 
+          loading={loading} 
+          recommendationsRef={recommendationsRef}
+          onPrint={() => handlePrintModule('recommendations', 'Product-Market Fit (PMF) Analysis')}
+        />
         </div>
       </div>
     </div>
