@@ -82,7 +82,7 @@ Sat June 14 2025：
 - [x] 每个模块新增导print按钮
 - [x] 登录表单 remember me 按钮
 - [x] RRO功能添加tooltip，说明需要购买高级扩展
-- [ ] 添加跳转landing定价的页面
+- [x] 添加跳转landing定价的页面
 - [ ] 添加竞品Prompt拆解菜单栏预埋
 - [ ] 添加PMF分析功能预埋
 - [] 添加产品营销定制上下文功能预埋

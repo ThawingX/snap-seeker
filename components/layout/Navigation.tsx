@@ -4,6 +4,7 @@ import { SidebarLink, SidebarCredits } from "@/components/ui/sidebar";
 import {
   IconHome,
   IconHistory,
+  IconCoins,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +29,14 @@ export const Navigation = () => {
     },
   ];
 
+  const pricingLink = {
+    label: "Pricing",
+    href: "https://seeker-landing.snapsnap.site/en/pricing",
+    icon: (
+      <IconCoins className="h-5 w-5 shrink-0 text-muted-foreground" />
+    ),
+  };
+
   return (
     <nav className="mt-8 flex flex-col gap-2">
       {navigationLinks.map((link, idx) => (
@@ -40,8 +49,22 @@ export const Navigation = () => {
 export const AuthButtons = () => {
   const { showAuthModal, isAuthenticated, logout } = useAuth();
 
+  const pricingLink = {
+    label: "Pricing",
+    href: "https://seeker-landing.snapsnap.site/en/pricing",
+    icon: (
+      <IconCoins className="h-5 w-5 shrink-0 text-white" />
+    ),
+  };
+
   return (
     <div className="pb-4">
+      <div className="mb-4">
+        <SidebarLink 
+          link={pricingLink} 
+          className="bg-gradient-to-r from-amber-300 to-orange-300 hover:from-amber-400 hover:to-orange-400 text-white font-semibold shadow-lg hover:shadow-xl border-amber-300/30 hover:border-amber-300/50 transition-all duration-300"
+        />
+      </div>
       <div className="mb-4">
         <SidebarCredits />
       </div>
