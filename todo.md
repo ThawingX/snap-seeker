@@ -75,5 +75,6 @@ Sat June 14 2025：
 - [x] landing
 - [x] logo整改
 - [x] dev环境区分，统一管理接口
-- [ ] 注册表单中login  signup区分不明显
-- [ ] 隐藏clear history
+- [x] 注册表单中login  signup区分不明显
+- [x] logout
+- [x] 隐藏clear history

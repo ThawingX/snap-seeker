@@ -112,9 +112,9 @@ export const SearchBar = forwardRef<SearchBarRef>((props, ref) => {
           <div className="flex items-center space-x-2">
             <div className="flex items-center">
               <div className="relative inline-flex items-center cursor-not-allowed opacity-70">
-                <div className="w-10 h-5 bg-secondary border border-border rounded-full shadow-inner"></div>
-                <div className="absolute left-0.5 top-0.5 bg-secondary-foreground w-4 h-4 rounded-full shadow-sm"></div>
-                <span className="ml-3 text-xs font-medium text-secondary-foreground">PRO</span>
+                <div className="w-10 h-5 bg-gray-300 dark:bg-gray-600 border border-gray-400 dark:border-gray-500 rounded-full shadow-inner"></div>
+                <div className="absolute left-0.5 top-0.5 bg-white dark:bg-gray-300 w-4 h-4 rounded-full shadow-sm"></div>
+                <span className="ml-3 text-xs font-medium text-gray-600 dark:text-gray-300">PRO</span>
               </div>
             </div>
           </div>

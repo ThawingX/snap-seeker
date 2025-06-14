@@ -64,7 +64,7 @@ export const History = () => {
               {historyItems.length > 0 && (
                 <button 
                   onClick={handleClearHistory}
-                  className="text-destructive hover:text-destructive/80 text-sm font-medium px-3 py-1 rounded-md border border-destructive/20 hover:border-destructive/40 hover:bg-destructive/10 transition-all duration-300"
+                  className="text-destructive hidden hover:text-destructive/80 text-sm font-medium px-3 py-1 rounded-md border border-destructive/20 hover:border-destructive/40 hover:bg-destructive/10 transition-all duration-300"
                 >
                   Clear History
                 </button>
