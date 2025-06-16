@@ -124,6 +124,7 @@ const createSSEContext = (
     },
     setFunctionList: (data: FunctionListData[]) => {
       currentResults.functionList = data;
+      context.currentFunctionList = data; // 同步更新context中的currentFunctionList
       setters.setFunctionList(data);
     },
     setLoading: setters.setLoading,
