@@ -57,12 +57,13 @@ export class ChatIdStrategy implements SSEDataStrategy {
     if (data.content && data.content.trim() !== '') {
       context.validSearchId = data.content;
       context.hasValidId = true;
-      // 更新浏览器URL为后端返回的真实ID
-      context.updateURL(data.content);
+      // 延迟更新浏览器URL，避免过早移除isNew参数
+      // context.updateURL(data.content);
       // 更新finalSearchId状态，供组件使用
       context.setFinalSearchId(data.content);
       // 注意：不在这里保存数据和添加历史记录，而是在流结束时统一处理
       // 这样确保所有数据都已经处理完成后再保存和添加历史记录
+      // URL更新也延迟到流结束时进行
     }
   }
 }
@@ -209,6 +210,11 @@ export class DoneStrategy implements SSEDataStrategy {
         type: 'warning',
         duration: 3000
       });
+    }
+
+    // 在流结束时更新浏览器URL，移除isNew参数
+    if (context.hasValidId) {
+      context.updateURL(context.validSearchId);
     }
 
     // 注意：数据保存和历史记录添加已在useSSEData中统一处理
