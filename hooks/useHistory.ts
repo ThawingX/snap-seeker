@@ -28,7 +28,7 @@ export const useHistory = () => {
       const data = await response.json();
       // 使用SearchResultProcessor格式化历史数据
       const historyData = Array.isArray(data) ? data : data.data || [];
-      const formattedItems = historyData.map(item => SearchResultProcessor.formatHistoryItem(item));
+      const formattedItems = historyData.map((item: any) => SearchResultProcessor.formatHistoryItem(item));
       setHistoryItems(formattedItems);
     } catch (err) {
       console.error('Failed to fetch history:', err);

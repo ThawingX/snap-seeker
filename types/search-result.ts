@@ -114,16 +114,16 @@ export class SearchResultProcessor {
         };
       }) : [],
       competitors: Array.isArray(results?.competitors) 
-        ? results.competitors.filter(competitor => 
+        ? results.competitors.filter((competitor: any) => 
             competitor && 
             (competitor.name || competitor.slogan || competitor.relevance || 
-             (Array.isArray(competitor.targetUser) && competitor.targetUser.some(user => user.trim())) ||
-             (Array.isArray(competitor.keyFeatures) && competitor.keyFeatures.some(feature => feature.trim()))
+             (Array.isArray(competitor.targetUser) && competitor.targetUser.some((user: any) => user.trim())) ||
+             (Array.isArray(competitor.keyFeatures) && competitor.keyFeatures.some((feature: any) => feature.trim()))
             )
           )
         : [],
       figures: Array.isArray(results?.figures) 
-         ? results.figures.filter(figure => figure && figure.content && figure.content.trim())
+         ? results.figures.filter((figure: any) => figure && figure.content && figure.content.trim())
          : [],
       hotKeysData: results?.hotKeysData && typeof results.hotKeysData === 'object' ? {
         mostRelevant: Array.isArray(results.hotKeysData.mostRelevant) 
@@ -163,7 +163,7 @@ export class SearchResultProcessor {
          results.requirementCard.slogan?.trim() ||
          results.requirementCard.targetUser?.trim() ||
          results.requirementCard.painPoints?.trim() ||
-         (Array.isArray(results.requirementCard.usp) && results.requirementCard.usp.some(item => item?.trim())) ||
+         (Array.isArray(results.requirementCard.usp) && results.requirementCard.usp.some((item: any) => item?.trim())) ||
          results.requirementCard.revenueModel?.trim()
        ) ? results.requirementCard : null,
         functionList: Array.isArray(results?.functionList) ? results.functionList : []
