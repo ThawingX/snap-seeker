@@ -86,7 +86,33 @@ export class SearchResultProcessor {
     const results = apiResponse?.results || apiResponse;
     
     return {
-      logicSteps: Array.isArray(results?.logicSteps) ? results.logicSteps : [],
+      logicSteps: Array.isArray(results?.logicSteps) ? results.logicSteps.map((step: any) => {
+        // 处理历史数据格式：{step: "step", messageContent: "..."}
+        if (step.messageContent && !step.title && !step.description) {
+          const content = step.messageContent.trim();
+          // 使用正则表达式提取markdown标题
+          const titleMatch = content.match(/^\s*##\s*(.+?)\n/);
+          const title = titleMatch ? titleMatch[1].trim() : `Analysis Step`;
+          // 提取标题后的描述内容
+          const description = titleMatch 
+            ? content.replace(/^\s*##\s*.+?\n/, '').trim()
+            : content;
+          
+          return {
+            title,
+            description
+          };
+        }
+        // 如果已经是正确格式，直接返回
+        if (step.title && step.description) {
+          return step;
+        }
+        // 兜底处理
+        return {
+          title: step.title || step.step || 'Analysis Step',
+          description: step.description || step.messageContent || 'Processing...'
+        };
+      }) : [],
       competitors: Array.isArray(results?.competitors) 
         ? results.competitors.filter(competitor => 
             competitor && 
