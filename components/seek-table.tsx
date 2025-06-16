@@ -396,22 +396,22 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
       }
     },
     {
-      title: "Finalized Requirement Card",
-      icon: <IconClipboardList className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
-      href: "#requirement-card",
-      onClick: () => {
-        if (requirementRef.current) {
-          requirementRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-    },
-    {
       title: "Analysis Figures",
       icon: <IconPhoto className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
       href: "#figures",
       onClick: () => {
         if (figuresRef.current) {
           figuresRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+    },
+    {
+      title: "Finalized Requirement Card",
+      icon: <IconClipboardList className="h-5 w-5 text-neutral-500 dark:text-neutral-400" />,
+      href: "#requirement-card",
+      onClick: () => {
+        if (requirementRef.current) {
+          requirementRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       }
     },
