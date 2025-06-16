@@ -25,6 +25,7 @@ export default function LoginForm() {
   const { showToast } = useToast();
   const { login, loginGoogle, loading } = useAuth();
   const [isGoogleAuthReady, setIsGoogleAuthReady] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   
   // 表单状态
   const [formData, setFormData] = useState({
@@ -132,6 +133,8 @@ export default function LoginForm() {
         return;
       }
 
+      setIsGoogleLoading(true);
+
       // 使用Google Sign-In
       const result: LoginResponse = await signInWithGoogle();
       
@@ -153,6 +156,8 @@ export default function LoginForm() {
         type: "error",
         duration: 5000
       });
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -242,11 +247,25 @@ export default function LoginForm() {
 
         {/* 第三方登录选项 */}
         <div className="flex flex-col space-y-4">
-          <SocialButton onClick={() => handleSocialLogin("Google")}>
-            <IconBrandGoogle className="h-4 w-4 text-foreground" />
-            <span className="text-sm text-foreground">
-              Login with Google
-            </span>
+          <SocialButton 
+            onClick={() => handleSocialLogin("Google")}
+            disabled={isGoogleLoading || loading}
+          >
+            {isGoogleLoading ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
+                <span className="text-sm text-foreground">
+                  Connecting to Google...
+                </span>
+              </>
+            ) : (
+              <>
+                <IconBrandGoogle className="h-4 w-4 text-foreground" />
+                <span className="text-sm text-foreground">
+                  Login with Google
+                </span>
+              </>
+            )}
           </SocialButton>
         </div>
       </form>
