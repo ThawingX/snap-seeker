@@ -38,9 +38,9 @@ const CompetitorCard = ({ competitor }: { competitor: CompetitorData }) => (
     </div>
 
     <div className="mb-4">
-      <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Plain Points</p>
+      <p className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 mb-2">Pain Points</p>
       <ul className="list-disc pl-5 text-sm text-neutral-700 dark:text-neutral-300 space-y-1">
-        {(competitor.plainPoints || []).filter(point => point != null).map((point, index) => (
+        {(competitor.painPoints || []).filter(point => point != null).map((point, index) => (
           <li key={index}>{point}</li>
         ))}
       </ul>

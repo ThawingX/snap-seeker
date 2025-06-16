@@ -19,7 +19,7 @@ export interface RequirementCardData {
   userStory: string;
   slogan: string;
   targetUser: string;
-  plainPoints: string;
+  painPoints: string;
   usp: string[];
   revenueModel: string;
 }
@@ -73,7 +73,7 @@ const RequirementCardContent = ({ requirement }: { requirement: RequirementCardD
           <h4 className="text-lg font-bold text-zinc-700 dark:text-zinc-200">Pain Points</h4>
         </div>
         <div className="bg-gradient-to-br from-zinc-50/80 to-gray-50/80 dark:from-zinc-800/60 dark:to-gray-800/60 border border-zinc-200/30 dark:border-zinc-600/30 rounded-lg p-4">
-          <p className="text-neutral-700 dark:text-neutral-300 font-medium">{requirement.plainPoints}</p>
+          <p className="text-neutral-700 dark:text-neutral-300 font-medium">{requirement.painPoints}</p>
         </div>
       </div>
 

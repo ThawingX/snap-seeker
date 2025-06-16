@@ -10,6 +10,7 @@ import { CompetitorData, HotKeysData, SearchStep } from '@/types/competitor';
 import { FigureData } from '@/components/figure/FigureCards';
 import { RequirementCardData } from '@/components/requirement/RequirementCard';
 import { FunctionListData } from '@/components/function/FunctionList';
+import { SearchResultData, CompleteSearchData, createInitialResultsState } from '@/types/search-result';
 import { tokenManager, setGlobalAuthErrorHandler } from '@/lib/api';
 
 interface UseSSEDataProps {
@@ -29,42 +30,9 @@ interface UseSSEDataReturn {
   finalSearchId: string; // 添加finalSearchId字段，返回最终使用的searchId（后端返回的或初始的）
 }
 
-/**
- * 搜索结果数据结构
- */
-interface SearchResultData {
-  logicSteps: SearchStep[];
-  competitors: CompetitorData[];
-  figures: FigureData[];
-  hotKeysData: HotKeysData;
-  requirementCard: RequirementCardData | null;
-  functionList: FunctionListData[];
-}
+// 搜索结果数据结构已移至 @/types/search-result
 
-/**
- * 完整的搜索数据结构（包含查询和结果）
- */
-interface CompleteSearchData {
-  query: string;
-  results: SearchResultData;
-  timestamp: string;
-}
-
-/**
- * 初始化搜索结果状态数据
- */
-const createInitialResultsState = (): SearchResultData => ({
-  logicSteps: [],
-  competitors: [],
-  figures: [],
-  hotKeysData: {
-    mostRelevant: [],
-    allInSeeker: [],
-    allFields: []
-  },
-  requirementCard: null,
-  functionList: []
-});
+// 初始化函数已移至 @/types/search-result
 
 // localStorage相关函数已移除，不再在本地存储搜索结果数据
 

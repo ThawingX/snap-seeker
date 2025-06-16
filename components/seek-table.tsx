@@ -17,6 +17,7 @@ import { CompetitorData, HotKeysData, SearchStep } from '@/types/competitor';
 import { FigureData } from '@/components/figure/FigureCards';
 import { RequirementCardData } from '@/components/requirement/RequirementCard';
 import { FunctionListData } from '@/components/function/FunctionList';
+import { SearchResultData, HistoryApiResponse, SearchResultProcessor, createInitialResultsState } from '@/types/search-result';
 import { useToast } from "@/components/ui/toast";
 import { useSSEData } from "@/hooks/useSSEData";
 
@@ -187,19 +188,15 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         const data = await response.json();
         console.log('History data fetched successfully:', data);
         
-        // 设置数据状态
-        if (data.results) {
-          setHistorySearchSteps(data.results.logicSteps || []);
-          setHistoryCompetitorData(data.results.competitors || []);
-          setHistoryFigureData(data.results.figures || []);
-          setHistoryHotKeysData(data.results.hotKeysData || {
-            mostRelevant: [],
-            allInSeeker: [],
-            allFields: []
-          });
-          setHistoryRequirementData(data.results.requirementCard || null);
-          setHistoryFunctionListData(data.results.functionList || []);
-        }
+        // 使用安全的数据处理方法
+        const processedData = SearchResultProcessor.safeGetSearchResultData(data);
+        
+        setHistorySearchSteps(processedData.logicSteps);
+        setHistoryCompetitorData(processedData.competitors);
+        setHistoryFigureData(processedData.figures);
+        setHistoryHotKeysData(processedData.hotKeysData);
+        setHistoryRequirementData(processedData.requirementCard);
+        setHistoryFunctionListData(processedData.functionList);
         
       } catch (err) {
         console.error('Error fetching history data:', err);
@@ -260,18 +257,15 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
             const data = await response.json();
             console.log('Initial history data fetched successfully:', data);
             
-            if (data.results) {
-              setHistorySearchSteps(data.results.logicSteps || []);
-              setHistoryCompetitorData(data.results.competitors || []);
-              setHistoryFigureData(data.results.figures || []);
-              setHistoryHotKeysData(data.results.hotKeysData || {
-                mostRelevant: [],
-                allInSeeker: [],
-                allFields: []
-              });
-              setHistoryRequirementData(data.results.requirementCard || null);
-              setHistoryFunctionListData(data.results.functionList || []);
-            }
+            // 使用安全的数据处理方法
+            const processedData = SearchResultProcessor.safeGetSearchResultData(data);
+            
+            setHistorySearchSteps(processedData.logicSteps);
+            setHistoryCompetitorData(processedData.competitors);
+            setHistoryFigureData(processedData.figures);
+            setHistoryHotKeysData(processedData.hotKeysData);
+            setHistoryRequirementData(processedData.requirementCard);
+            setHistoryFunctionListData(processedData.functionList);
             
           } catch (err) {
             console.error('Error in initial history data fetch:', err);

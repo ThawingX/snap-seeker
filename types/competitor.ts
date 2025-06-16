@@ -13,7 +13,7 @@ export interface CompetitorData {
   relevance: string;
   traffic: string;
   targetUser: string[];
-  plainPoints: string[];
+  painPoints: string[];
   keyFeatures: string[];
   potentialWeaknesses: string[];
   revenueModel: string;

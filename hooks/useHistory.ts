@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { clearSearchHistory, SearchHistoryItem } from "@/lib/searchHistory";
+import { HistoryItemWithResults, SearchResultProcessor } from "@/types/search-result";
 import { api, API_ENDPOINTS } from "@/lib/api";
 
 /**
@@ -7,7 +8,7 @@ import { api, API_ENDPOINTS } from "@/lib/api";
  * 用于History和MobileHistory组件，避免代码重复
  */
 export const useHistory = () => {
-  const [historyItems, setHistoryItems] = useState<SearchHistoryItem[]>([]);
+  const [historyItems, setHistoryItems] = useState<HistoryItemWithResults[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,9 +26,10 @@ export const useHistory = () => {
       }
       
       const data = await response.json();
-      // 假设API返回的数据格式与localStorage一致
+      // 使用SearchResultProcessor格式化历史数据
       const historyData = Array.isArray(data) ? data : data.data || [];
-      setHistoryItems(historyData);
+      const formattedItems = historyData.map(item => SearchResultProcessor.formatHistoryItem(item));
+      setHistoryItems(formattedItems);
     } catch (err) {
       console.error('Failed to fetch history:', err);
       setError("Failed to load history items");

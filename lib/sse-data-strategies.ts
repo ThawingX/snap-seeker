@@ -145,7 +145,7 @@ export class CompetitorsStrategy implements SSEDataStrategy {
       relevance: cardContent.relevance,
       traffic: cardContent.traffic,
       targetUser: cardContent.target_users,
-      plainPoints: cardContent.pain_points_addressed,
+      painPoints: cardContent.pain_points_addressed,
       keyFeatures: cardContent.key_features,
       potentialWeaknesses: cardContent.potential_weaknesses,
       revenueModel: revenueModel
@@ -236,7 +236,7 @@ export class RequirementCardStrategy implements SSEDataStrategy {
           userStory: sourceData.userStory || '',
           slogan: sourceData.slogan || '',
           targetUser: sourceData.targetUser || '',
-          plainPoints: sourceData.painPoints || sourceData.plainPoints || '',
+          painPoints: sourceData.painPoints || sourceData.painPoints || '',
           usp: Array.isArray(sourceData.usp) ? sourceData.usp : [],
           revenueModel: sourceData.revenueModel || ''
         };

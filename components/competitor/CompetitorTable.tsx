@@ -96,7 +96,7 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
                     <th className="p-4 text-left font-medium sticky top-0 w-[150px]">Relevance</th>
                     <th className="p-4 text-left font-medium sticky top-0 w-[160px]">Traffic</th>
                     <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Target User</th>
-                    <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Plain Points</th>
+                    <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Pain Points</th>
                     <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Key Features</th>
                     <th className="p-4 text-left font-medium sticky top-0 w-[180px]">Revenue Model</th>
                   </tr>
@@ -127,7 +127,7 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
                       </td>
                       <td className="p-4 text-neutral-700 dark:text-neutral-300">
                         <ul className="list-disc list-inside">
-                          {(competitor.plainPoints || []).filter(point => point != null).map((point, idx) => (
+                          {(competitor.painPoints || []).filter(point => point != null).map((point, idx) => (
                             <li key={idx} className="text-sm py-1">{point}</li>
                           ))}
                         </ul>
@@ -160,7 +160,7 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
                     <th className="p-4 text-left font-medium sticky top-0 w-[150px]">Relevance</th>
                     <th className="p-4 text-left font-medium sticky top-0 w-[160px]">Traffic</th>
                     <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Target User</th>
-                    <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Plain Points</th>
+                    <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Pain Points</th>
                     <th className="p-4 text-left font-medium sticky top-0 w-[240px]">Key Features</th>
                     <th className="p-4 text-left font-medium sticky top-0 w-[180px]">Revenue Model</th>
                   </tr>
