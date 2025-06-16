@@ -53,7 +53,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   const [isExporting, setIsExporting] = useState(false);
   
   // 检查是否为新搜索（从首页搜索按钮进来的）
-  const [isNewSearch, setIsNewSearch] = useState(true);
+  const [isNewSearch, setIsNewSearch] = useState(false);
 
   // 打印功能处理函数
   const handlePrintModule = (moduleId: string, moduleName: string) => {
@@ -141,20 +141,27 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
   const { showToast } = useToast();
   
   // 使用SSE数据hook获取实时数据（新搜索时使用）
-  const sseData = useSSEData({ query, searchId });
+  const sseData = useSSEData({ 
+    query: isNewSearch ? query : '', 
+    searchId: isNewSearch ? searchId : '' 
+  });
 
   // 检查是否为新搜索 - 通过URL参数判断
   useEffect(() => {
     // 检查URL参数中是否有isNew标识
     const urlParams = new URLSearchParams(window.location.search);
     const isNew = urlParams.get('isNew') === 'true';
+    console.log('Setting isNewSearch:', { isNew, searchId, currentUrl: window.location.search });
     setIsNewSearch(isNew);
   }, [searchId]);
   
   // 从后端API获取历史数据（仅当确认为历史查询时）
   useEffect(() => {
+    console.log('History data useEffect triggered:', { isNewSearch, searchId, query });
+    
     const fetchHistoryData = async () => {
       try {
+        console.log('Starting to fetch history data for searchId:', searchId);
         setHistoryLoading(true);
         setHistoryError(null);
         
@@ -178,6 +185,7 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
         }
         
         const data = await response.json();
+        console.log('History data fetched successfully:', data);
         
         // 设置数据状态
         if (data.results) {
@@ -208,9 +216,84 @@ export default function SeekTable({ query, searchId }: { query: string, searchId
 
     // 只有当不是新搜索时才调用历史数据接口
     if (!isNewSearch && searchId) {
+      console.log('Conditions met, calling fetchHistoryData');
       fetchHistoryData();
+    } else {
+      console.log('Conditions not met for fetching history data:', { isNewSearch, searchId });
     }
   }, [isNewSearch, searchId]);
+
+  // 初始化时获取历史数据（解决刷新页面时不触发的问题）
+  useEffect(() => {
+    console.log('Initial mount useEffect triggered');
+    
+    // 使用setTimeout确保isNewSearch和searchId都已经设置
+    const timer = setTimeout(() => {
+      console.log('Initial check for history data:', { isNewSearch, searchId, query });
+      
+      // 如果不是新搜索且有searchId，获取历史数据
+      if (!isNewSearch && searchId) {
+        console.log('Initial conditions met, fetching history data on mount');
+        
+        const fetchInitialHistoryData = async () => {
+          try {
+            console.log('Starting initial fetch for searchId:', searchId);
+            setHistoryLoading(true);
+            setHistoryError(null);
+            
+            const response = await api.get(`${API_ENDPOINTS.HISTORY}/${searchId}`);
+            
+            if (!response.ok) {
+              if (response.status === 404) {
+                const errorMessage = '搜索记录不存在或已被删除';
+                setHistoryError(errorMessage);
+                setHistoryLoading(false);
+                showToast({
+                  message: "记录未找到：该搜索记录不存在或已被删除，请返回历史记录页面查看其他记录。",
+                  type: "error"
+                });
+                return;
+              }
+              throw new Error(`请求失败: HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Initial history data fetched successfully:', data);
+            
+            if (data.results) {
+              setHistorySearchSteps(data.results.logicSteps || []);
+              setHistoryCompetitorData(data.results.competitors || []);
+              setHistoryFigureData(data.results.figures || []);
+              setHistoryHotKeysData(data.results.hotKeysData || {
+                mostRelevant: [],
+                allInSeeker: [],
+                allFields: []
+              });
+              setHistoryRequirementData(data.results.requirementCard || null);
+              setHistoryFunctionListData(data.results.functionList || []);
+            }
+            
+          } catch (err) {
+            console.error('Error in initial history data fetch:', err);
+            const errorMessage = err instanceof Error ? err.message : '加载数据失败';
+            setHistoryError(errorMessage);
+            showToast({
+              message: "加载错误：无法加载搜索结果，请检查网络连接或稍后重试。",
+              type: "error"
+            });
+          } finally {
+            setHistoryLoading(false);
+          }
+        };
+        
+        fetchInitialHistoryData();
+      } else {
+        console.log('Initial conditions not met for history data:', { isNewSearch, searchId });
+      }
+    }, 100); // 短暂延迟确保状态已更新
+    
+    return () => clearTimeout(timer);
+  }, []); // 只在组件挂载时执行一次
 
   // 监听滚动事件
   useEffect(() => {
