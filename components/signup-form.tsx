@@ -42,7 +42,7 @@ export default function SignupForm() {
         await initializeGoogleAuth();
         setIsGoogleAuthReady(true);
       } catch (error) {
-        console.error('Failed to initialize Google Auth:', error);
+        // 静默处理Google认证初始化失败
       }
     };
 
@@ -124,7 +124,7 @@ export default function SignupForm() {
       if (!isGoogleAuthReady || !isGoogleAuthAvailable()) {
         const reason = getGoogleAuthUnavailableReason();
         showToast({
-          message: reason || "Google authentication is not available",
+          message: reason || "Registration service temporarily unavailable, please try again later",
           type: "error",
           duration: 8000
         });
@@ -148,9 +148,9 @@ export default function SignupForm() {
         duration: 3000
       });
     } catch (error) {
-      console.error('Google signup error:', error);
+      // 不显示技术性错误信息给用户
       showToast({
-        message: error instanceof Error ? error.message : "Google signup failed",
+        message: "Registration failed, please try again",
         type: "error",
         duration: 5000
       });

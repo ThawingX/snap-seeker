@@ -19,7 +19,7 @@ export default function GoogleAuthCallbackPage() {
         <div className="mb-4">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
         </div>
-        <p className="text-gray-600">Processing Google authentication...</p>
+        <p className="text-gray-600">Processing authentication...</p>
       </div>
     </div>
   );

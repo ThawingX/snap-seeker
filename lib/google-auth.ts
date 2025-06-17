@@ -57,12 +57,12 @@ export interface LoginResponse {
 export const initializeGoogleAuth = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (typeof window === 'undefined') {
-      reject(new Error('Google Auth can only be initialized in browser'));
+      reject(new Error('Login service temporarily unavailable, please try again later'));
       return;
     }
 
     if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
-      reject(new Error('Google Client ID not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your .env.local file'));
+      reject(new Error('Login service temporarily unavailable, please try again later'));
       return;
     }
 
@@ -108,17 +108,17 @@ export const initializeGoogleAuth = (): Promise<void> => {
 export const signInWithGoogle = (invitationCode: string | null = null): Promise<LoginResponse> => {
   return new Promise((resolve, reject) => {
     if (typeof window === 'undefined') {
-      reject(new Error('Google Sign-In can only be used in browser'));
+      reject(new Error('Login service temporarily unavailable, please try again later'));
       return;
     }
 
     if (!window.google?.accounts?.id) {
-      reject(new Error('Google Identity Services not initialized. Please call initializeGoogleAuth() first.'));
+      reject(new Error('Login service temporarily unavailable, please try again later'));
       return;
     }
 
     if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
-      reject(new Error('Google Client ID not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your .env.local file'));
+      reject(new Error('Login service temporarily unavailable, please try again later'));
       return;
     }
 
@@ -126,7 +126,7 @@ export const signInWithGoogle = (invitationCode: string | null = null): Promise<
     const handleCredentialResponse = async (response: GoogleAuthResponse) => {
       try {
         if (!response.credential) {
-          throw new Error('No credential received from Google');
+          throw new Error('Login failed, please try again');
         }
 
         // 解析JWT token获取用户信息
@@ -218,7 +218,7 @@ export const authenticateWithServer = async (
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || errorData.message || 'Authentication failed');
+      throw new Error('Login failed, please try again');
     }
 
     const result = await response.json();
@@ -233,7 +233,7 @@ export const authenticateWithServer = async (
     if (error instanceof Error) {
       throw error;
     }
-    throw new Error('Network error occurred during authentication');
+    throw new Error('Network connection error, please check your network and try again');
   }
 };
 
@@ -256,17 +256,17 @@ export const renderGoogleSignInButton = (
   } = {}
 ): void => {
   if (typeof window === 'undefined') {
-    console.warn('Google Sign-In button can only be rendered in browser');
+    // 静默处理服务端渲染情况
     return;
   }
 
   if (!window.google?.accounts?.id) {
-    console.error('Google Identity Services not initialized. Please call initializeGoogleAuth() first.');
+    // 静默处理Google服务未初始化情况
     return;
   }
 
   if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
-    console.error('Google Client ID not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your .env.local file');
+    // 静默处理配置问题
     return;
   }
 
@@ -363,11 +363,11 @@ export const isGoogleAuthAvailable = (): boolean => {
  */
 export const getGoogleAuthUnavailableReason = (): string | null => {
   if (typeof window === 'undefined') {
-    return 'Not running in browser environment';
+    return 'Login service temporarily unavailable, please try again later';
   }
   
   if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
-    return 'Google Client ID not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your .env.local file';
+    return 'Login service temporarily unavailable, please try again later';
   }
   
   if (!window.google?.accounts?.id) {
@@ -417,10 +417,10 @@ export const handleGoogleAuthCallback = (): void => {
     // 关闭弹窗
     window.close();
   } catch (error) {
-    console.error('Error handling Google auth callback:', error);
+    // 静默处理认证回调错误
     window.opener?.postMessage({
       type: 'GOOGLE_AUTH_ERROR',
-      error: 'Failed to process authentication callback'
+      error: 'Login failed, please try again'
     }, window.location.origin);
     window.close();
   }

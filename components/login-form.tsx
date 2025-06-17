@@ -41,7 +41,7 @@ export default function LoginForm() {
         await initializeGoogleAuth();
         setIsGoogleAuthReady(true);
       } catch (error) {
-        console.error('Failed to initialize Google Auth:', error);
+        // 静默处理Google认证初始化失败
       }
     };
 
@@ -126,7 +126,7 @@ export default function LoginForm() {
       if (!isGoogleAuthReady || !isGoogleAuthAvailable()) {
         const reason = getGoogleAuthUnavailableReason();
         showToast({
-          message: reason || "Google authentication is not available",
+          message: reason || "Login service temporarily unavailable, please try again later",
           type: "error",
           duration: 8000
         });
@@ -150,9 +150,9 @@ export default function LoginForm() {
         duration: 3000
       });
     } catch (error) {
-      console.error('Google login error:', error);
+      // 不显示技术性错误信息给用户
       showToast({
-        message: error instanceof Error ? error.message : "Google login failed",
+        message: "Login failed, please try again",
         type: "error",
         duration: 5000
       });
