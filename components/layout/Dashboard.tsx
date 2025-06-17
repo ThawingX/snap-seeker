@@ -99,7 +99,7 @@ export const Dashboard = () => {
         )}
 
         {/* 标题和搜索框层 - 在弹幕之上，垂直排列 */}
-        <div ref={searchBarContainerRef} className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl px-6 flex flex-col items-center space-y-8" style={{ zIndex: 100 }}>
+        <div ref={searchBarContainerRef} className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl px-6 flex flex-col items-center space-y-8" style={{ zIndex: 40 }}>
           {/* 标题 */}
           <h1 className="text-4xl md:text-5xl font-bold text-center text-foreground">
             Get Your <ColourfulText text="MVP" /> Right. Find Your <ColourfulText text="PMF" /> Fast.
@@ -113,7 +113,7 @@ export const Dashboard = () => {
 
         {/* 提示文本 - 在弹幕之上 */}
         {!isLoading && hotTags.length > 0 && (
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2" style={{ zIndex: 200 }}>
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2" style={{ zIndex: 30 }}>
             <div className="flex items-center space-x-2 text-sm text-muted-foreground bg-card/80 px-4 py-2 rounded-full backdrop-blur-md border border-border shadow-lg">
               <span className="text-lg">💡</span>
               <span>Click floating tags to add to search</span>

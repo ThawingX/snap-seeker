@@ -108,6 +108,7 @@ export const API_ENDPOINTS = {
     LOGIN: `${ENV.API_BASE_URL}/auth/login/token`,
     GOOGLE_LOGIN: `${ENV.API_BASE_URL}/auth/login/google`,
     LOGOUT: `${ENV.API_BASE_URL}/auth/logout`,
+    ACTIVATE: `${ENV.API_BASE_URL}/auth/activate`,
   },
 
   // Chat endpoints
@@ -120,6 +121,7 @@ export const API_ENDPOINTS = {
   HOT_KEYS: `${ENV.API_BASE_URL}/api/hot_keys`,
   CREDITS: `${ENV.API_BASE_URL}/api/credits`,
   HISTORY: `${ENV.API_BASE_URL}/api/history`,
+  USER_INFO: `${ENV.API_BASE_URL}/api/user-info`,
 };
 
 /**

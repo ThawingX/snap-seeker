@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AuthModal from "@/components/auth/AuthModal";
+import ActivationModal from "@/components/auth/ActivationModal";
 import { 
   isAuthenticated as checkAuthStatus, 
   removeToken, 
@@ -14,6 +15,8 @@ import {
   type GoogleLoginRequest,
   type RegisterRequest
 } from "@/lib/auth-api";
+import { tokenManager } from "@/lib/api";
+import { getUserInfo, type UserInfoResponse } from "@/lib/user-api";
 import { setGlobalAuthErrorHandler } from "@/lib/api";
 
 // 定义用户信息类型
@@ -27,12 +30,15 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
+  isActivated: boolean;
   showAuthModal: (mode?: "login" | "signup") => void;
   hideAuthModal: () => void;
   login: (data: LoginRequest) => Promise<void>;
   loginGoogle: (data: GoogleLoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
+  checkUserActivation: () => Promise<void>;
+  handleActivationSuccess: () => void;
   loading: boolean;
 }
 
@@ -55,17 +61,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // 认证状态
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isActivated, setIsActivated] = useState(true); // 默认为true，避免未登录时显示激活弹窗
   const [loading, setLoading] = useState(true);
   
   // 模态框状态
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"login" | "signup">("login");
+  const [isActivationModalOpen, setIsActivationModalOpen] = useState(false);
+
+  // 检查用户激活状态
+  const checkUserActivation = async () => {
+    // 如果没有token，直接返回
+    const token = tokenManager.getToken();
+    if (!token) {
+      setIsAuthenticated(false);
+      setIsActivated(true); // 未登录时不需要检查激活状态
+      return;
+    }
+
+    try {
+      // 调用user-info接口验证token有效性并获取激活状态
+      const userInfo = await getUserInfo();
+      
+      // token有效，设置认证状态
+      setIsAuthenticated(true);
+      setIsActivated(userInfo.isActive);
+      
+      // 如果用户未激活，显示激活模态框
+      if (!userInfo.isActive) {
+        setIsActivationModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Failed to check user activation status:', error);
+      // 如果获取用户信息失败（可能token无效），清除认证状态
+      setIsAuthenticated(false);
+      setIsActivated(true);
+      // 清除无效token
+      tokenManager.removeToken();
+    }
+  };
+
+  // 处理激活成功
+  const handleActivationSuccess = () => {
+    setIsActivated(true);
+    setIsActivationModalOpen(false);
+  };
 
   // 初始化时检查认证状态
   useEffect(() => {
-    const checkAuth = () => {
-      const authenticated = checkAuthStatus();
-      setIsAuthenticated(authenticated);
+    const checkAuth = async () => {
+      // 直接调用checkUserActivation，它会验证token有效性并设置认证状态
+      await checkUserActivation();
       setLoading(false);
     };
     
@@ -76,10 +122,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // 清除认证状态
       setIsAuthenticated(false);
       setUser(null);
+      setIsActivated(true); // 重置激活状态
+      setIsActivationModalOpen(false); // 关闭激活弹窗
       // 显示登录模态框
       showAuthModal("login");
     });
   }, []);
+
+  // 当认证状态变化时，检查激活状态
+  useEffect(() => {
+    if (isAuthenticated) {
+      checkUserActivation();
+    } else {
+      setIsActivated(true);
+      setIsActivationModalOpen(false);
+    }
+  }, [isAuthenticated]);
 
   // 显示认证模态框
   const showAuthModal = (mode: "login" | "signup" = "login") => {
@@ -141,6 +199,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       hideAuthModal();
       
+      // 检查激活状态
+      await checkUserActivation();
+      
       // 处理待处理的搜索
       handlePendingSearch();
     } catch (error) {
@@ -161,6 +222,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(response.user);
       }
       hideAuthModal();
+      
+      // 检查激活状态
+      await checkUserActivation();
       
       // 处理待处理的搜索
       handlePendingSearch();
@@ -183,6 +247,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       hideAuthModal();
       
+      // 检查激活状态
+      await checkUserActivation();
+      
       // 处理待处理的搜索
       handlePendingSearch();
     } catch (error) {
@@ -199,12 +266,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // API调用成功后更新状态
       setIsAuthenticated(false);
       setUser(null);
+      setIsActivated(true);
+      setIsActivationModalOpen(false);
     } catch (error) {
       // 即使API调用失败，也清除本地状态
       console.error('Logout API failed:', error);
       removeToken();
       setIsAuthenticated(false);
       setUser(null);
+      setIsActivated(true);
+      setIsActivationModalOpen(false);
     }
   };
 
@@ -212,12 +283,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const value = {
     isAuthenticated,
     user,
+    isActivated,
     showAuthModal,
     hideAuthModal,
     login,
     loginGoogle,
     register,
     logout,
+    checkUserActivation,
+    handleActivationSuccess,
     loading,
   };
 
@@ -228,6 +302,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isOpen={isAuthModalOpen} 
         onClose={hideAuthModal} 
         initialMode={authModalMode} 
+      />
+      <ActivationModal
+        isOpen={isActivationModalOpen}
+        onClose={() => setIsActivationModalOpen(false)}
+        onActivationSuccess={handleActivationSuccess}
       />
     </AuthContext.Provider>
   );
