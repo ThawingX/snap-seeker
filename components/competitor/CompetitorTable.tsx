@@ -140,7 +140,7 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
               {safeCompetitorData.map((competitor, index) => (
                 <div key={index} className="bg-neutral-900 rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-white">{competitor.product}</h3>
+                    <h3 className="text-lg font-semibold text-white">{competitor.name}</h3>
                     <span className="text-sm text-neutral-400">{competitor.traffic}</span>
                   </div>
                   
@@ -160,17 +160,17 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
                     
                     <div>
                       <span className="text-xs text-neutral-500 uppercase tracking-wide">Target Users</span>
-                      <p className="text-sm text-neutral-300 mt-1">{competitor.targetUsers}</p>
+                      <p className="text-sm text-neutral-300 mt-1">{Array.isArray(competitor.targetUser) ? competitor.targetUser.join(', ') : competitor.targetUser}</p>
                     </div>
                     
                     <div>
                       <span className="text-xs text-neutral-500 uppercase tracking-wide">Pain Points</span>
-                      <p className="text-sm text-neutral-300 mt-1">{competitor.painPoints}</p>
+                      <p className="text-sm text-neutral-300 mt-1">{Array.isArray(competitor.painPoints) ? competitor.painPoints.join(', ') : competitor.painPoints}</p>
                     </div>
                     
                     <div>
                       <span className="text-xs text-neutral-500 uppercase tracking-wide">Key Features</span>
-                      <p className="text-sm text-neutral-300 mt-1">{competitor.keyFeatures}</p>
+                      <p className="text-sm text-neutral-300 mt-1">{Array.isArray(competitor.keyFeatures) ? competitor.keyFeatures.join(', ') : competitor.keyFeatures}</p>
                     </div>
                     
                     <div>
@@ -201,7 +201,7 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
                   <tbody>
                     {safeCompetitorData.map((competitor, index) => (
                       <tr key={index} className="border-b border-neutral-800 hover:bg-neutral-800/50 transition-colors">
-                        <td className="p-4 text-white font-medium">{competitor.product}</td>
+                        <td className="p-4 text-white font-medium">{competitor.name}</td>
                         <td className="p-4 text-neutral-300 italic">{competitor.slogan}</td>
                         <td className="p-4">
                           <div className="w-full bg-neutral-800 rounded-full h-2 mb-1">
@@ -214,13 +214,13 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
                         </td>
                         <td className="p-4 text-neutral-300">{competitor.traffic}</td>
                         <td className="p-4 text-neutral-300 max-w-xs">
-                          <div className="line-clamp-3">{competitor.targetUsers}</div>
+                          <div className="line-clamp-3">{Array.isArray(competitor.targetUser) ? competitor.targetUser.join(', ') : competitor.targetUser}</div>
                         </td>
                         <td className="p-4 text-neutral-300 max-w-xs">
-                          <div className="line-clamp-3">{competitor.painPoints}</div>
+                          <div className="line-clamp-3">{Array.isArray(competitor.painPoints) ? competitor.painPoints.join(', ') : competitor.painPoints}</div>
                         </td>
                         <td className="p-4 text-neutral-300 max-w-xs">
-                          <div className="line-clamp-3">{competitor.keyFeatures}</div>
+                          <div className="line-clamp-3">{Array.isArray(competitor.keyFeatures) ? competitor.keyFeatures.join(', ') : competitor.keyFeatures}</div>
                         </td>
                         <td className="p-4 text-neutral-300">{competitor.revenueModel}</td>
                       </tr>

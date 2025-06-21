@@ -11,7 +11,7 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { trackPricingClick } from "@/lib/analytics";
+import { trackPricingClick, trackEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 
 export const Navigation = () => {
@@ -82,8 +82,8 @@ export const AuthButtons = () => {
     ),
     onClick: () => {
       trackPricingClick({
-        source: 'sidebar',
-        user_authenticated: isAuthenticated,
+        action: 'click',
+        section: 'sidebar',
         page: 'main_app'
       });
     }

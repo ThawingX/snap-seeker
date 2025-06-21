@@ -60,8 +60,8 @@ function CompetitorAnalysisContent() {
               // 触发竞争对手分析试用埋点
               trackCompetitorPromptAnalysisTryIt({
                 page: 'competitor_analysis',
-                feature_status: 'coming_soon',
-                user_interest: 'high'
+                action: 'click',
+                section: 'main'
               });
               console.log('User clicked Expect button');
             }}

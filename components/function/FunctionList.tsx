@@ -294,4 +294,3 @@ const FunctionList: React.FC<FunctionListProps> = ({
 
 // 导出所有必要的组件和类型
 export { FunctionList, FunctionListContent, FunctionListSkeleton };
-export type { FunctionListData };

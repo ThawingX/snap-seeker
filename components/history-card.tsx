@@ -87,10 +87,10 @@ export function HistoryCard({
   
   const handleCardClick = () => {
     trackHistoryCardClick({
-      search_query: title,
-      search_id: id,
-      created_at: date,
-      categories: categories
+      action: 'click',
+      section: 'history',
+      search_term: title,
+      card_id: id
     });
   };
 

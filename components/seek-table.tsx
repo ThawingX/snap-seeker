@@ -18,6 +18,7 @@ import { FigureData } from '@/components/figure/FigureCards';
 import { RequirementCardData } from '@/components/requirement/RequirementCard';
 import { FunctionListData } from '@/components/function/FunctionList';
 import { SearchResultData, HistoryApiResponse, SearchResultProcessor, createInitialResultsState } from '@/types/search-result';
+import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
 import { useToast } from "@/components/ui/toast";
 import { useSSEData } from "@/hooks/useSSEData";
 

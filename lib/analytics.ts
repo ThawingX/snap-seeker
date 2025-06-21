@@ -79,6 +79,7 @@ export const ANALYTICS_EVENTS = {
   COMPETITOR_PROMPT_ANALYSIS_TRYIT: 'competitor_prompt_analysis_tryit',
   PMF_ANALYSIS_TRYIT: 'pmf_analysis_tryit',
   MARKETING_CONTEXT_TRYIT: 'marketing_context_tryit',
+  PRODUCT_MARKETING_TRYIT: 'product_marketing_tryit',
 } as const;
 
 // TypeScript interfaces for event parameters
@@ -94,6 +95,8 @@ export interface PageViewParams extends BaseEventParams {
   page_title?: string;   // 页面标题
   page_url?: string;     // 页面URL
   referrer?: string;     // 来源页面
+  title?: string;        // 页面标题
+  user_agent?: string;   // 用户代理
 }
 
 export interface AuthActivateParams extends BaseEventParams {
@@ -113,6 +116,10 @@ export interface VisitParams extends BaseEventParams {
   referrer?: string;          // 来源页面
   first_visit_time?: string;  // 首次访问时间
   days_since_first_visit?: number; // 距离首次访问天数
+  user_agent?: string;        // 用户代理
+  screen_resolution?: string; // 屏幕分辨率
+  language?: string;          // 语言
+  title?: string;             // 页面标题
 }
 
 export interface TryItParams extends BaseEventParams {
@@ -231,6 +238,14 @@ export const trackMarketingContextTryIt = (params?: TryItParams) => {
   trackEvent(ANALYTICS_EVENTS.MARKETING_CONTEXT_TRYIT, {
     action: 'click',
     feature_name: 'marketing_context',
+    ...params
+  });
+};
+
+export const trackProductMarketingTryIt = (params?: TryItParams) => {
+  trackEvent(ANALYTICS_EVENTS.PRODUCT_MARKETING_TRYIT, {
+    action: 'click',
+    feature_name: 'product_marketing',
     ...params
   });
 };

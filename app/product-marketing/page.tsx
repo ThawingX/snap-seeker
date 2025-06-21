@@ -68,8 +68,8 @@ function ProductMarketingContent() {
               // 触发产品营销试用埋点
               trackProductMarketingTryIt({
                 page: 'product_marketing',
-                feature_status: 'coming_soon',
-                user_interest: 'high'
+                action: 'click',
+                section: 'main'
               });
               console.log('User clicked Expect button');
             }}

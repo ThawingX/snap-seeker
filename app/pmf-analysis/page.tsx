@@ -64,8 +64,8 @@ function PMFAnalysisContent() {
               // 触发PMF分析试用埋点
               trackPMFAnalysisTryIt({
                 page: 'pmf_analysis',
-                feature_status: 'coming_soon',
-                user_interest: 'high'
+                action: 'click',
+                section: 'main'
               });
               console.log('User clicked Expect button');
             }}
