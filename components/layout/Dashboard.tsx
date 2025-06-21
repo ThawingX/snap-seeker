@@ -87,7 +87,7 @@ export const Dashboard = () => {
 
         {/* 弹幕标签层 - 在背景之上 */}
         {!isLoading && hotTags.length > 0 && (
-          <div className="absolute inset-0" style={{ zIndex: 50 }}>
+          <div className="absolute inset-0" style={{ zIndex: 30 }}>
             <FloatingTags
               tags={hotTags}
               onTagSelected={handleTagSelected}
@@ -99,7 +99,7 @@ export const Dashboard = () => {
         )}
 
         {/* 标题和搜索框层 - 在弹幕之上，垂直排列 */}
-        <div ref={searchBarContainerRef} className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl px-6 flex flex-col items-center space-y-8" style={{ zIndex: 40 }}>
+        <div ref={searchBarContainerRef} className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl px-6 flex flex-col items-center space-y-8" style={{ zIndex: 50 }}>
           {/* 标题 */}
           <h1 className="text-4xl md:text-5xl font-bold text-center text-foreground">
             Get Your <ColourfulText text="MVP" /> Right. Find Your <ColourfulText text="PMF" /> Fast.

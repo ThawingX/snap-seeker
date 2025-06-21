@@ -338,7 +338,7 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
     <div 
       ref={containerRef}
       className="absolute inset-0 pointer-events-none overflow-hidden"
-      style={{ zIndex: 50 }}
+      style={{ zIndex: 30 }}
     >
       {floatingTags.map(tag => (
         <div
