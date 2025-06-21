@@ -4,21 +4,13 @@ import { HistoryCard } from "@/components/history-card";
 import { useHistory } from "@/hooks/useHistory";
 
 export const MobileHistory = () => {
-  const { historyItems, loading, error, handleClearHistory, formatDate } = useHistory();
+  const { historyItems, loading, error, formatDate } = useHistory();
 
   return (
     <div className="flex flex-col h-full bg-background text-foreground">
       <div className="sticky top-0 left-0 right-0 z-30 bg-background px-4 py-3 border-b border-border">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">History</h1>
-          {historyItems.length > 0 && (
-            <button 
-              onClick={handleClearHistory}
-              className="text-destructive hover:text-destructive/80 text-xs font-medium px-2 py-1 rounded border border-destructive/20 hover:border-destructive/40 hover:bg-destructive/10 transition-all duration-300"
-            >
-              Clear All
-            </button>
-          )}
         </div>
       </div>
       

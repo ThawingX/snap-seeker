@@ -96,8 +96,8 @@ Sat June 14 2025：
 -[x] google登录一些错误消息不能显示
 
 2025/06/21：
-- [] 埋点
+- [x] 埋点
 - [] 移动端检查
-- [] searchBar 点击不了
+- [x] searchBar 点击不了
 - [] ph upvote
-- [] clear history相关删除
+- [x] clear history相关删除 

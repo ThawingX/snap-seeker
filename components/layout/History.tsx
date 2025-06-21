@@ -4,7 +4,7 @@ import { HistoryCard, HistoryCardProps } from "@/components/history-card";
 import { useHistory } from "@/hooks/useHistory";
 
 export const History = () => {
-  const { historyItems, loading, error, handleClearHistory, formatDate } = useHistory();
+  const { historyItems, loading, error, formatDate } = useHistory();
 
   return (
     <div className="flex flex-1 flex-col h-full overflow-hidden">
@@ -13,14 +13,6 @@ export const History = () => {
           <div className="flex flex-col max-w-7xl mx-auto w-full">
             <div className="flex justify-between items-center">
               <h1 className="text-3xl md:text-4xl font-bold">Search History</h1>
-              {historyItems.length > 0 && (
-                <button 
-                  onClick={handleClearHistory}
-                  className="text-destructive hidden hover:text-destructive/80 text-sm font-medium px-3 py-1 rounded-md border border-destructive/20 hover:border-destructive/40 hover:bg-destructive/10 transition-all duration-300"
-                >
-                  Clear History
-                </button>
-              )}
             </div>
           </div>
         </div>

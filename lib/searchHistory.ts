@@ -70,27 +70,7 @@ export const addSearchToHistory = (query: string, id?: string): void => {
   }
 };
 
-/**
- * 清除搜索历史
- * 删除历史记录列表和对应的搜索数据
- */
-export const clearSearchHistory = (): void => {
-  if (typeof window === 'undefined') return;
 
-  try {
-    const history = getSearchHistory();
-    
-    // 删除历史记录列表
-    localStorage.removeItem(STORAGE_KEY);
-    
-    // 删除每个历史记录项对应的搜索数据（使用统一的存储格式）
-    history.forEach(item => {
-      localStorage.removeItem(item.id);
-    });
-  } catch (error) {
-    console.error('Failed to clear search history:', error);
-  }
-};
 
 // 最大描述长度
 const MAX_DESCRIPTION_LENGTH = 100;

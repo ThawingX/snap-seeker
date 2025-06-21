@@ -49,9 +49,6 @@ export const ANALYTICS_EVENTS = {
   
   // History events
   HISTORY_CARD_CLICK: 'history_card_click',
-  HISTORY_CLEAR_START: 'history_clear_start',
-  HISTORY_CLEAR_SUCCESS: 'history_clear_success',
-  HISTORY_CLEAR_FAILED: 'history_clear_failed',
   
   // Print events
   PRINT_START: 'print_start',
