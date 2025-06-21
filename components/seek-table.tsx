@@ -528,7 +528,8 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
         <span className={`transition-opacity duration-300 ${
           isScrolled ? 'opacity-100' : 'opacity-0 sm:opacity-100'
         }`}>
-          Back to History
+          <span className="sm:hidden">Back</span>
+          <span className="hidden sm:inline">Back to History</span>
         </span>
       </Link>
 
@@ -577,11 +578,11 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
         mobileClassName="fixed bottom-8 right-8 z-50 shadow-lg"
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-20">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-8 pt-20">
         <div className="space-y-8">
         {/* 页面头部 */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mt-4 mb-2 text-neutral-900 dark:text-white">Competitor Analysis</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mt-4 mb-2 text-neutral-900 dark:text-white">Competitor Analysis</h1>
           <p className="text-neutral-600 dark:text-neutral-400">Results for: {query}</p>
           {loading && (
             <div className="flex items-center mt-2 text-neutral-600 dark:text-neutral-400">

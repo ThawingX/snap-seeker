@@ -97,7 +97,7 @@ Sat June 14 2025：
 
 2025/06/21：
 - [x] 埋点
-- [] 移动端检查
+- [x] 移动端检查
 - [x] searchBar 点击不了
 - [] ph upvote
 - [x] clear history相关删除 
