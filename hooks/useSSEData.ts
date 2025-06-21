@@ -100,6 +100,7 @@ const createSSEContext = (
     hasValidId: false, // 初始为false，等待后端返回真实的id
     showToast,
     query,
+    searchId,
     updateURL: (newSearchId: string) => {
       // 更新浏览器URL，使用replace避免在历史记录中创建新条目
       router.replace(`/results?id=${newSearchId}`);

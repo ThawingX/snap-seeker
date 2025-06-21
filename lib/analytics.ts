@@ -42,11 +42,13 @@ export const ANALYTICS_EVENTS = {
   // Search events
   SEARCH_START: 'search_start',
   SEARCH_SUBMIT: 'search_submit',
+  SEARCH_COMPLETE: 'search_complete',
   SEARCH_FAILED: 'search_failed',
   SEARCH_UNAUTHENTICATED: 'search_unauthenticated',
   TAG_CLICK: 'tag_click',
   
   // History events
+  HISTORY_CARD_CLICK: 'history_card_click',
   HISTORY_CLEAR_START: 'history_clear_start',
   HISTORY_CLEAR_SUCCESS: 'history_clear_success',
   HISTORY_CLEAR_FAILED: 'history_clear_failed',
@@ -136,6 +138,21 @@ export interface AuthParams extends BaseEventParams {
   has_invitation_code?: boolean; // 是否有邀请码
 }
 
+export interface HistoryCardParams extends BaseEventParams {
+  card_id?: string;           // 历史卡片ID
+  search_term?: string;       // 搜索关键词
+  card_position?: number;     // 卡片在列表中的位置
+  total_cards?: number;       // 总卡片数量
+}
+
+export interface SearchCompleteParams extends BaseEventParams {
+  search_term?: string;       // 搜索关键词
+  search_id?: string;         // 搜索ID
+  results_count?: number;     // 搜索结果数量
+  search_duration?: number;   // 搜索耗时(毫秒)
+  user_authenticated?: boolean; // 用户是否已认证
+}
+
 // Convenience functions for specific events
 export const trackPageView = (params?: PageViewParams) => {
   trackEvent(ANALYTICS_EVENTS.PAGE_VIEW, {
@@ -217,6 +234,22 @@ export const trackMarketingContextTryIt = (params?: TryItParams) => {
   trackEvent(ANALYTICS_EVENTS.MARKETING_CONTEXT_TRYIT, {
     action: 'click',
     feature_name: 'marketing_context',
+    ...params
+  });
+};
+
+export const trackHistoryCardClick = (params?: HistoryCardParams) => {
+  trackEvent(ANALYTICS_EVENTS.HISTORY_CARD_CLICK, {
+    action: 'click',
+    section: 'history',
+    ...params
+  });
+};
+
+export const trackSearchComplete = (params?: SearchCompleteParams) => {
+  trackEvent(ANALYTICS_EVENTS.SEARCH_COMPLETE, {
+    action: 'complete',
+    section: 'search_results',
     ...params
   });
 };

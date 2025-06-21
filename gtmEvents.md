@@ -26,6 +26,31 @@
 - **触发时机**: 用户点击创建账户按钮
 - **实现位置**: 待实现
 
+### 4. 历史详情卡片点击 (history_card_click)
+- **事件名称**: `history_card_click`
+- **触发时机**: 用户点击历史记录中的详情卡片
+- **事件参数**:
+  - `action`: 'click'
+  - `section`: 'history'
+  - `card_id`: 历史卡片ID
+  - `search_term`: 搜索关键词
+  - `card_position`: 卡片在列表中的位置
+  - `total_cards`: 总卡片数量
+- **实现位置**: 待实现
+
+### 5. 搜索完成 (search_complete)
+- **事件名称**: `search_complete`
+- **触发时机**: 结果页面搜索完成时
+- **事件参数**:
+  - `action`: 'complete'
+  - `section`: 'search_results'
+  - `search_term`: 搜索关键词
+  - `search_id`: 搜索ID
+  - `results_count`: 搜索结果数量
+  - `search_duration`: 搜索耗时(毫秒)
+  - `user_authenticated`: 用户是否已认证
+- **实现位置**: 待实现
+
 ## 待实现的事件
 
 - [ ] 搜索提交事件

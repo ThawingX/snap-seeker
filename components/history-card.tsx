@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card-components";
 import { calculateVisibleTags, formatCategories } from "@/lib/tag-utils";
 import { cn } from "@/lib/utils";
+import { trackHistoryCardClick } from '@/lib/analytics';
 
 export interface HistoryCardProps {
   title: string;
@@ -84,8 +85,17 @@ export function HistoryCard({
     };
   }, []);
   
+  const handleCardClick = () => {
+    trackHistoryCardClick({
+      search_query: title,
+      search_id: id,
+      created_at: date,
+      categories: categories
+    });
+  };
+
   return (
-    <Link href={`/results?id=${id}`} className="block">
+    <Link href={`/results?id=${id}`} className="block" onClick={handleCardClick}>
       <motion.div
         className="group/card relative overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 p-5 transition duration-200 dark:border-neutral-800 dark:bg-neutral-900 
                  hover:border-neutral-300 hover:shadow-md dark:hover:border-neutral-700 transform hover:-translate-y-1 text-neutral-900 dark:text-neutral-100"

@@ -43,6 +43,7 @@ export interface SSEProcessingContext {
   updateURL: (newSearchId: string) => void;
   setFinalSearchId: (id: string) => void;
   query: string;
+  searchId: string;
 }
 
 /**
@@ -215,6 +216,16 @@ export class DoneStrategy implements SSEDataStrategy {
     // 在流结束时更新浏览器URL，移除isNew参数
     if (context.hasValidId) {
       context.updateURL(context.validSearchId);
+    }
+
+    // 触发搜索完成埋点
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push({
+        event: 'search_complete',
+        search_query: context.query,
+        search_id: context.validSearchId || context.searchId,
+        has_results: context.hasValidId
+      });
     }
 
     // 注意：数据保存和历史记录添加已在useSSEData中统一处理
