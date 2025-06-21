@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 export const MobileSearchBar = () => {
   const [input, setInput] = useState("");
@@ -41,8 +42,22 @@ export const MobileSearchBar = () => {
   const handleSubmit = async () => {
     if (!input.trim() || isLoading) return;
     
+    // 触发搜索开始埋点
+    trackEvent(ANALYTICS_EVENTS.SEARCH_START, {
+      search_term: input.trim(),
+      search_length: input.trim().length,
+      page: 'mobile_dashboard',
+      user_authenticated: isAuthenticated
+    });
+    
     // 检查用户是否已登录
     if (!isAuthenticated) {
+      // 触发未登录搜索尝试埋点
+      trackEvent(ANALYTICS_EVENTS.SEARCH_UNAUTHENTICATED, {
+        search_term: input.trim(),
+        page: 'mobile_dashboard'
+      });
+      
       // 保存当前搜索数据到sessionStorage，用于登录后恢复
       sessionStorage.setItem('pendingSearch', JSON.stringify({
         query: input,
@@ -60,6 +75,13 @@ export const MobileSearchBar = () => {
       // 生成一个临时ID用于页面跳转
       const tempId = crypto.randomUUID();
       
+      // 触发搜索提交成功埋点
+      trackEvent(ANALYTICS_EVENTS.SEARCH_SUBMIT, {
+        search_term: input.trim(),
+        search_id: tempId,
+        page: 'mobile_dashboard'
+      });
+      
       // 直接跳转到results页面，通过URL参数传递查询和ID
       // 将查询存储到sessionStorage中
         sessionStorage.setItem('currentSearch', JSON.stringify({
@@ -70,6 +92,13 @@ export const MobileSearchBar = () => {
         router.push(`/results?id=${tempId}&isNew=true`);
     } catch (error) {
       console.error('Error during search submission:', error);
+      
+      // 触发搜索失败埋点
+      trackEvent(ANALYTICS_EVENTS.SEARCH_FAILED, {
+        search_term: input.trim(),
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        page: 'mobile_dashboard'
+      });
       // 使用toast组件显示错误信息
       showToast({
         message: '搜索请求失败，请稍后再试',

@@ -8,6 +8,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import { GoogleTagManager, GoogleTagManagerNoScript } from "@/components/GoogleTagManager";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { AnalyticsProvider } from "@/components/AnalyticsProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -53,7 +54,9 @@ export default function RootLayout({
         >
           <ToastProvider>
             <AuthProvider>
-              {children}
+              <AnalyticsProvider>
+                {children}
+              </AnalyticsProvider>
             </AuthProvider>
           </ToastProvider>
         </ThemeProvider>

@@ -97,18 +97,41 @@ export default function SignupForm() {
     }
 
     try {
+      // 触发注册开始埋点
+      trackEvent(ANALYTICS_EVENTS.SIGNUP_START, {
+        method: 'email',
+        page: 'signup_modal',
+        has_invitation_code: !!formData.invitationCode
+      });
+
       await register({
         email: formData.email,
         password: formData.password,
         invitation_code: formData.invitationCode
       });
       
+      // 触发注册成功埋点
+      trackEvent(ANALYTICS_EVENTS.SIGNUP_SUCCESS, {
+        method: 'email',
+        page: 'signup_modal',
+        user_email: formData.email,
+        has_invitation_code: !!formData.invitationCode
+      });
+
       showToast({
         message: "Registration successful! Welcome to SnapSeeker!",
         type: "success",
         duration: 3000
       });
     } catch (error) {
+      // 触发注册失败埋点
+      trackEvent(ANALYTICS_EVENTS.SIGNUP_FAILED, {
+        method: 'email',
+        page: 'signup_modal',
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        has_invitation_code: !!formData.invitationCode
+      });
+
       showToast({
         message: error instanceof Error ? error.message : "Registration failed",
         type: "error",
@@ -273,8 +296,19 @@ export default function SignupForm() {
         </div>
 
         {/* 注册按钮 */}
-        <SignUpButton type="submit" disabled={loading}>
-          {loading ? "Creating account..." : "Sign up"} &rarr;
+        <SignUpButton 
+          type="submit" 
+          disabled={loading}
+          onClick={() => {
+            // 触发创建账户按钮点击埋点
+            trackEvent(ANALYTICS_EVENTS.CREATE_ACCOUNT_CLICK, {
+              method: 'email',
+              page: 'signup_modal',
+              has_invitation_code: !!formData.invitationCode
+            });
+          }}
+        >
+          {loading ? "Creating account..." : "Create Account"}
         </SignUpButton>
 
         {/* 分隔线 */}

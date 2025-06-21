@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { trackEvent, ANALYTICS_EVENTS } from '@/lib/analytics';
 
 interface FloatingTag {
   id: string;
@@ -308,6 +309,14 @@ export const FloatingTags: React.FC<FloatingTagsProps> = ({
   }, [containerSize, searchBarBounds, hoveredTag]);
 
   const handleTagClick = (tag: FloatingTag) => {
+    // 触发标签点击埋点
+    trackEvent(ANALYTICS_EVENTS.TAG_CLICK, {
+      tag_text: tag.text,
+      tag_category: 'trending',
+      page: 'dashboard',
+      action: 'add_to_search'
+    });
+    
     // 单击直接添加到搜索框
     onTagSelected(tag.text);
     

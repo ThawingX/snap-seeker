@@ -3,6 +3,7 @@ import React from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { IconTarget, IconTools } from "@tabler/icons-react";
+import { trackProductMarketingTryIt } from "@/lib/analytics";
 
 function ProductMarketingContent() {
   return (
@@ -64,7 +65,12 @@ function ProductMarketingContent() {
           <button 
             className=" cursor-pointer px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             onClick={() => {
-              // Add your expect functionality here
+              // 触发产品营销试用埋点
+              trackProductMarketingTryIt({
+                page: 'product_marketing',
+                feature_status: 'coming_soon',
+                user_interest: 'high'
+              });
               console.log('User clicked Expect button');
             }}
           >

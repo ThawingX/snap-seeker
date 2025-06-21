@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { IconSun, IconMoon } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
+import { trackEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
@@ -28,9 +29,22 @@ export function ThemeToggle({ className }: { className?: string }) {
     );
   }
 
+  const handleThemeToggle = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    
+    // 触发主题切换埋点
+    trackEvent(ANALYTICS_EVENTS.THEME_TOGGLE, {
+      from_theme: theme,
+      to_theme: newTheme,
+      page: window.location.pathname
+    });
+    
+    setTheme(newTheme);
+  };
+
   return (
     <button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      onClick={handleThemeToggle}
       className={cn(
         "relative inline-flex h-10 w-10 items-center justify-center rounded-lg bg-card text-foreground transition-all duration-200 hover:bg-accent hover:text-accent-foreground hover:shadow-md",
         className

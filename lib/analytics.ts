@@ -29,12 +29,52 @@ export const ANALYTICS_EVENTS = {
   CREATE_ACCOUNT_CLICK: 'create_account_click',
   GOOGLE_LOGIN: 'google_login',
   
-  // New events
+  // Auth events
+  LOGIN_START: 'login_start',
+  LOGIN_SUCCESS: 'login_success',
+  LOGIN_FAILED: 'login_failed',
+  LOGOUT_START: 'logout_start',
+  LOGOUT_SUCCESS: 'logout_success',
+  LOGOUT_FAILED: 'logout_failed',
+  SIGNUP_SUCCESS: 'signup_success',
+  SIGNUP_FAILED: 'signup_failed',
+  
+  // Search events
+  SEARCH_START: 'search_start',
+  SEARCH_SUBMIT: 'search_submit',
+  SEARCH_FAILED: 'search_failed',
+  SEARCH_UNAUTHENTICATED: 'search_unauthenticated',
+  TAG_CLICK: 'tag_click',
+  
+  // History events
+  HISTORY_CLEAR_START: 'history_clear_start',
+  HISTORY_CLEAR_SUCCESS: 'history_clear_success',
+  HISTORY_CLEAR_FAILED: 'history_clear_failed',
+  
+  // Print events
+  PRINT_START: 'print_start',
+  PRINT_SUCCESS: 'print_success',
+  PRINT_FAILED: 'print_failed',
+  
+  // Theme events
+  THEME_TOGGLE: 'theme_toggle',
+  
+  // Modal events
+  MODAL_OPEN: 'modal_open',
+  MODAL_CLOSE: 'modal_close',
+  
+  // Export events
+  EXPORT_START: 'export_start',
+  EXPORT_SUCCESS: 'export_success',
+  EXPORT_FAILED: 'export_failed',
+  
+  // Page and user events
   PAGE_VIEW: 'page_view',
   AUTH_ACTIVATE: 'auth_activate',
   SIGNUP_START: 'signup_start',
   SIGNUP_COMPLETE: 'signup_complete',
   FIRST_VISIT: 'first_visit',
+  REPEAT_VISIT: 'repeat_visit',
   RETURN_VISIT: 'return_visit',
   PRICING_CLICK: 'pricing_click',
   COMPETITOR_PROMPT_ANALYSIS_TRYIT: 'competitor_prompt_analysis_tryit',
@@ -71,12 +111,29 @@ export interface VisitParams extends BaseEventParams {
   visit_count?: number;       // 访问次数
   session_id?: string;        // 会话ID
   time_since_last_visit?: number; // 距离上次访问时间(分钟)
+  referrer?: string;          // 来源页面
+  first_visit_time?: string;  // 首次访问时间
+  days_since_first_visit?: number; // 距离首次访问天数
 }
 
 export interface TryItParams extends BaseEventParams {
   feature_name?: string;      // 功能名称
   button_position?: string;   // 按钮位置
   user_status?: string;       // 用户状态: 'logged_in', 'guest'
+}
+
+export interface SearchParams extends BaseEventParams {
+  search_term?: string;       // 搜索关键词
+  search_length?: number;     // 搜索词长度
+  search_id?: string;         // 搜索ID
+  user_authenticated?: boolean; // 用户是否已认证
+}
+
+export interface AuthParams extends BaseEventParams {
+  method?: string;            // 认证方式: 'email', 'google'
+  user_email?: string;        // 用户邮箱
+  error_message?: string;     // 错误信息
+  has_invitation_code?: boolean; // 是否有邀请码
 }
 
 // Convenience functions for specific events
@@ -112,6 +169,14 @@ export const trackFirstVisit = (params?: VisitParams) => {
   trackEvent(ANALYTICS_EVENTS.FIRST_VISIT, {
     action: 'visit',
     visit_type: 'first',
+    ...params
+  });
+};
+
+export const trackRepeatVisit = (params?: VisitParams) => {
+  trackEvent(ANALYTICS_EVENTS.REPEAT_VISIT, {
+    action: 'visit',
+    visit_type: 'repeat',
     ...params
   });
 };

@@ -18,6 +18,7 @@ import {
 import { tokenManager } from "@/lib/api";
 import { getUserInfo, type UserInfoResponse } from "@/lib/user-api";
 import { setGlobalAuthErrorHandler } from "@/lib/api";
+import { trackEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 // 定义用户信息类型
 interface User {
@@ -90,6 +91,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // 如果用户未激活，显示激活模态框
       if (!userInfo.isActive) {
         setIsActivationModalOpen(true);
+        
+        // 触发账户未激活埋点
+        trackEvent(ANALYTICS_EVENTS.AUTH_ACTIVATE, {
+          user_id: userInfo.id || 'unknown',
+          user_email: userInfo.email || 'unknown',
+          activation_status: 'required'
+        });
       }
     } catch (error) {
       console.error('Failed to check user activation status:', error);
@@ -103,6 +111,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // 处理激活成功
   const handleActivationSuccess = () => {
+    // 触发账户激活埋点
+    trackEvent(ANALYTICS_EVENTS.AUTH_ACTIVATE, {
+      user_id: user?.id || 'unknown',
+      user_email: user?.email || 'unknown',
+      activation_method: 'email_verification'
+    });
+    
     setIsActivated(true);
     setIsActivationModalOpen(false);
   };
@@ -141,12 +156,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // 显示认证模态框
   const showAuthModal = (mode: "login" | "signup" = "login") => {
+    // 触发模态框打开埋点
+    trackEvent(ANALYTICS_EVENTS.MODAL_OPEN, {
+      modal_type: 'auth',
+      auth_mode: mode,
+      page: window.location.pathname
+    });
+    
     setAuthModalMode(mode);
     setIsAuthModalOpen(true);
   };
 
   // 隐藏认证模态框
   const hideAuthModal = () => {
+    // 触发模态框关闭埋点
+    trackEvent(ANALYTICS_EVENTS.MODAL_CLOSE, {
+      modal_type: 'auth',
+      page: window.location.pathname
+    });
+    
     setIsAuthModalOpen(false);
   };
 
@@ -262,12 +290,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // 退出登录
   const logout = async () => {
     try {
+      // 触发登出开始埋点
+      trackEvent(ANALYTICS_EVENTS.LOGOUT_START, {
+        user_id: user?.id,
+        page: window.location.pathname
+      });
+      
       await logoutUser();
       // API调用成功后更新状态
       setIsAuthenticated(false);
       setUser(null);
       setIsActivated(true);
       setIsActivationModalOpen(false);
+      
+      // 触发登出成功埋点
+      trackEvent(ANALYTICS_EVENTS.LOGOUT_SUCCESS, {
+        user_id: user?.id,
+        page: window.location.pathname
+      });
     } catch (error) {
       // 即使API调用失败，也清除本地状态
       console.error('Logout API failed:', error);
@@ -276,6 +316,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       setIsActivated(true);
       setIsActivationModalOpen(false);
+      
+      // 触发登出失败埋点
+      trackEvent(ANALYTICS_EVENTS.LOGOUT_FAILED, {
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        page: window.location.pathname
+      });
     }
   };
 

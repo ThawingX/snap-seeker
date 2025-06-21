@@ -67,9 +67,23 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
 
   // 打印功能处理函数
   const handlePrintModule = (moduleId: string, moduleName: string) => {
+    // 触发打印开始埋点
+    trackEvent(ANALYTICS_EVENTS.PRINT_START, {
+      module_id: moduleId,
+      module_name: moduleName,
+      page: 'search_results'
+    });
+    
     const moduleElement = document.getElementById(moduleId);
     if (!moduleElement) {
       console.error(`Module with id '${moduleId}' not found`);
+      // 触发打印失败埋点
+      trackEvent(ANALYTICS_EVENTS.PRINT_FAILED, {
+        module_id: moduleId,
+        module_name: moduleName,
+        error_message: 'Module element not found',
+        page: 'search_results'
+      });
       return;
     }
 
@@ -131,6 +145,13 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
       setTimeout(() => {
         printWindow.print();
         printWindow.close();
+        
+        // 触发打印成功埋点
+        trackEvent(ANALYTICS_EVENTS.PRINT_SUCCESS, {
+          module_id: moduleId,
+          module_name: moduleName,
+          page: 'search_results'
+        });
       }, 500);
     };
   };
@@ -332,6 +353,14 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
   const handleExportMVP = async () => {
     if (isExporting) return;
     
+    // 触发导出开始埋点
+    trackEvent(ANALYTICS_EVENTS.EXPORT_START, {
+      export_type: 'prd',
+      search_id: searchId,
+      query: query,
+      page: 'search_results'
+    });
+    
     setIsExporting(true);
     try {
       const response = await api.get(API_ENDPOINTS.CHAT.DOWNLOAD(searchId), {
@@ -359,11 +388,29 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       
+      // 触发导出成功埋点
+      trackEvent(ANALYTICS_EVENTS.EXPORT_SUCCESS, {
+        export_type: 'prd',
+        search_id: searchId,
+        query: query,
+        file_name: `prd-${query.replace(/\s+/g, '-')}-${searchId}.md`,
+        page: 'search_results'
+      });
+      
     } catch (error) {
       console.error('导出PRD文件失败:', error);
       showToast({
         message: "Export Error: Failed to export PRD file. Please try again.",
         type: "error"
+      });
+      
+      // 触发导出失败埋点
+      trackEvent(ANALYTICS_EVENTS.EXPORT_FAILED, {
+        export_type: 'prd',
+        search_id: searchId,
+        query: query,
+        error_message: error instanceof Error ? error.message : 'Unknown error',
+        page: 'search_results'
       });
     } finally {
       setIsExporting(false);

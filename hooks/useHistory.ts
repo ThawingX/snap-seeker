@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { clearSearchHistory, SearchHistoryItem } from "@/lib/searchHistory";
 import { HistoryItemWithResults, SearchResultProcessor } from "@/types/search-result";
 import { api, API_ENDPOINTS } from "@/lib/api";
+import { trackEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 /**
  * 共享的历史记录管理hook
@@ -41,6 +42,12 @@ export const useHistory = () => {
   // 清除所有历史记录
   const handleClearHistory = async () => {
     try {
+      // 触发清除历史记录开始埋点
+      trackEvent(ANALYTICS_EVENTS.HISTORY_CLEAR_START, {
+        history_count: historyItems.length,
+        page: 'history'
+      });
+      
       // 通过API清除历史记录
       const response = await api.delete(API_ENDPOINTS.HISTORY);
       
@@ -53,9 +60,21 @@ export const useHistory = () => {
       
       // 同时清除本地缓存的搜索数据
       clearSearchHistory();
+      
+      // 触发清除历史记录成功埋点
+      trackEvent(ANALYTICS_EVENTS.HISTORY_CLEAR_SUCCESS, {
+        history_count: historyItems.length,
+        page: 'history'
+      });
     } catch (err) {
       console.error('Failed to clear history:', err);
       setError('Failed to clear history');
+      
+      // 触发清除历史记录失败埋点
+      trackEvent(ANALYTICS_EVENTS.HISTORY_CLEAR_FAILED, {
+        error_message: err instanceof Error ? err.message : 'Unknown error',
+        page: 'history'
+      });
     }
   };
 

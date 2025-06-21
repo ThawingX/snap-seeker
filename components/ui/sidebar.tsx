@@ -12,6 +12,7 @@ interface Links {
   label: string;
   href: string;
   icon: React.JSX.Element | React.ReactNode;
+  onClick?: () => void;
 }
 
 interface SidebarContextProps {
@@ -277,6 +278,7 @@ export const SidebarLink = ({
       href={link.href}
       target={isExternalLink ? "_blank" : undefined}
       rel={isExternalLink ? "noopener noreferrer" : undefined}
+      onClick={link.onClick}
       className={cn(
         "flex items-center justify-start gap-4 group/sidebar py-3 px-4 rounded-lg transition-all duration-300 border border-transparent",
         "hover:bg-primary/10 hover:text-primary hover:shadow-md hover:border-primary/30",

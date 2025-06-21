@@ -96,6 +96,12 @@ export default function LoginForm() {
     }
 
     try {
+      // 触发登录开始埋点
+      trackEvent(ANALYTICS_EVENTS.LOGIN_START, {
+        method: 'email',
+        page: 'login_modal'
+      });
+
       await login({
         username: formData.email, // API expects username field
         password: formData.password
@@ -110,12 +116,26 @@ export default function LoginForm() {
         rememberMeManager.clearCredentials();
       }
       
+      // 触发登录成功埋点
+      trackEvent(ANALYTICS_EVENTS.LOGIN_SUCCESS, {
+        method: 'email',
+        page: 'login_modal',
+        user_email: formData.email
+      });
+
       showToast({
         message: "Login successful!",
         type: "success",
         duration: 3000
       });
     } catch (error) {
+      // 触发登录失败埋点
+      trackEvent(ANALYTICS_EVENTS.LOGIN_FAILED, {
+        method: 'email',
+        page: 'login_modal',
+        error_message: error instanceof Error ? error.message : 'Unknown error'
+      });
+
       showToast({
         message: error instanceof Error ? error.message : "Login failed",
         type: "error",

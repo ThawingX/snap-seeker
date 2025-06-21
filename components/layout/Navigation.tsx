@@ -11,6 +11,7 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackPricingClick } from "@/lib/analytics";
 
 
 export const Navigation = () => {
@@ -79,6 +80,13 @@ export const AuthButtons = () => {
     icon: (
       <IconCoins className="h-5 w-5 shrink-0 text-white" />
     ),
+    onClick: () => {
+      trackPricingClick({
+        source: 'sidebar',
+        user_authenticated: isAuthenticated,
+        page: 'main_app'
+      });
+    }
   };
 
   return (
@@ -109,14 +117,27 @@ export const AuthButtons = () => {
         <>
           <div className="flex justify-center mb-4">
             <button 
-              onClick={() => showAuthModal("signup")}
+              onClick={() => {
+                trackEvent(ANALYTICS_EVENTS.CREATE_ACCOUNT_CLICK, {
+                  method: 'email',
+                  page: 'sidebar',
+                  has_invitation_code: false
+                });
+                showAuthModal("signup");
+              }}
               className="text-base py-3 px-8 rounded-full bg-green-600/80 hover:bg-green-600/90 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border border-green-500/30 hover:border-green-500/50 backdrop-blur-sm">
                 Sign Up
             </button>
           </div>
           <div className="flex justify-center">
             <button 
-              onClick={() => showAuthModal("login")}
+              onClick={() => {
+                trackEvent(ANALYTICS_EVENTS.LOGIN_START, {
+                  method: 'email',
+                  page: 'sidebar'
+                });
+                showAuthModal("login");
+              }}
               className="text-base py-3 px-8 rounded-full bg-blue-600/80 hover:bg-blue-600/90 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl border border-blue-500/30 hover:border-blue-500/50 backdrop-blur-sm">
                 Log in
             </button>

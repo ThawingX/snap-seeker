@@ -3,6 +3,7 @@ import React from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { MobileLayout } from "@/components/layout/MobileLayout";
 import { IconChartBar, IconTools } from "@tabler/icons-react";
+import { trackPMFAnalysisTryIt } from "@/lib/analytics";
 
 function PMFAnalysisContent() {
   return (
@@ -60,7 +61,12 @@ function PMFAnalysisContent() {
           <button 
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             onClick={() => {
-              // Add your expect functionality here
+              // 触发PMF分析试用埋点
+              trackPMFAnalysisTryIt({
+                page: 'pmf_analysis',
+                feature_status: 'coming_soon',
+                user_interest: 'high'
+              });
               console.log('User clicked Expect button');
             }}
           >
