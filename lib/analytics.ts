@@ -20,6 +20,7 @@ export const trackEvent = (eventName: string, eventParams?: { [key: string]: any
 export const ANALYTICS_EVENTS = {
   UPGRADE_CLICK: 'upgrade_click',
   CREATE_ACCOUNT_CLICK: 'create_account_click',
+  GOOGLE_LOGIN: 'google_login',
 } as const;
 
 // Add TypeScript type for window.dataLayer
@@ -27,4 +28,4 @@ declare global {
   interface Window {
     dataLayer: any[];
   }
-} 
+}

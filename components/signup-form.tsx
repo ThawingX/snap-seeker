@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { initializeGoogleAuth, signInWithGoogle, isGoogleAuthAvailable, getGoogleAuthUnavailableReason } from "@/lib/google-auth";
 import type { LoginResponse } from "@/lib/google-auth";
+import { trackEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 /**
  * 注册表单组件
@@ -121,6 +122,13 @@ export default function SignupForm() {
    */
   const handleGoogleSignup = async () => {
     try {
+      // 触发GTM埋点事件 - Google注册按钮点击
+      trackEvent(ANALYTICS_EVENTS.GOOGLE_LOGIN, {
+        action: 'click',
+        method: 'google',
+        page: 'signup'
+      });
+
       if (!isGoogleAuthReady || !isGoogleAuthAvailable()) {
         const reason = getGoogleAuthUnavailableReason();
         showToast({

@@ -13,8 +13,14 @@ import {
 } from "@/components/ui/form-utils";
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { initializeGoogleAuth, signInWithGoogle, isGoogleAuthAvailable, getGoogleAuthUnavailableReason } from "@/lib/google-auth";
-import type { LoginResponse } from "@/lib/google-auth";
+import { 
+  initializeGoogleAuth, 
+  signInWithGoogle, 
+  isGoogleAuthAvailable, 
+  getGoogleAuthUnavailableReason,
+  type LoginResponse 
+} from "@/lib/google-auth";
+import { trackEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { rememberMeManager } from "@/lib/api";
 
 /**
@@ -123,6 +129,13 @@ export default function LoginForm() {
    */
   const handleGoogleLogin = async () => {
     try {
+      // 触发GTM埋点事件 - Google登录按钮点击
+      trackEvent(ANALYTICS_EVENTS.GOOGLE_LOGIN, {
+        action: 'click',
+        method: 'google',
+        page: 'login'
+      });
+
       if (!isGoogleAuthReady || !isGoogleAuthAvailable()) {
         const reason = getGoogleAuthUnavailableReason();
         showToast({
