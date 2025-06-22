@@ -101,3 +101,8 @@ Sat June 14 2025：
 - [x] searchBar 点击不了
 - [] ph upvote
 - [x] clear history相关删除 
+
+2025/06/22：
+-[] prd id
+-[] print 按钮颜色
+-[] google 登录

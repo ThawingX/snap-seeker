@@ -394,6 +394,18 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
   const hasReceivedCompetitorsRef = useRef<boolean>(false);
   const processor = useRef(new SSEDataProcessor());
   
+  // 使用ref存储初始的searchId，避免因URL更新导致的重复请求
+  const initialSearchIdRef = useRef<string>(searchId);
+  const initialQueryRef = useRef<string>(query);
+  
+  // 只在初始化时设置ref值，后续不再更新
+  if (initialSearchIdRef.current !== searchId && !finalSearchId) {
+    initialSearchIdRef.current = searchId;
+  }
+  if (initialQueryRef.current !== query) {
+    initialQueryRef.current = query;
+  }
+  
   // 添加 ref 来保存最新的状态数据
   const latestDataRef = useRef<SearchResultData>(initialResults);
   
@@ -410,7 +422,11 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
   }, [logicSteps, competitors, figures, hotKeysData, requirementCard, functionList]);
 
   useEffect(() => {
-    if (!searchId || !query) return;
+    // 使用初始的searchId和query，避免因URL更新导致的重复请求
+    const currentSearchId = initialSearchIdRef.current;
+    const currentQuery = initialQueryRef.current;
+    
+    if (!currentSearchId || !currentQuery) return;
 
     // localStorage加载已移除，不再从本地加载搜索结果数据
     // 直接进行新的搜索请求
@@ -444,7 +460,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
         const response = await fetch(ENV.TARGET_CHAT_API_URL, {
           method: 'POST',
           headers,
-          body: JSON.stringify({ query, searchId }),
+          body: JSON.stringify({ query: currentQuery, searchId: currentSearchId }),
           signal: abortController.signal
         });
         console.log('SSE Response:', response);
@@ -468,7 +484,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
         // 初始化处理数据
         const currentResults = createInitialResultsState();
         const setters = { setLogicSteps, setCompetitors, setFigures, setHotKeysData, setRequirementCard, setFunctionList, setLoading };
-        const context = createSSEContext(currentResults, setters, searchId, query, showToast, router, setFinalSearchId);
+        const context = createSSEContext(currentResults, setters, currentSearchId, currentQuery, showToast, router, setFinalSearchId);
         
         // 设置超时监控
         lastDataTimeRef.current = Date.now();
@@ -478,8 +494,8 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
           lastDataTimeRef,
           hasReceivedCompetitorsRef,
           context,
-          searchId,
-          query,
+          currentSearchId,
+          currentQuery,
           setLoading
         );
 
@@ -490,8 +506,8 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
           processor.current,
           context,
           currentResults,
-          searchId,
-          query,
+          currentSearchId,
+          currentQuery,
           lastDataTimeRef,
           hasReceivedCompetitorsRef,
           intervalIdRef,
@@ -527,7 +543,7 @@ export const useSSEData = ({ query, searchId }: UseSSEDataProps): UseSSEDataRetu
       abortController.abort();
       clearTimeoutMonitor(intervalIdRef);
     };
-  }, [query, searchId]);
+  }, []); // 移除依赖项，避免因URL更新导致的重复请求，使用ref存储的初始值
 
   return {
     loading,

@@ -173,6 +173,7 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
   const { showToast } = useToast();
   
   // 使用SSE数据hook获取实时数据（新搜索时使用）
+  // 注意：这里使用初始的searchId，避免使用finalSearchId导致无限循环
   const sseData = useSSEData({ 
     query: isNewSearch ? query : '', 
     searchId: isNewSearch ? searchId : '' 
@@ -279,17 +280,20 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
   const handleExportMVP = async () => {
     if (isExporting) return;
     
+    // 获取正确的searchId：新搜索时使用finalSearchId，历史查询时使用原始searchId
+    const exportSearchId = isNewSearch ? sseData.finalSearchId : searchId;
+    
     // 触发导出开始埋点
     trackEvent(ANALYTICS_EVENTS.EXPORT_START, {
       export_type: 'prd',
-      search_id: searchId,
+      search_id: exportSearchId,
       query: query,
       page: 'search_results'
     });
     
     setIsExporting(true);
     try {
-      const response = await api.get(API_ENDPOINTS.CHAT.DOWNLOAD(searchId), {
+      const response = await api.get(API_ENDPOINTS.CHAT.DOWNLOAD(exportSearchId), {
          headers: {
            'Content-Type': 'application/json',
          },
@@ -306,7 +310,7 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
       // 创建下载链接
       const a = document.createElement('a');
       a.href = url;
-      a.download = `prd-${query.replace(/\s+/g, '-')}-${searchId}.md`;
+      a.download = `prd-${query.replace(/\s+/g, '-')}-${exportSearchId}.md`;
       document.body.appendChild(a);
       a.click();
       
@@ -317,9 +321,9 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
       // 触发导出成功埋点
       trackEvent(ANALYTICS_EVENTS.EXPORT_SUCCESS, {
         export_type: 'prd',
-        search_id: searchId,
+        search_id: exportSearchId,
         query: query,
-        file_name: `prd-${query.replace(/\s+/g, '-')}-${searchId}.md`,
+        file_name: `prd-${query.replace(/\s+/g, '-')}-${exportSearchId}.md`,
         page: 'search_results'
       });
       
@@ -333,7 +337,7 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
       // 触发导出失败埋点
       trackEvent(ANALYTICS_EVENTS.EXPORT_FAILED, {
         export_type: 'prd',
-        search_id: searchId,
+        search_id: exportSearchId,
         query: query,
         error_message: error instanceof Error ? error.message : 'Unknown error',
         page: 'search_results'
