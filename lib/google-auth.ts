@@ -329,59 +329,58 @@ const parseJWT = (token: string): GoogleUser => {
 };
 
 /**
- * 调用服务端API进行Google认证
+ * 处理Google认证token，返回用户信息但不调用服务端API
+ * 服务端认证将由AuthContext统一处理
  */
 export const authenticateWithServer = async (
   googleIdToken: string,
   invitationCode: string | null = null
 ): Promise<LoginResponse> => {
   try {
-    // 使用统一的API管理系统
-    const { API_ENDPOINTS, publicApi, tokenManager } = await import('./api');
+    // 解析JWT token获取用户信息
+    const payload = parseJWT(googleIdToken);
     
-    const requestBody: LoginRequest = {
-      google_id_token: googleIdToken,
-      invitationCode: invitationCode,
+    if (!payload) {
+      throw new Error('Invalid Google ID token');
+    }
+
+    // 返回token和用户信息，让上层调用者处理服务端认证
+    return {
+      token: googleIdToken,
+      user: {
+        id: payload.sub,
+        email: payload.email,
+        name: payload.name,
+        picture: payload.picture
+      }
     };
-
-    const response = await publicApi.post(API_ENDPOINTS.AUTH.GOOGLE_LOGIN, requestBody);
-
-    // 首先尝试解析响应体
-    const result = await response.json().catch(() => ({}));
-    
-    // 检查HTTP状态码
-    if (!response.ok) {
-      // 如果有具体的错误信息，使用它；否则使用通用错误信息
-      const errorMessage = result.detail || result.message || result.error || 'Login failed, please try again';
-      throw new Error(errorMessage);
-    }
-    
-    // 检查响应体中是否包含错误信息（即使状态码是200）
-    if (result.error || result.detail) {
-      const errorMessage = result.error || result.detail || 'Login failed, please try again';
-      throw new Error(errorMessage);
-    }
-    
-    // 检查是否包含必要的认证信息
-    if (!result.access_token && !result.token) {
-      throw new Error('Invalid server response: missing authentication token');
-    }
-    
-    // Save token after successful login
-    if (result.access_token) {
-      tokenManager.setToken(result.access_token);
-    } else if (result.token) {
-      tokenManager.setToken(result.token);
-    }
-
-    return result;
   } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('Network connection error, please check your network and try again');
+    console.error('Google authentication error:', error);
+    throw error instanceof Error ? error : new Error('Google authentication failed');
   }
 };
+
+/**
+ * 解析JWT token（仅用于获取用户信息，不验证签名）
+ */
+function parseJWT(token: string): any {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('Failed to parse JWT token:', error);
+    return null;
+  }
+}
+
+
 
 /**
  * 渲染Google登录按钮
