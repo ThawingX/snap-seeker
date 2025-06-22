@@ -310,7 +310,7 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
       // 创建下载链接
       const a = document.createElement('a');
       a.href = url;
-      a.download = `prd-${query.replace(/\s+/g, '-')}-${exportSearchId}.md`;
+      a.download = `PRD.md`;
       document.body.appendChild(a);
       a.click();
       
@@ -323,7 +323,7 @@ export default function SeekTable({ query: initialQuery, searchId }: { query: st
         export_type: 'prd',
         search_id: exportSearchId,
         query: query,
-        file_name: `prd-${query.replace(/\s+/g, '-')}-${exportSearchId}.md`,
+        file_name: `PRD.md`,
         page: 'search_results'
       });
       
