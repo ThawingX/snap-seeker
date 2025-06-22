@@ -11,19 +11,25 @@
 - 新增 `isGoogleServicesInitialized()` 函数，实时检测 Google Identity Services 的初始化状态
 - 自动判断是否需要使用备用登录方案
 
-### 2. 备用弹窗登录
+### 2. 智能初始化等待机制
+
+- 当 Google Identity Services 未完成初始化时，系统会自动等待并尝试初始化
+- 初始化完成后自动触发登录逻辑，无需用户重新点击
+- 提升用户体验，避免显示"未初始化"的错误提示
+
+### 3. 备用弹窗登录
 
 - 新增 `signInWithGooglePopup()` 函数，使用标准 OAuth 2.0 流程
-- 当 Google Identity Services 未初始化时自动启用
-- 支持弹窗窗口登录，用户体验流畅
+- 当初始化等待失败时自动启用备用方案
+- 支持弹窗窗口登录，确保登录功能始终可用
 
-### 3. 统一的登录入口
+### 4. 统一的登录入口
 
-- 更新 `signInWithGoogle()` 函数，现在会自动选择最佳的登录方式
-- 优先使用 Google Identity Services，失败时自动切换到弹窗方式
-- 对调用者完全透明，无需修改现有代码
+- 更新 `signInWithGoogle()` 函数，现在会自动处理初始化等待和选择最佳的登录方式
+- 优先尝试初始化 Google Identity Services，然后使用该服务进行登录
+- 初始化失败时自动切换到弹窗方式，对调用者完全透明
 
-### 4. 改进的按钮渲染
+### 5. 改进的按钮渲染
 
 - 更新 `renderGoogleSignInButton()` 函数
 - 当 Google 服务未初始化时，自动渲染备用按钮
@@ -43,15 +49,17 @@
 flowchart TD
     A[用户点击登录] --> B{Google Services 已初始化?}
     B -->|是| C[使用 Google Identity Services]
-    B -->|否| D[使用弹窗 OAuth 登录]
-    C --> E[获取 ID Token]
-    D --> F[打开 OAuth 弹窗]
-    F --> G[用户授权]
-    G --> H[回调页面处理]
-    H --> I[发送消息给父窗口]
-    I --> E
-    E --> J[调用服务端 API]
-    J --> K[登录成功]
+    B -->|否| D[等待并尝试初始化]
+    D --> E{初始化成功?}
+    E -->|是| C
+    E -->|否| F[使用弹窗 OAuth 登录]
+    C --> G[获取 ID Token]
+    F --> H[打开 OAuth 弹窗]
+    H --> I[用户授权]
+    I --> J[回调页面处理]
+    G --> K[服务端认证]
+    J --> K
+    K --> L[登录完成]
 ```
 
 ### 关键文件

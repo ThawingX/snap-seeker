@@ -216,10 +216,24 @@ export const signInWithGoogle = async (invitationCode: string | null = null): Pr
     throw new Error('Login service temporarily unavailable, please try again later');
   }
 
-  // 检查Google服务是否已初始化
+  // 检查Google服务是否已初始化，如果未初始化则等待
   if (!isGoogleServicesInitialized()) {
-    console.log('Google Identity Services not initialized, using popup method');
-    return signInWithGooglePopup(invitationCode);
+    console.log('Google Identity Services not initialized, waiting for initialization...');
+    
+    try {
+      // 尝试初始化Google服务
+      await initializeGoogleAuth();
+      console.log('Google Identity Services initialized successfully');
+    } catch (error) {
+      console.log('Failed to initialize Google Identity Services, using popup method as fallback');
+      return signInWithGooglePopup(invitationCode);
+    }
+    
+    // 初始化完成后，再次检查
+    if (!isGoogleServicesInitialized()) {
+      console.log('Google Identity Services still not available, using popup method');
+      return signInWithGooglePopup(invitationCode);
+    }
   }
 
   // 使用Google Identity Services
