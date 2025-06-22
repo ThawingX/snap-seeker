@@ -102,26 +102,119 @@ export const initializeGoogleAuth = (): Promise<void> => {
 };
 
 /**
- * 使用Google Identity Services进行登录
- * 获取Google ID Token并调用服务端API进行认证
+ * 检查Google服务是否已初始化
  */
-export const signInWithGoogle = (invitationCode: string | null = null): Promise<LoginResponse> => {
+const isGoogleServicesInitialized = (): boolean => {
+  return !!(window.google?.accounts?.id && GOOGLE_CLIENT_ID && GOOGLE_CLIENT_ID !== 'YOUR_GOOGLE_CLIENT_ID');
+};
+
+/**
+ * 使用弹窗窗口进行Google OAuth登录（备用方案）
+ */
+const signInWithGooglePopup = (invitationCode: string | null = null): Promise<LoginResponse> => {
   return new Promise((resolve, reject) => {
-    if (typeof window === 'undefined') {
-      reject(new Error('Login service temporarily unavailable, please try again later'));
-      return;
-    }
-
-    if (!window.google?.accounts?.id) {
-      reject(new Error('Login service temporarily unavailable, please try again later'));
-      return;
-    }
-
     if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID === 'YOUR_GOOGLE_CLIENT_ID') {
       reject(new Error('Login service temporarily unavailable, please try again later'));
       return;
     }
 
+    // 构建OAuth URL
+    const params = new URLSearchParams({
+      client_id: GOOGLE_CLIENT_ID,
+      redirect_uri: `${window.location.origin}/auth/google/callback`,
+      response_type: 'id_token token',
+      scope: 'openid email profile',
+      nonce: Math.random().toString(36).substring(2, 15),
+      state: invitationCode || '',
+    });
+
+    const authUrl = `https://accounts.google.com/oauth/v2/auth?${params.toString()}`;
+
+    // 打开弹窗窗口
+    const popup = window.open(
+      authUrl,
+      'google-auth',
+      'width=500,height=600,scrollbars=yes,resizable=yes,status=yes,location=yes,toolbar=no,menubar=no'
+    );
+
+    if (!popup) {
+      reject(new Error('Failed to open popup window. Please allow popups for this site.'));
+      return;
+    }
+
+    // 监听弹窗消息
+    const messageHandler = async (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      if (event.data.type === 'GOOGLE_AUTH_SUCCESS') {
+        try {
+          // 使用ID Token进行服务端认证
+          const loginResult = await authenticateWithServer(event.data.idToken, invitationCode);
+          
+          // 解析用户信息
+          const userInfo = parseJWT(event.data.idToken);
+          
+          resolve({
+            token: loginResult.token,
+            user: loginResult.user || userInfo,
+            message: loginResult.message,
+          });
+        } catch (error) {
+          reject(error instanceof Error ? error : new Error('Failed to authenticate with Google'));
+        } finally {
+          window.removeEventListener('message', messageHandler);
+          popup.close();
+        }
+      } else if (event.data.type === 'GOOGLE_AUTH_ERROR') {
+        window.removeEventListener('message', messageHandler);
+        popup.close();
+        reject(new Error(event.data.error || 'Google authentication failed'));
+      }
+    };
+
+    window.addEventListener('message', messageHandler);
+
+    // 检查弹窗是否被关闭
+    const checkClosed = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(checkClosed);
+        window.removeEventListener('message', messageHandler);
+        reject(new Error('Google sign-in was cancelled'));
+      }
+    }, 1000);
+
+    // 设置超时
+    setTimeout(() => {
+      clearInterval(checkClosed);
+      window.removeEventListener('message', messageHandler);
+      if (!popup.closed) {
+        popup.close();
+      }
+      reject(new Error('Google sign-in timeout'));
+    }, 60000); // 增加到60秒超时
+  });
+};
+
+/**
+ * 使用Google Identity Services进行登录
+ * 获取Google ID Token并调用服务端API进行认证
+ * 如果服务未初始化，自动使用弹窗方式登录
+ */
+export const signInWithGoogle = async (invitationCode: string | null = null): Promise<LoginResponse> => {
+  if (typeof window === 'undefined') {
+    throw new Error('Login service temporarily unavailable, please try again later');
+  }
+
+  // 检查Google服务是否已初始化
+  if (!isGoogleServicesInitialized()) {
+    console.log('Google Identity Services not initialized, using popup method');
+    return signInWithGooglePopup(invitationCode);
+  }
+
+  // 使用Google Identity Services
+  return new Promise((resolve, reject) => {
     // 设置登录回调
     const handleCredentialResponse = async (response: GoogleAuthResponse) => {
       try {
@@ -156,9 +249,11 @@ export const signInWithGoogle = (invitationCode: string | null = null): Promise<
     // 显示Google登录弹窗
     window.google.accounts.id.prompt((notification) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        // 如果弹窗没有显示，可能是因为用户之前取消过
-        // 这种情况下我们可以尝试使用按钮方式登录
-        reject(new Error('Google sign-in popup was not displayed. Please try using the sign-in button.'));
+        // 如果弹窗没有显示，尝试使用弹窗方式登录
+        console.log('Google Identity Services popup not displayed, falling back to popup method');
+        signInWithGooglePopup(invitationCode)
+          .then(resolve)
+          .catch(reject);
       } else if (notification.isDismissedMoment()) {
         reject(new Error('Google sign-in was dismissed'));
       }
@@ -216,16 +311,32 @@ export const authenticateWithServer = async (
 
     const response = await publicApi.post(API_ENDPOINTS.AUTH.GOOGLE_LOGIN, requestBody);
 
+    // 首先尝试解析响应体
+    const result = await response.json().catch(() => ({}));
+    
+    // 检查HTTP状态码
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error('Login failed, please try again');
+      // 如果有具体的错误信息，使用它；否则使用通用错误信息
+      const errorMessage = result.detail || result.message || result.error || 'Login failed, please try again';
+      throw new Error(errorMessage);
     }
-
-    const result = await response.json();
+    
+    // 检查响应体中是否包含错误信息（即使状态码是200）
+    if (result.error || result.detail) {
+      const errorMessage = result.error || result.detail || 'Login failed, please try again';
+      throw new Error(errorMessage);
+    }
+    
+    // 检查是否包含必要的认证信息
+    if (!result.access_token && !result.token) {
+      throw new Error('Invalid server response: missing authentication token');
+    }
     
     // Save token after successful login
     if (result.access_token) {
       tokenManager.setToken(result.access_token);
+    } else if (result.token) {
+      tokenManager.setToken(result.token);
     }
 
     return result;
@@ -281,6 +392,86 @@ export const renderGoogleSignInButton = (
     locale: options.locale || 'zh_CN',
     ...options
   };
+
+  // 检查Google服务是否已初始化
+  if (!isGoogleServicesInitialized()) {
+    // 如果Google服务未初始化，创建一个备用按钮
+    element.innerHTML = '';
+    const fallbackButton = document.createElement('button');
+    fallbackButton.className = 'gsi-material-button';
+    fallbackButton.style.cssText = `
+      height: 40px;
+      border-radius: 4px;
+      border: 1px solid #dadce0;
+      background-color: #fff;
+      color: #3c4043;
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.25px;
+      line-height: 16px;
+      padding: 0 12px;
+      text-align: center;
+      vertical-align: middle;
+      width: ${config.width}px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    `;
+    
+    // 添加Google图标
+    const icon = document.createElement('div');
+    icon.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+    `;
+    
+    const text = document.createElement('span');
+    text.textContent = config.text === 'signin_with' ? 'Sign in with Google' : 
+                      config.text === 'signup_with' ? 'Sign up with Google' :
+                      config.text === 'continue_with' ? 'Continue with Google' : 'Sign in';
+    
+    fallbackButton.appendChild(icon);
+    fallbackButton.appendChild(text);
+    
+    // 添加点击事件处理
+    fallbackButton.addEventListener('click', async () => {
+      try {
+        if (config.click_listener) {
+          config.click_listener();
+          return;
+        }
+        
+        // 使用弹窗方式登录
+        const result = await signInWithGooglePopup(invitationCode);
+        
+        // 触发成功事件
+        const event = new CustomEvent('googleSignInSuccess', {
+          detail: {
+            token: result.token,
+            user: result.user,
+            message: result.message,
+          }
+        });
+        window.dispatchEvent(event);
+      } catch (error) {
+        // 触发错误事件
+        const errorEvent = new CustomEvent('googleSignInError', {
+          detail: { error: error instanceof Error ? error.message : 'Google sign-in failed' }
+        });
+        window.dispatchEvent(errorEvent);
+      }
+    });
+    
+    element.appendChild(fallbackButton);
+    return;
+  }
 
   // 设置按钮点击回调
   const handleCredentialResponse = async (response: GoogleAuthResponse) => {

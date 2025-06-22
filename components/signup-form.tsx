@@ -152,19 +152,9 @@ export default function SignupForm() {
         page: 'signup'
       });
 
-      if (!isGoogleAuthReady || !isGoogleAuthAvailable()) {
-        const reason = getGoogleAuthUnavailableReason();
-        showToast({
-          message: reason || "Registration service temporarily unavailable, please try again later",
-          type: "error",
-          duration: 8000
-        });
-        return;
-      }
-
       setIsGoogleLoading(true);
 
-      // 使用Google Sign-In，传入邀请码
+      // 使用Google Sign-In，传入邀请码（自动处理初始化和备用方案）
       const result: LoginResponse = await signInWithGoogle(formData.invitationCode || null);
       
       // 调用AuthContext的loginGoogle方法（注册和登录使用同一个接口）
@@ -179,9 +169,10 @@ export default function SignupForm() {
         duration: 3000
       });
     } catch (error) {
-      // 不显示技术性错误信息给用户
+      // 显示具体的错误信息
+      const errorMessage = error instanceof Error ? error.message : "Registration failed, please try again";
       showToast({
-        message: "Registration failed, please try again",
+        message: errorMessage,
         type: "error",
         duration: 5000
       });

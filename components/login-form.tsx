@@ -156,19 +156,9 @@ export default function LoginForm() {
         page: 'login'
       });
 
-      if (!isGoogleAuthReady || !isGoogleAuthAvailable()) {
-        const reason = getGoogleAuthUnavailableReason();
-        showToast({
-          message: reason || "Login service temporarily unavailable, please try again later",
-          type: "error",
-          duration: 8000
-        });
-        return;
-      }
-
       setIsGoogleLoading(true);
 
-      // 使用Google Sign-In
+      // 使用Google Sign-In（自动处理初始化和备用方案）
       const result: LoginResponse = await signInWithGoogle();
       
       // 调用AuthContext的loginGoogle方法
@@ -183,9 +173,10 @@ export default function LoginForm() {
         duration: 3000
       });
     } catch (error) {
-      // 不显示技术性错误信息给用户
+      // 显示具体的错误信息
+      const errorMessage = error instanceof Error ? error.message : "Login failed, please try again";
       showToast({
-        message: "Login failed, please try again",
+        message: errorMessage,
         type: "error",
         duration: 5000
       });
