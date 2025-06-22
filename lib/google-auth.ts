@@ -338,21 +338,17 @@ export const authenticateWithServer = async (
 ): Promise<LoginResponse> => {
   try {
     // 解析JWT token获取用户信息
-    const payload = parseJWT(googleIdToken);
+    const user = parseJWT(googleIdToken);
     
-    if (!payload) {
+    if (!user) {
       throw new Error('Invalid Google ID token');
     }
 
     // 返回token和用户信息，让上层调用者处理服务端认证
     return {
       token: googleIdToken,
-      user: {
-        id: payload.sub,
-        email: payload.email,
-        name: payload.name,
-        picture: payload.picture
-      }
+      user: user,
+      message: 'Google authentication successful'
     };
   } catch (error) {
     console.error('Google authentication error:', error);
@@ -360,25 +356,7 @@ export const authenticateWithServer = async (
   }
 };
 
-/**
- * 解析JWT token（仅用于获取用户信息，不验证签名）
- */
-function parseJWT(token: string): any {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (error) {
-    console.error('Failed to parse JWT token:', error);
-    return null;
-  }
-}
+
 
 
 
