@@ -105,6 +105,16 @@ const createSSEContext = (
       // 更新浏览器URL，使用replace避免在历史记录中创建新条目
       router.replace(`/results?id=${newSearchId}`);
     },
+    updateURLWithSearchId: (newSearchId: string) => {
+      // 更新浏览器URL中的searchId，但保留isNew参数
+      const currentUrl = new URL(window.location.href);
+      const isNew = currentUrl.searchParams.get('isNew');
+      if (isNew === 'true') {
+        router.replace(`/results?id=${newSearchId}&isNew=true`);
+      } else {
+        router.replace(`/results?id=${newSearchId}`);
+      }
+    },
     setFinalSearchId
   };
   

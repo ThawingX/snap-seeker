@@ -126,7 +126,7 @@ export const Dashboard = () => {
           <div className="absolute top-4 right-4" style={{ zIndex: 300 }}>
             <div className="flex items-center space-x-3 text-muted-foreground bg-card/80 px-6 py-3 rounded-full backdrop-blur-md border border-border shadow-lg">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-              <span className="text-sm">正在加载热门标签...</span>
+              <span className="text-sm">Loading Hot tags...</span>
             </div>
           </div>
         )}
