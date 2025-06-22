@@ -118,6 +118,8 @@ const signInWithGooglePopup = (invitationCode: string | null = null): Promise<Lo
       return;
     }
 
+    let isCompleted = false; // 添加完成标志
+
     // 构建OAuth URL
     const params = new URLSearchParams({
       client_id: GOOGLE_CLIENT_ID,
@@ -149,6 +151,7 @@ const signInWithGooglePopup = (invitationCode: string | null = null): Promise<Lo
       }
 
       if (event.data.type === 'GOOGLE_AUTH_SUCCESS') {
+        isCompleted = true; // 标记为已完成
         try {
           // 使用ID Token进行服务端认证
           const loginResult = await authenticateWithServer(event.data.idToken, invitationCode);
@@ -168,6 +171,7 @@ const signInWithGooglePopup = (invitationCode: string | null = null): Promise<Lo
           popup.close();
         }
       } else if (event.data.type === 'GOOGLE_AUTH_ERROR') {
+        isCompleted = true; // 标记为已完成
         window.removeEventListener('message', messageHandler);
         popup.close();
         reject(new Error(event.data.error || 'Google authentication failed'));
@@ -181,7 +185,10 @@ const signInWithGooglePopup = (invitationCode: string | null = null): Promise<Lo
       if (popup.closed) {
         clearInterval(checkClosed);
         window.removeEventListener('message', messageHandler);
-        reject(new Error('Google sign-in was cancelled'));
+        // 只有在未完成认证的情况下才认为是取消
+        if (!isCompleted) {
+          reject(new Error('Google sign-in was cancelled'));
+        }
       }
     }, 1000);
 
@@ -192,7 +199,9 @@ const signInWithGooglePopup = (invitationCode: string | null = null): Promise<Lo
       if (!popup.closed) {
         popup.close();
       }
-      reject(new Error('Google sign-in timeout'));
+      if (!isCompleted) {
+        reject(new Error('Google sign-in timeout'));
+      }
     }, 60000); // 增加到60秒超时
   });
 };
@@ -279,10 +288,9 @@ export const signInWithGoogle = async (invitationCode: string | null = null): Pr
           .then(safeResolve)
           .catch(safeReject);
       } else if (notification.isDismissedMoment()) {
-        // 只有在用户真正主动取消时才抛出dismissed错误
-        // 如果已经在处理登录流程，则忽略这个通知
-        console.log('Google sign-in dismissed by user');
-        safeReject(new Error('Google sign-in was cancelled'));
+        // 不要立即抛出错误，因为dismissed可能在正常登录流程中也会触发
+        // 让超时机制来处理真正的取消情况
+        console.log('Google sign-in popup dismissed, waiting for potential credential response');
       }
     });
 
