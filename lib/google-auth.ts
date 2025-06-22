@@ -215,6 +215,27 @@ export const signInWithGoogle = async (invitationCode: string | null = null): Pr
 
   // 使用Google Identity Services
   return new Promise((resolve, reject) => {
+    let isResolved = false; // 防止重复resolve/reject
+    let timeoutId: NodeJS.Timeout;
+
+    // 安全的resolve函数
+    const safeResolve = (result: LoginResponse) => {
+      if (!isResolved) {
+        isResolved = true;
+        if (timeoutId) clearTimeout(timeoutId);
+        resolve(result);
+      }
+    };
+
+    // 安全的reject函数
+    const safeReject = (error: Error) => {
+      if (!isResolved) {
+        isResolved = true;
+        if (timeoutId) clearTimeout(timeoutId);
+        reject(error);
+      }
+    };
+
     // 设置登录回调
     const handleCredentialResponse = async (response: GoogleAuthResponse) => {
       try {
@@ -228,13 +249,13 @@ export const signInWithGoogle = async (invitationCode: string | null = null): Pr
         // 调用服务端API进行认证
         const loginResult = await authenticateWithServer(response.credential, invitationCode);
         
-        resolve({
+        safeResolve({
           token: loginResult.token,
           user: loginResult.user || userInfo,
           message: loginResult.message,
         });
       } catch (error) {
-        reject(error instanceof Error ? error : new Error('Failed to authenticate with Google'));
+        safeReject(error instanceof Error ? error : new Error('Failed to authenticate with Google'));
       }
     };
 
@@ -248,20 +269,26 @@ export const signInWithGoogle = async (invitationCode: string | null = null): Pr
 
     // 显示Google登录弹窗
     window.google.accounts.id.prompt((notification) => {
+      // 只有在还没有resolved的情况下才处理notification
+      if (isResolved) return;
+      
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
         // 如果弹窗没有显示，尝试使用弹窗方式登录
         console.log('Google Identity Services popup not displayed, falling back to popup method');
         signInWithGooglePopup(invitationCode)
-          .then(resolve)
-          .catch(reject);
+          .then(safeResolve)
+          .catch(safeReject);
       } else if (notification.isDismissedMoment()) {
-        reject(new Error('Google sign-in was dismissed'));
+        // 只有在用户真正主动取消时才抛出dismissed错误
+        // 如果已经在处理登录流程，则忽略这个通知
+        console.log('Google sign-in dismissed by user');
+        safeReject(new Error('Google sign-in was cancelled'));
       }
     });
 
     // 设置超时
-    setTimeout(() => {
-      reject(new Error('Google sign-in timeout'));
+    timeoutId = setTimeout(() => {
+      safeReject(new Error('Google sign-in timeout'));
     }, 30000);
   });
 };
