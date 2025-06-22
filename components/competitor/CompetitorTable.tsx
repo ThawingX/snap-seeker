@@ -90,9 +90,10 @@ export const CompetitorTable: React.FC<CompetitorTableProps> = ({
         {onPrint && (
           <button
             onClick={onPrint}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center px-3 py-2 text-sm bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600 text-neutral-700 dark:text-white rounded-lg transition-colors duration-200 no-print"
+            title="Print this module"
           >
-            <IconPrinter className="mr-2 h-4 w-4" />
+            <IconPrinter className="h-4 w-4 mr-1" />
             Print
           </button>
         )}
