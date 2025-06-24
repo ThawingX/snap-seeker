@@ -7,44 +7,28 @@ import { BackgroundBeamsWithCollision } from "../ui/background-beams-with-collis
 import { Cover } from "../ui/cover";
 import ColourfulText from "../ui/colourful-text";
 import Image from "next/image";
+import ProductHuntBadge from "../ui/product-hunt-badge";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { IconBrandDiscord } from "@tabler/icons-react";
 
 export const MobileDashboard = () => {
   return (
-    <div className="flex flex-col h-full bg-background text-foreground">
-      <div className="flex items-center justify-between px-5 py-4">
-        <div className="flex items-center">
-          <div className="relative bg-background rounded-md overflow-hidden transition-all duration-300 ease-in-out">
-            <div className="absolute inset-0 bg-gradient-to-r from-background via-muted to-background opacity-50"></div>
-            <Image
-              src="/images/header-logo.jpg"
-              alt="SnapSeeker Logo"
-              width={120}
-              height={24}
-              className="rounded-md relative z-10"
-              style={{ 
-                objectFit: 'contain',
-                filter: 'brightness(1.2) contrast(0.9)'
-              }}
-              priority
-              quality={100}
-            />
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Link
-            href="/login"
-            className="rounded-full border border-neutral-600 px-3 py-1 text-sm text-white hover:bg-neutral-800"
-          >
-            Log in
-          </Link>
-          <Link
-            href="/login?mode=signup"
-            className="rounded-full bg-teal-500 px-3 py-1 text-sm text-white hover:bg-teal-600"
-          >
-            Sign up
-          </Link>
-        </div>
-      </div>
+    <div className="flex flex-col h-full bg-background text-foreground relative">
+      {/* Top Left Controls */}
+       <div className="fixed top-16 left-4 z-40 flex items-center space-x-2">
+         <a
+           href="https://discord.gg/CSkT2BdNKy"
+           target="_blank"
+           rel="noopener noreferrer"
+           className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-[#5865F2]/10 hover:bg-[#5865F2]/20 text-[#5865F2] transition-all duration-300 backdrop-blur-sm"
+           aria-label="Join Discord"
+         >
+           <IconBrandDiscord className="h-5 w-5" />
+         </a>
+         <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-[#5865F2]/10 hover:bg-[#5865F2]/20 transition-all duration-300 backdrop-blur-sm">
+           <ThemeToggle className="w-5 h-5" />
+         </div>
+       </div>
 
       <div className="flex-1 overflow-y-auto">
         <div className="flex flex-col items-center justify-center px-4 pt-6">
@@ -58,6 +42,11 @@ export const MobileDashboard = () => {
             </div>
           </BackgroundBeamsWithCollision>
         </div>
+      </div>
+      
+      {/* Product Hunt Badge - Fixed to bottom right */}
+      <div className="fixed bottom-20 right-2 z-40">
+        <ProductHuntBadge className="scale-[0.6] transform-gpu" />
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import ColourfulText from "../ui/colourful-text";
 import { FloatingTags } from "../ui/floating-tags";
 import { useToast } from "../ui/toast";
 import { API_ENDPOINTS, publicApi } from "../../lib/api";
+import ProductHuntBadge from "../ui/product-hunt-badge";
 
 // 从后端获取热门标签的函数
 const fetchHotTags = async (): Promise<string[]> => {
@@ -121,9 +122,14 @@ export const Dashboard = () => {
           </div>
         )}
 
-        {/* 加载状态 - 右上角显示 */}
+        {/* Product Hunt Badge - 右上角显示 */}
+        <div className="absolute top-4 right-4" style={{ zIndex: 300 }}>
+          <ProductHuntBadge className="hidden sm:block" />
+        </div>
+
+        {/* 加载状态 - 右上角显示，当有Product Hunt badge时向下偏移 */}
         {isLoading && (
-          <div className="absolute top-4 right-4" style={{ zIndex: 300 }}>
+          <div className="absolute top-20 right-4" style={{ zIndex: 300 }}>
             <div className="flex items-center space-x-3 text-muted-foreground bg-card/80 px-6 py-3 rounded-full backdrop-blur-md border border-border shadow-lg">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
               <span className="text-sm">Loading Hot tags...</span>
